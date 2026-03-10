@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RackingHub - Your One-Stop Storage Solutions Partner</title>
+    <meta name="description" content="Sourcing quality racking systems from China to the world. Wide product range, fast response, competitive pricing.">
+    
+    <!-- Google Translate -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,es,fr,pt,th,vi,id,de,it,ru,ar',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        /* Header */
+        header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #1a365d;
+        }
+        
+        .lang-selector {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        #google_translate_element {
+            display: inline-block;
+        }
+        
+        #google_translate_element select {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            color: white;
+            padding: 10rem 2rem 5rem;
+            text-align: center;
+            margin-top: 60px;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 1rem;
+            opacity: 0.95;
+        }
+        
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: #fbbf24;
+            color: #1a365d;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #1a365d;
+        }
+        
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        
+        /* Section Styles */
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: #1a365d;
+            margin-bottom: 3rem;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: #4a5568;
+            max-width: 700px;
+            margin: -2rem auto 3rem;
+        }
+        
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: box-shadow 0.3s, transform 0.3s;
+            background: white;
+        }
+        
+        .product-card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+        }
+        
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f7fafc;
+        }
+        
+        .product-card-content {
+            padding: 1.5rem;
+        }
+        
+        .product-card h3 {
+            color: #1a365d;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .product-card p {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .product-card .btn-link {
+            color: #2c5282;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .product-card .btn-link:hover {
+            color: #1a365d;
+        }
+        
+        /* Why Choose Us */
+        .why-choose {
+            background: #f7fafc;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-box h3 {
+            color: #1a365d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-box p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+        
+        /* Services */
+        .services-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .service-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .service-item:last-child {
+            border-bottom: none;
+        }
+        
+        .service-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .service-item h4 {
+            color: #1a365d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .service-item p {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        /* Markets */
+        .markets {
+            background: #1a365d;
+            color: white;
+            text-align: center;
+        }
+        
+        .markets .section-title {
+            color: white;
+        }
+        
+        .markets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .market-item {
+            padding: 2rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .market-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Contact Form */
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .contact-info {
+            background: #f7fafc;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .contact-icon {
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            background: #1a365d;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .contact-item h4 {
+            color: #1a365d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .contact-item a,
+        .contact-item p {
+            color: #4a5568;
+        }
+        
+        .contact-item a:hover {
+            color: #2c5282;
+        }
+        
+        .contact-form {
+            background: white;
+            padding: 2rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2c5282;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .required {
+            color: #e53e3e;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            background: #1a365d;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background: #2c5282;
+        }
+        
+        /* Footer */
+        footer {
+            background: #1a365d;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        footer p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        footer a {
+            color: #fbbf24;
+            margin: 0 0.5rem;
+        }
+        
+        /* WhatsApp Float Button */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+            z-index: 999;
+            transition: transform 0.3s;
+        }
+        
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .whatsapp-float {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="#" class="logo">RackingHub</a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#products">Products</a></li>
+                <li><a href="#why">Why Us</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div id="google_translate_element"></div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <h1>Your One-Stop Storage Solutions Partner</h1>
+        <p>Sourcing quality racking systems from China to the world. We integrate multiple products to save your time and cost.</p>
+        <div class="hero-features">
+            <span class="feature">✓ Wide Product Range</span>
+            <span class="feature">✓ Fast 24h Response</span>
+            <span class="feature">✓ Competitive Pricing</span>
+        </div>
+        <div class="cta-buttons">
+            <a href="#contact" class="btn btn-primary">Get a Free Quote</a>
+            <a href="https://wa.me/8615348317266" class="btn btn-whatsapp">WhatsApp Us</a>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="section" id="products">
+        <h2 class="section-title">Our Products</h2>
+        <p class="section-subtitle">Comprehensive storage solutions for warehouses, logistics centers, and distribution facilities</p>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="images/Pallet-Racks-pd533912748.jpg" alt="Heavy Duty Pallet Racking">
+                <div class="product-card-content">
+                    <h3>Heavy Duty Pallet Racking</h3>
+                    <p>High-capacity storage solution for industrial warehouses with superior load-bearing performance.</p>
+                    <a href="products/heavy-duty-racking.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="images/Longspan-Shelving-pd594146548.jpg" alt="Medium Duty Shelving">
+                <div class="product-card-content">
+                    <h3>Medium Duty Shelving</h3>
+                    <p>Versatile shelving solutions for medium-weight storage needs in warehouses and workshops.</p>
+                    <a href="products/medium-duty-shelving.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="images/Mezzanine-pd521783548.jpg" alt="Mezzanine Racking">
+                <div class="product-card-content">
+                    <h3>Mezzanine Racking</h3>
+                    <p>Multi-level storage systems to maximize warehouse space utilization efficiently.</p>
+                    <a href="products/mezzanine-racking.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="images/Steel-Platform-pd505717048.jpg" alt="Steel Platform">
+                <div class="product-card-content">
+                    <h3>Steel Platform</h3>
+                    <p>Durable steel platforms for various industrial applications and elevated storage.</p>
+                    <a href="products/steel-platform.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="images/Shuttle-Radio-Rack-pd531383548.jpg" alt="Radio Shuttle Racking">
+                <div class="product-card-content">
+                    <h3>Radio Shuttle Racking</h3>
+                    <p>Semi-automated high-density storage solution for improved warehouse efficiency.</p>
+                    <a href="products/radio-shuttle-racking.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="images/Drive-in-Racking-pd544883548.jpg" alt="Drive-In Racking">
+                <div class="product-card-content">
+                    <h3>Drive-In Racking</h3>
+                    <p>High-density storage for homogeneous products with forklift access.</p>
+                    <a href="products/drive-in-racking.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="images/Plastic-Pallet-pd517083548.jpg" alt="Plastic Pallets">
+                <div class="product-card-content">
+                    <h3>Plastic Pallets</h3>
+                    <p>Hygienic and durable pallets for modern logistics and food industry.</p>
+                    <a href="products/plastic-pallets.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="images/Wire-Mesh-Container-pd555083548.jpg" alt="Warehouse Cages">
+                <div class="product-card-content">
+                    <h3>Warehouse Cages</h3>
+                    <p>Secure storage containers for organized warehousing and inventory management.</p>
+                    <a href="products/warehouse-cages.html" class="btn-link">Learn More →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="section why-choose" id="why">
+        <h2 class="section-title">Why Choose RackingHub</h2>
+        <p class="section-subtitle">As a trading company, we offer flexibility and integration that factories cannot match</p>
+        <div class="features-grid">
+            <div class="feature-box">
+                <div class="feature-icon">🎯</div>
+                <h3>One-Stop Sourcing</h3>
+                <p>Source multiple products from one supplier. Save time and reduce communication costs.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast Response</h3>
+                <p>24-hour quote turnaround. Quick communication and flexible problem-solving.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">💰</div>
+                <h3>Competitive Pricing</h3>
+                <p>Direct factory prices with added value of product integration and quality control.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">🔧</div>
+                <h3>Flexible Solutions</h3>
+                <p>Not limited to standard products. We customize according to your specific needs.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">✅</div>
+                <h3>Quality Assurance</h3>
+                <p>Working with certified manufacturers. Quality inspection before shipment.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">🚢</div>
+                <h3>Shipping Support</h3>
+                <p>Help arrange logistics and shipping. Door-to-door delivery available.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="section">
+        <h2 class="section-title">What We Provide</h2>
+        <div class="services-list">
+            <div class="service-item">
+                <span class="service-icon">📦</span>
+                <div>
+                    <h4>Warehouse Racking Systems</h4>
+                    <p>All types of pallet racking, shelving, and storage systems for various industries</p>
+                </div>
+            </div>
+            <div class="service-item">
+                <span class="service-icon">🏗️</span>
+                <div>
+                    <h4>Custom Design Support</h4>
+                    <p>Layout design and solution customization based on your warehouse dimensions</p>
+                </div>
+            </div>
+            <div class="service-item">
+                <span class="service-icon">🔍</span>
+                <div>
+                    <h4>Quality Inspection</h4>
+                    <p>Pre-shipment inspection to ensure product quality meets your standards</p>
+                </div>
+            </div>
+            <div class="service-item">
+                <span class="service-icon">📋</span>
+                <div>
+                    <h4>Storage Accessories</h4>
+                    <p>Pallets, cages, decking, and other warehouse storage accessories</p>
+                </div>
+            </div>
+            <div class="service-item">
+                <span class="service-icon">🚚</span>
+                <div>
+                    <h4>Shipping Arrangement</h4>
+                    <p>Help coordinate logistics and shipping to your destination port</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Target Markets -->
+    <section class="section markets">
+        <h2 class="section-title">Serving Global Clients</h2>
+        <div class="markets-grid">
+            <div class="market-item">
+                <div class="market-icon">🌏</div>
+                <h3>Southeast Asia</h3>
+                <p>Thailand, Vietnam, Indonesia, Malaysia, Philippines</p>
+            </div>
+            <div class="market-item">
+                <div class="market-icon">🌎</div>
+                <h3>Latin America</h3>
+                <p>Brazil, Mexico, Chile, Colombia, Argentina</p>
+            </div>
+            <div class="market-item">
+                <div class="market-icon">🌍</div>
+                <h3>Europe</h3>
+                <p>Germany, UK, France, Spain, Italy, Poland</p>
+            </div>
+            <div class="market-item">
+                <div class="market-icon">🌍</div>
+                <h3>Africa</h3>
+                <p>Nigeria, Kenya, South Africa, Egypt, Ghana</p>
+            </div>
+        </div>
+        <p style="margin-top: 2rem; opacity: 0.9;">Exporting to 30+ countries worldwide</p>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" id="contact">
+        <h2 class="section-title">Get a Free Quote</h2>
+        <p class="section-subtitle">Tell us your requirements, we'll respond within 24 hours</p>
+        <div class="contact-container">
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <div>
+                        <h4>Email</h4>
+                        <a href="mailto:info@rackinghub.com">info@rackinghub.com</a>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📱</div>
+                    <div>
+                        <h4>WhatsApp</h4>
+                        <a href="https://wa.me/8615348317266">+86 153 4831 7266</a>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">💬</div>
+                    <div>
+                        <h4>WeChat</h4>
+                        <p>+86 153 4831 7266</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <div>
+                        <h4>Location</h4>
+                        <p>Changsha, Hunan, China</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">⏰</div>
+                    <div>
+                        <h4>Response Time</h4>
+                        <p>Within 24 hours (often much faster)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-form">
+                <form action="https://formspree.io/f/your-form-id" method="POST">
+                    <div class="form-group">
+                        <label>Your Name <span class="required">*</span></label>
+                        <input type="text" name="name" required placeholder="John Smith">
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" name="email" required placeholder="john@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Company</label>
+                        <input type="text" name="company" placeholder="Your company name">
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" name="country" placeholder="Your country">
+                    </div>
+                    <div class="form-group">
+                        <label>Product Interest</label>
+                        <select name="product">
+                            <option value="">Select a product</option>
+                            <option value="Heavy Duty Racking">Heavy Duty Pallet Racking</option>
+                            <option value="Medium Duty Shelving">Medium Duty Shelving</option>
+                            <option value="Mezzanine Racking">Mezzanine Racking</option>
+                            <option value="Steel Platform">Steel Platform</option>
+                            <option value="Radio Shuttle Racking">Radio Shuttle Racking</option>
+                            <option value="Drive-In Racking">Drive-In Racking</option>
+                            <option value="Plastic Pallets">Plastic Pallets</option>
+                            <option value="Warehouse Cages">Warehouse Cages</option>
+                            <option value="Multiple Products">Multiple Products</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Message <span class="required">*</span></label>
+                        <textarea name="message" required placeholder="Tell us your requirements (warehouse size, load capacity, quantity, etc.)"></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Send Inquiry</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 RackingHub Storage Solutions. All rights reserved.</p>
+        <p style="margin-top: 0.5rem;">
+            <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+        </p>
+    </footer>
+
+    <!-- WhatsApp Float Button -->
+    <a href="https://wa.me/8615348317266" class="whatsapp-float" target="_blank">💬</a>
+</body>
+</html>
