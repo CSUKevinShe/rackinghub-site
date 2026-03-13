@@ -492,6 +492,36 @@
             transform: scale(1.1);
         }
         
+        .whatsapp-tooltip {
+            position: absolute;
+            right: 70px;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+        
+        .whatsapp-float:hover .whatsapp-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Pulse Animation */
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); }
+            50% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.7); }
+            100% { box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); }
+        }
+        
+        .whatsapp-float {
+            animation: pulse 2s infinite;
+        }
+        
         /* Mobile */
         @media (max-width: 768px) {
             .nav-links {
@@ -629,7 +659,7 @@
         <p class="section-subtitle">As a trading company, we offer flexibility and integration that factories cannot match</p>
         <div class="features-grid">
             <div class="feature-box">
-                <div class="feature-icon">🎯</div>
+                <div class="feature-icon">🏪</div>
                 <h3>One-Stop Sourcing</h3>
                 <p>Source multiple products from one supplier. Save time and reduce communication costs.</p>
             </div>
@@ -827,6 +857,11 @@
     </footer>
 
     <!-- WhatsApp Float Button -->
-    <a href="https://wa.me/8615348317266" class="whatsapp-float" target="_blank">💬</a>
+    <a href="https://wa.me/8615348317266" class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="white">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.884-.795-1.484-1.78-1.66-2.07-.173-.292-.018-.45.13-.595.134-.132.298-.345.447-.517.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.363 9.363 0 01-4.728-1.287l-3.382.994 1.002-3.305A9.36 9.36 0 012.647 12c0-5.178 4.172-9.38 9.318-9.38 5.146 0 9.318 4.202 9.318 9.38 0 5.178-4.172 9.38-9.318 9.38"/>
+        </svg>
+        <span class="whatsapp-tooltip">Chat on WhatsApp</span>
+    </a>
 </body>
 </html>
