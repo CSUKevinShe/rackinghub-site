@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#" style="height: auto;">
+ <head>
+<link rel="preconnect" href="https://rqrorwxhnprrll5q-static.micyjz.com" />
+<link rel="preconnect" href="https://iprorwxhnprrll5q-static.micyjz.com" />
+<link rel="preconnect" href="https://jmrorwxhnprrll5q-static.micyjz.com" /><script>
+	document.write = function (e) {
+		documentWrite(document.currentScript, e)
+	}
+	function documentWrite(documenturrentScript, e) {
+		var i = document.createElement("span");
+		i.innerHTML = e;
+		var o = i.querySelectorAll("script");
+		if (o.length) {
+			o.forEach(function (t) {
+				if (t.src && t.src != "") {
+					var script = document.createElement("script");
+					script.src = t.src;
+					document.body.appendChild(script);
+				}
+			})
+		}
+		document.body.appendChild(i);
+	}
+	window.onloadHack = function(func){
+		if (!!!func || typeof func !== 'function') {
+			return;
+		}
+		if (document.readyState === "complete") {
+			func();
+		}
+		else if( window.addEventListener ){
+			window.addEventListener( "load", func, false);
+		} else if( window.attachEvent ){
+			window.attachEvent( "onload", func, false);
+		}
+	}
+</script>
+	<title>404 - BORACS</title>
+	<meta name="keywords" content="404,BORACS"/>
+	<meta name="description" content="404, BORACS"/>
+	<!-- dns-prefetch -->
+		<link rel="canonical" href="https://www.boracs.com/404.html" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="renderer" content="webkit" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="icon" href="//jmrorwxhnprrll5q-static.micyjz.com/cloud/lkBpiKjolqSRjlnkqknjkq/bitbug_favicon.ico">
+
+
+<link rel="preload" type="text/css" as="style" href="//jmrorwxhnprrll5q-static.micyjz.com/concat/uoinKBvh0uRyiSoqlmjqqijikil/static/assets/widget/mobile_head/style04/style04.css,/static/assets/widget/mobile_head/css/headerStyles.css,/static/assets/widget/style/component/langBar/langBar.css,/static/assets/widget/style/component/follow/widget_setting_iconSize/iconSize24.css,/static/assets/style/bootstrap/cus.bootstrap.grid.system.css,/static/assets/style/fontAwesome/4.7.0/css/font-awesome.css,/static/assets/style/iconfont/iconfont.css,/static/assets/widget/script/plugins/gallery/colorbox/colorbox.css,/static/assets/style/bootstrap/cus.bootstrap.grid.system.split.css,/static/assets/widget/script/plugins/picture/animate.css,/static/assets/widget/style/component/pictureNew/widget_setting_description/picture.description.css,/static/assets/widget/style/component/pictureNew/public/public.css,/static/assets/widget/style/component/graphic/graphic.css" onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="stylesheet" type="text/css" href="//jmrorwxhnprrll5q-static.micyjz.com/concat/uoinKBvh0uRyiSoqlmjqqijikil/static/assets/widget/mobile_head/style04/style04.css,/static/assets/widget/mobile_head/css/headerStyles.css,/static/assets/widget/style/component/langBar/langBar.css,/static/assets/widget/style/component/follow/widget_setting_iconSize/iconSize24.css,/static/assets/style/bootstrap/cus.bootstrap.grid.system.css,/static/assets/style/fontAwesome/4.7.0/css/font-awesome.css,/static/assets/style/iconfont/iconfont.css,/static/assets/widget/script/plugins/gallery/colorbox/colorbox.css,/static/assets/style/bootstrap/cus.bootstrap.grid.system.split.css,/static/assets/widget/script/plugins/picture/animate.css,/static/assets/widget/style/component/pictureNew/widget_setting_description/picture.description.css,/static/assets/widget/style/component/pictureNew/public/public.css,/static/assets/widget/style/component/graphic/graphic.css" />
+
+    <style>
+	.siteblocks-container .backstage-blocksEditor-wrap[data-blockseditor-type="phoenix_blocks_text"] *{
+		font-family: inherit;
+		font-size:inherit;
+		line-height: inherit;
+		font-weight: inherit;
+		color: inherit;
+		text-align: inherit;
+	}
+	.siteblocks-container .backstage-blocksEditor-wrap[data-blockseditor-type="phoenix_blocks_text"] strong{
+		font-weight: bold;
+	}
+</style>
+<style>
+	@media (min-width: 990px){
+		[data-type="rows"][data-level="rows"]{
+			display: flex;
+		}
+	}
+</style>
+
+<style id="speed3DefaultStyle">
+	@supports not (aspect-ratio: 1/1) {
+		.prodlist-wrap li .prodlist-cell{
+			position: relative;
+			padding-top: 100%;
+			width: 100%;
+		}
+		.prodlist-lists-style-13 .prod_img_a_t13,
+		.prodlist-lists-style-12 .prod_img_a_t12,
+		.prodlist-lists-style-nophoto-11 .prod_img_a_t12{
+			position: unset!important;
+			min-height:unset!important;
+		}
+		.prodlist-wrap li .prodlist-picbox img{
+			position: absolute;
+			width: 100%;
+			left: 0;
+			top: 0;
+		}
+	}
+	.piclist360 .prodlist-pic4-3 li .prodlist-display{
+		max-width: 100%;
+	}
+	@media(max-width: 600px){
+		.prodlist-fix-num li{
+			width:50% !important
+		}
+	}
+</style>
+<template id="appdStylePlace"></template>
+<link href="//jmrorwxhnprrll5q-static.micyjz.com/theme/omjiKBoiqjRlkSoiqjRlpSrnlrRliSjoRljSjrinjrirkokrkj/style/style.css" type="text/css" 				rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" data-theme="true" />
+<link href="//jmrorwxhnprrll5q-static.micyjz.com/theme/omjiKBoiqjRlkSoiqjRlpSrnlrRliSjoRljSjrinjrirkokrkj/style/style.css" type="text/css" rel="stylesheet" 			 />
+
+<style  guid='u_47afe2c303e9482f930f7b05c5d879a8' emptyRender='true' placeholder='true' type='text/css'></style>
+<link href="//rqrorwxhnprrll5q-static.micyjz.com/site-res/rnklKBoiqjRlpSrnlrRllSprjkrnRliSnpprinRljSjrrojiiqlkroRriSoqlmjmoqrrrrSRkl.css?1769472171213" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" data-extStyle="true" type="text/css" data-extAttr="20260127134600"/>			<link href="//rqrorwxhnprrll5q-static.micyjz.com/site-res/rnklKBoiqjRlpSrnlrRllSprjkrnRliSnpprinRljSjrrojiiqlkroRriSoqlmjmoqrrrrSRkl.css?1769472171213" data-extAttr="20260127134600" type="text/css" rel="stylesheet"
+				  />
+<template data-js-type='style_respond' data-type='inlineStyle'></template><template data-js-type='style_head' data-type='inlineStyle'></template><template data-js-type='style_respond' data-type='inlineStyle'></template><template data-js-type='style_head' data-type='inlineStyle'></template><script data-ignoreMinify="true">
+	function loadInlineStyle(){
+		var allInlineStyle = document.querySelectorAll("template[data-type='inlineStyle']");
+		var length = document.querySelectorAll("template[data-type='inlineStyle']").length;
+		for(var i = 0;i < length;i++){
+			var style = allInlineStyle[i].innerHTML;
+			allInlineStyle[i].outerHTML = style;
+		}
+	}
+loadInlineStyle();
+</script>
+<link rel='preload' as='style' onload='this.onload=null;this.rel="stylesheet"' href='https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap' data-type='1' type='text/css' media='all' />
+			<script type="text/javascript" data-src="//iprorwxhnprrll5q-static.micyjz.com/static/t-mjBpBKjKzqsiyj7r/assets/script/jquery-1.11.0.concat.js"></script>
+
+
+<script type="text/javascript" data-src="//ld-analytics.micyjz.com/lqilKBrnlrRlrSSRRQRinSjkippr/ltm-web.js?v=1769492760000"></script><script type="text/x-delay-ids" data-type="delayIds" data-device="pc" data-xtype="0" 			data-delayIds='[485753284,485744834,486348094,485744694,485744804,485744644,485744634,485744664,484748294,484748274,484748284,484748254,484748264,494775004,494781784,495444864,494781754,486604264,494777364,484743694,495661184,494777334,494764784,494777424,495444904,494777394,486604304,532772528,486604274,495444884,532772018,486628884,532772438,495661174,486627484]'></script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-548QLD2P');</script>
+<!-- End Google Tag Manager --><script guid='9b483d51-d697-46aa-bc69-ec6e124e5a76' pm_pageStaticHack='true' jumpName='head' pm_scripts='head' type='text/javascript'>
+/*id='u_69e23da343554d358b6c41494cb04d9e' guid='u_69e23da343554d358b6c41494cb04d9e' pm_script='init' type='text/javascript'*/
+try{
+(function(window, undefined){
+		var phoenixSite = window.phoenixSite || (window.phoenixSite = {});
+		phoenixSite.lanEdition ="EN_US";
+		var page = phoenixSite.page || (phoenixSite.page = {});
+		page.cdnUrl = '//jmrorwxhnprrll5q-static.micyjz.com';
+		page.siteUrl = 'https://www.boracs.com';
+		page.lanEdition = phoenixSite.lanEdition;
+		page._menu_prefix = "";
+		page._menu_trans_flag = "";
+		page._captcha_domain_prefix = "captcha.c";
+		page._pId = 'gkfAtKIirFpj';
+			phoenixSite._sViewMode = 'true';
+			phoenixSite._templateSupport = 'false';		
+			phoenixSite._singlePublish = 'false';
+	})(this);
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}</script>
+
+<meta name="google-site-verification" content="rJbOxALzvQdOIK9_3mkklQDj4J_U5xTuYQIugJx9YeA" /><meta name="yandex-verification" content="fad66bdb5d1efc82" />
+
+<script id='u_37add2115df1401fb2e3eb1c4b1855b0' guid='u_37add2115df1401fb2e3eb1c4b1855b0' pm_script='init_top' type='text/javascript'>try{(function(window, undefined){
+		var datalazyloadDefaultOptions = window.datalazyloadDefaultOptions || (window.datalazyloadDefaultOptions = {});
+		datalazyloadDefaultOptions['version'] = '3.0.0';
+			datalazyloadDefaultOptions['isMobileViewer'] = 'false';
+			datalazyloadDefaultOptions['hasCLSOptimizeAuth'] = 'false';
+
+		datalazyloadDefaultOptions['_version'] = '3.0.0';
+			datalazyloadDefaultOptions['isPcOptViewer'] = 'false';
+	})(this);
+			(function(window, undefined){
+				window.__ph_optSet__ = '{\"loadImgType\":\"0\",\"isOpenFlagUA\":true,\"v30NewMode\":\"1\",\"idsVer\":\"1\",\"docReqType\":\"0\",\"docDecrease\":\"1\",\"docCallback\":\"1\"}';
+			})(this);}catch(e){try{console && console.log && console.log(e);}catch(e){}}</script>
+
+<script id='u_e955c9d537bd4c218f40a623ce4ccdaa' guid='u_e955c9d537bd4c218f40a623ce4ccdaa' type='text/javascript'>try{
+var thisUrl = location.host
+	var referUrl = document.referrer
+	if(referUrl.indexOf(thisUrl) == -1){
+		localStorage.setItem("landedPage",document.URL);
+	}
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}</script>
+
+ </head> 
+ <body class=" frontend-body-canvas ">
+<template data-js-type='globalBody' data-type='code_template'>  	<script> (function() { var j = document.createElement("script"); var s = document.getElementsByTagName("script")[0]; j.async = true; j.charset = "UTF-8"; j.src = "https://qingk.leadsmee.com/RqoKyeAUPQBD/js/widget-2.2.js"; s.parentNode.insertBefore(j, s); })(); </script>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-548QLD2P"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+</template>
+<div id="backstage-bodyArea"><div class="outerContainer" data-mobileBg="true" id="outerContainer_1457316549291" data-type="outerContainer" data-level="rows"><div class="container" data-type="container" data-level="rows" cnttype="backstage-container-mark"><div class="row" data-type="rows" data-level="rows" data-attr-xs="" data-attr-sm=""><div class="col-md-3" id="column_1457316701187" data-type="columns" data-level="columns"><div id="location_1457316701188" data-type="locations" data-level="rows"><div class="backstage-stwidgets-settingwrap" id="component_HTftnORjShcZ" data-scope="0" data-settingId="HTftnORjShcZ" data-relationCommonId="gkfAtKIirFpj" data-classAttr="sitewidget-placeHolder-20160307101402"> <div class="sitewidget-placeholder sitewidget-placeHolder-20160307101402"> <div class="sitewidget-bd"> <div class="resizee" style="height:10px"></div> </div> </div> <script type="text/x-delay-script" data-id="HTftnORjShcZ" data-jsLazyloadType="1" data-alias="placeHolder" data-jsLazyload='true' data-type="component" data-jsDepand='' data-jsThreshold='' data-cssDepand='' data-cssThreshold=''>
+	(function(window, $, undefined) {
+	})(window, $);
+</script></div>
+</div></div><div class="col-md-6" id="column_1457316549293" data-type="columns" data-level="columns"><div id="location_1457316549294" data-type="locations" data-level="rows"><style data-type='inlineHeadStyle'>#picture-wrap-wVpjIEctSCPZ .img-default-bgc{max-width:100%;width:365px}</style> <div class="backstage-stwidgets-settingwrap " scope="0" settingId="wVpjIEctSCPZ" id="component_wVpjIEctSCPZ" relationCommonId="gkfAtKIirFpj" classAttr="sitewidget-pictureNew-20160307101052"> <div class="sitewidget-pictureNew sitewidget-pictureNew-20160307101052"> <div class="sitewidget-bd"> <div class="picture-resize-wrap " style="position: relative; width: 100%; text-align: center; "> <span class="picture-wrap pic-style-default " id="picture-wrap-wVpjIEctSCPZ" style="display: inline-block;vertical-align: middle; position: relative; max-width: 100%; "> <a class="imgBox mobile-imgBox" isMobileViewMode="false" style="display: inline-block; position: relative;max-width: 100%;" aria-label="404"> <img class="lazy mb4 img-default-bgc" phoenix-lazyload="//jmrorwxhnprrll5q-static.micyjz.com/cloud/kmBqiKjolqSRnloqrki/404_03.png" src="//jmrorwxhnprrll5q-static.micyjz.com/cloud/kmBqiKjolqSRnloqrki/404_03.png" alt="404" title="" style="visibility:visible;"/> </a> </span> </div> </div> </div> </div> <script type="text/x-delay-script" data-id="wVpjIEctSCPZ" data-jsLazyloadType="1" data-alias="pictureNew" data-jsLazyload='true' data-type="component" data-jsDepand='["//jmrorwxhnprrll5q-static.micyjz.com/static/t-lkBpBKkKlplwsz7r/assets/widget/script/plugins/jquery.lazyload.js","//iprorwxhnprrll5q-static.micyjz.com/static/t-zkBqBKnKxknjjq7n/assets/widget/script/compsettings/comp.pictureNew.settings.js"]' data-jsThreshold='5' data-cssDepand='' data-cssThreshold='5'>
+	(function(window, $, undefined) {
+
+/**guid='98ad464c-187d-4fc7-8644-754aaf1e3a78' componentAlias='pictureNew' jumpNameRepeatHack='false' collectToRender='true' jumpName='wVpjIEctSCPZ' type='text/javascript'**/
+
+/*id='u_6e159760b1f346579fcd3364925031bc' guid='u_6e159760b1f346579fcd3364925031bc' pm_script='sitewidget-pictureNew-20160307101052' jumpTo='wVpjIEctSCPZ' type='text/javascript'*/
+try{
+(function(window, $, undefined){
+			var respSetting = {},temp;
+			$(function(){
+				if ("0" == '10') {
+					$("#picture-wrap-wVpjIEctSCPZ").mouseenter(function () {
+						$(this).addClass("singleHoverValue");
+					});
+				}
+				if ("0" == '11') {
+					$("#picture-wrap-wVpjIEctSCPZ").mouseenter(function () {
+						$(this).addClass("picHoverReflection");
+					});
+				}
+				var version = $.trim('20210301111340');
+				if (!!!version) {
+					version = undefined;
+				}
+				var initPicHoverEffect_wVpjIEctSCPZ = function(obj){
+					$(obj).find(".picture-wrap").removeClass('animated bounceInDown bounceInLeft bounceInRight bounceInUp fadeInDownBig fadeInLeftBig fadeInRightBig fadeInUpBig zoomInDown zoomInLeft zoomInRight zoomInUp');
+	            	$(obj).find(".picture-wrap").removeClass('animated bounce zoomIn pulse rotateIn swing fadeIn');
+				}
+				if (phoenixSite.phoenixCompSettings && typeof phoenixSite.phoenixCompSettings.pictureNew !== 'undefined' && phoenixSite.phoenixCompSettings.pictureNew.version == version && typeof phoenixSite.phoenixCompSettings.pictureNew.pictureLoadEffect == "function") {
+
+					phoenixSite.phoenixCompSettings.pictureNew.pictureLoadEffect("wVpjIEctSCPZ",".sitewidget-pictureNew-20160307101052","","", respSetting);
+					return;
+				}
+				var resourceUrl = "//jmrorwxhnprrll5q-static.micyjz.com/static/assets/widget/script/compsettings/comp.pictureNew.settings.js?_=1769472171213";
+				if (phoenixSite && phoenixSite.page){
+					var cdnUrl = phoenixSite.page.cdnUrl;
+					if(cdnUrl && cdnUrl!=""){
+						resourceUrl = cdnUrl + '/static/assets/widget/script/compsettings/comp.pictureNew.settings.js?_=1769472171213';
+					}
+				}
+				var callback = function(){
+					phoenixSite.phoenixCompSettings.pictureNew.pictureLoadEffect("wVpjIEctSCPZ",".sitewidget-pictureNew-20160307101052","","", respSetting);
+				}
+				if (phoenixSite.cachedScript) {
+					phoenixSite.cachedScript(resourceUrl, callback());
+				} else {
+					$.getScript(resourceUrl, callback());
+				}
+			});
+		})(window, jQuery)
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}	})(window, $);
+</script><div class="backstage-stwidgets-settingwrap " id="component_wUAEItwOShQZ" data-scope="0" data-settingId="wUAEItwOShQZ" data-relationCommonId="gkfAtKIirFpj" data-classAttr="sitewidget-text-20160307101242"> <div class="sitewidget-text sitewidget-text-20160307101242 sitewidget-olul-liststyle"> <div class=" sitewidget-bd "> The page you visited does not exist or the link is broken.&nbsp;Please try the following: </div> </div> <script type="text/x-delay-script" data-id="wUAEItwOShQZ" data-jsLazyloadType="1" data-alias="text" data-jsLazyload='true' data-type="component" data-jsDepand='["//iprorwxhnprrll5q-static.micyjz.com/static/t-wrBpBKiKyixomp7r/assets/widget/script/compsettings/comp.text.settings.js"]' data-jsThreshold='5' data-cssDepand='' data-cssThreshold='5'>
+	(function(window, $, undefined) {
+	})(window, $);
+</script><template data-type='js_template' data-settingId='wUAEItwOShQZ'><script id='u_0aff281a4b6b4f03941849a26a43b976' guid='u_0aff281a4b6b4f03941849a26a43b976' type='text/javascript'>try{
+$(function(){
+		$(".sitewidget-text-20160307101242 .sitewidget-bd a").each(function(){
+			if($(this).attr("href")){
+				if($(this).attr("href").indexOf("#") != -1){
+					console.log("anchor-link",$(this))
+					$(this).attr("anchor-link","true")
+				}
+			}
+
+		})
+	});
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}</script></template> </div><div class="backstage-stwidgets-settingwrap " id="component_HHAOnEmjSCot" data-scope="0" data-settingId="HHAOnEmjSCot" data-relationCommonId="gkfAtKIirFpj" data-classAttr="sitewidget-text-20160307101446"> <div class="sitewidget-text sitewidget-text-20160307101446 sitewidget-olul-liststyle"> <div class=" sitewidget-bd "> &gt; Check that the web address is correct<br/> &gt; Try to access the page directly from the <a href="/">Homepage</a> </div> </div> <script type="text/x-delay-script" data-id="HHAOnEmjSCot" data-jsLazyloadType="1" data-alias="text" data-jsLazyload='true' data-type="component" data-jsDepand='["//iprorwxhnprrll5q-static.micyjz.com/static/t-wrBpBKiKyixomp7r/assets/widget/script/compsettings/comp.text.settings.js"]' data-jsThreshold='5' data-cssDepand='' data-cssThreshold='5'>
+	(function(window, $, undefined) {
+	})(window, $);
+</script><template data-type='js_template' data-settingId='HHAOnEmjSCot'><script id='u_b4644e47c01e48048138793247696ff7' guid='u_b4644e47c01e48048138793247696ff7' type='text/javascript'>try{
+$(function(){
+		$(".sitewidget-text-20160307101446 .sitewidget-bd a").each(function(){
+			if($(this).attr("href")){
+				if($(this).attr("href").indexOf("#") != -1){
+					console.log("anchor-link",$(this))
+					$(this).attr("anchor-link","true")
+				}
+			}
+
+		})
+	});
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}</script></template> </div>
+</div></div><div class="col-md-3" id="column_1457316785257" data-type="columns" data-level="columns"><div id="location_1457316785258" data-type="locations" data-level="rows"><div class="backstage-stwidgets-settingwrap" id="component_CiAZntcjSCyO" data-scope="0" data-settingId="CiAZntcjSCyO" data-relationCommonId="gkfAtKIirFpj" data-classAttr="sitewidget-placeHolder-20160307101409"> <div class="sitewidget-placeholder sitewidget-placeHolder-20160307101409"> <div class="sitewidget-bd"> <div class="resizee" style="height:10px"></div> </div> </div> <script type="text/x-delay-script" data-id="CiAZntcjSCyO" data-jsLazyloadType="1" data-alias="placeHolder" data-jsLazyload='true' data-type="component" data-jsDepand='' data-jsThreshold='' data-cssDepand='' data-cssThreshold=''>
+	(function(window, $, undefined) {
+	})(window, $);
+</script></div>
+</div></div></div></div></div></div>
+<script type="text/javascript" data-src="//rqrorwxhnprrll5q-static.micyjz.com/concat/eriiKB7bcfRziSoqlmjqqijikil/static/assets/widget/script/plugins/lazysizes.min.js,/static/assets/script/phoenix/phoenixsite.js,/static/assets/script/phoenix/il8n/phoenix_il8n_EN_US.js"></script>
+
+
+<script type="text/javascript" data-src="//rqrorwxhnprrll5q-static.micyjz.com/static/t-okBqBKzKlnpqlx7o/assets/script/plugins/labjs/lab_3.0.js"></script>
+
+
+
+<script type="text/javascript" data-src="//rqrorwxhnprrll5q-static.micyjz.com/concat/8milKB8ugvRfiSoqlmjqqijikil/static/assets/widget/script/plugins/gallery/colorbox/jquery.colorbox.js,/static/assets/script/phoenix/phoenix_form_popup.js,/static/assets/script/phoenix/phoenix_picture_popup.js"></script>
+
+<script type="text/javascript" data-src="//iprorwxhnprrll5q-static.micyjz.com/static/t-jmBpBKwKyyynrw7q/assets/widget/mobile_head/style04/style04.js"></script>
+
+<template data-js-type='script_dynamic' data-type='js_template'></template><template data-js-type='script_bottom' data-type='js_template'></template><template data-js-type='script_dynamic' data-type='js_template'></template><template data-js-type='script_bottom' data-type='js_template'><script guid='0f3f9ec4-9fa3-4420-94d1-0146fd98dc6c' pm_pageStaticHack='true' pm_scripts='bottom' type='text/javascript'>
+/*id='u_f3355e5bbb8c4286823b03a5c45d9a3e' guid='u_f3355e5bbb8c4286823b03a5c45d9a3e' pm_script='boot' type='text/javascript'*/
+try{
+(function(window, undefined){
+	    mobileLazyload.getDelayIds();
+	  // mobileLazyload.loadAboveTheFold();
+		// mobileLazyload.getHeights();
+    	mobileLazyload.initSiteModule();
+    	// $(function(){
+    	mobileLazyload.loadBelowTheFold();
+    	// })
+		onloadHack(function(){
+			mobileLazyload.triggerLoadBelowTheFold(10000);
+		})
+	})(window, undefined);
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}
+/*id='u_633a4f80a4f04caa8dbe77b21bbca9dc' guid='u_633a4f80a4f04caa8dbe77b21bbca9dc' pm_script='front_control' type='text/javascript'*/
+try{
+(function(window,$,undefined){
+			$(function(){
+					$(document).unbind('contextmenu').bind('contextmenu',function(e){
+						e.preventDefault();
+					})
+						phoenixSite && phoenixSite.sitewidgets.closePicturePreview();
+			})
+		})(window,jQuery)
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}
+/*id='u_6060527982ad4ff487a32d810084f999' guid='u_6060527982ad4ff487a32d810084f999' pm_script='technical_support' type='text/javascript'*/
+try{
+(function(window,$,undefined){
+			if($(".freeuser-copyrigh-discrtn").length > 0){
+				$(".freeuser-copyrigh-discrtn").hover(function(){
+					$(".freeuser-copyrigh-discrtn").append('<div class="freeuser-copyrigh-remove"><span class="front">Start creating your responsive website</span></div>');
+				},function(){
+					$(".freeuser-copyrigh-remove").remove();
+				})
+			}
+		})(window,jQuery)
+}catch(e){try{console && console.log && console.log(e);}catch(e){}}</script></template>
+<template data-js-type='serviceWorker' data-type='code_template'><script type="text/javascript" data-ignoreMinify="true">
+	try {
+		if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.getRegistrations().then(function(registrations) {
+					for(let registration of registrations) {
+						registration.unregister();
+					}
+				});
+		}
+	}catch (e) {
+	}
+</script>
+</template>			<!---->
+<script type="text/javascript" src="//rqrorwxhnprrll5q-static.micyjz.com/phoenix/optimization/gkfAtKIirFpj/0/speedLazyLoad4.min.js?_=1773150259715"></script>		<script data-ignoreMinify="true">
+				function isIE() {
+					return navigator.userAgent.toLowerCase().indexOf('trident')>-1?true:false;
+				}
+				var isIEflag = isIE();
+				if(isIEflag){
+					var scriptDom = document.createElement("script");
+					scriptDom.type = "text/javascript";
+					scriptDom.src = "//rqrorwxhnprrll5q-static.micyjz.com/static/assets/script/plugins/speedOptimization/browser.min.js";
+					document.body.appendChild(scriptDom);
+					scriptDom.onload = function () {
+						var scriptDom = document.createElement("script");
+						scriptDom.type = "text/javascript";
+						scriptDom.src = "//rqrorwxhnprrll5q-static.micyjz.com/static/assets/script/plugins/speedOptimization/speedLazyLoad.ie.min.js";
+						document.body.appendChild(scriptDom);
+					};
+				}
+			</script>
+
+
+
+        <style data-type="x-inline-style-placeholder-static"></style>
+ </body>
+</html>
+
