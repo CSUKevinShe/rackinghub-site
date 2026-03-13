@@ -97,9 +97,7 @@
         
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, rgba(26, 54, 93, 0.85) 0%, rgba(44, 82, 130, 0.85) 100%), url('images/banner1.jpg');
-            background-size: cover;
-            background-position: center;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
             color: white;
             padding: 10rem 2rem 5rem;
             text-align: center;
@@ -651,34 +649,6 @@
                     <p>Secure storage containers for organized warehousing and inventory management.</p>
                     <a href="products/warehouse-cages.html" class="btn-link">Learn More →</a>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Certifications -->
-    <section class="section" style="background: #f7fafc;">
-        <h2 class="section-title">Our Certifications</h2>
-        <p class="section-subtitle">We maintain strict quality standards with international certifications</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto;">
-            <div style="text-align: center; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <img src="images/cert-iso.png" alt="ISO 9001" style="width: 80px; height: 80px; margin-bottom: 1rem;">
-                <h4 style="color: #1a365d;">ISO 9001</h4>
-                <p style="color: #718096; font-size: 0.9rem;">Quality Management</p>
-            </div>
-            <div style="text-align: center; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <img src="images/cert-as.png" alt="AS 4084" style="width: 80px; height: 80px; margin-bottom: 1rem;">
-                <h4 style="color: #1a365d;">AS 4084</h4>
-                <p style="color: #718096; font-size: 0.9rem;">Australian Standard</p>
-            </div>
-            <div style="text-align: center; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="font-size: 3rem; margin-bottom: 0.5rem;">✅</div>
-                <h4 style="color: #1a365d;">CE Certified</h4>
-                <p style="color: #718096; font-size: 0.9rem;">European Standard</p>
-            </div>
-            <div style="text-align: center; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="font-size: 3rem; margin-bottom: 0.5rem;">✅</div>
-                <h4 style="color: #1a365d;">FEM Compliant</h4>
-                <p style="color: #718096; font-size: 0.9rem;">European Racking</p>
             </div>
         </div>
     </section>
