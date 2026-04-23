@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" href="../favicon-32.png" sizes="32x32">
+    <link rel="canonical" href="https://www.rackinghub.com/products/radio-shuttle-racking">
+
+    <title>Radio Shuttle Racking - RackingHub</title>
+    <meta name="description" content="Semi-automated radio shuttle racking for high-density pallet storage with FIFO/LIFO access.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow-x: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        a { text-decoration: none; color: inherit; }
+        header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #1a365d; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { color: #333; font-weight: 500; }
+        .nav-links a:hover { color: #1a365d; }
+        .hero { background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%); color: white; padding: 8rem 2rem 3rem; margin-top: 60px; }
+        .section { padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; }
+        .product-images { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .product-images img { width: 100%; border-radius: 10px; }
+        .features, .specs, .applications { background: #f7fafc; padding: 2rem; border-radius: 10px; margin-bottom: 2rem; }
+        .features h3, .specs h3, .applications h3 { color: #1a365d; margin-bottom: 1rem; }
+        .features ul { list-style: none; }
+        .features li { padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; }
+        .features li:before { content: "✓ "; color: #25D366; font-weight: bold; }
+        .specs table { width: 100%; border-collapse: collapse; }
+        .specs td { padding: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+        .specs td:first-child { font-weight: 500; color: #2d3748; width: 40%; }
+        .btn { display: inline-block; padding: 1rem 2rem; border-radius: 5px; font-weight: bold; margin-right: 1rem; }
+        .btn-primary { background: #fbbf24; color: #1a365d; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .related-products { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem; }
+        .related-card { border: 1px solid #e2e8f0; padding: 1rem; border-radius: 5px; text-align: center; }
+        .related-card a { color: #2c5282; font-weight: 500; }
+        footer { background: #1a365d; color: white; text-align: center; padding: 2rem; margin-top: 3rem; }
+        @media (max-width: 768px) { .nav-links { display: none; } }
+    
+        .logo{display:flex;align-items:center;text-decoration:none;}
+        .logo-img{height:30px;object-fit:contain;}
+        .footer-logos{display:flex;align-items:center;justify-content:center;margin-bottom:0.8rem;}
+        .footer-logo-img{height:24px;object-fit:contain;opacity:0.85;}
+        
+
+        /* WhatsApp Float */
+        .wa-float{position:fixed;bottom:26px;right:26px;background:#25D366;color:#fff;display:flex;align-items:center;gap:8px;padding:0 0 0 4px;height:48px;border-radius:24px;box-shadow:0 4px 16px rgba(37,211,102,0.45);z-index:999;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);text-decoration:none;font-size:0;}
+        .wa-float svg{flex-shrink:0;}
+        .wa-float-label{font-size:0.88rem;font-weight:600;padding-right:14px;white-space:nowrap;}
+        .wa-float:hover{box-shadow:0 6px 24px rgba(37,211,102,0.6);transform:translateY(-2px);}
+        @keyframes wa-pulse{0%{box-shadow:0 4px 16px rgba(37,211,102,0.45);}50%{box-shadow:0 4px 24px rgba(37,211,102,0.7),0 0 0 6px rgba(37,211,102,0.12);}100%{box-shadow:0 4px 16px rgba(37,211,102,0.45);}}
+        .wa-float{animation:wa-pulse 3s ease-in-out infinite;}
+        .wa-float:hover{animation:none;}
+img { max-width: 100%; height: auto; }
+    
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; padding: 5px; }
+        .hamburger span { width: 25px; height: 3px; background: #1a365d; border-radius: 2px; transition: all 0.3s; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 6px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
+        .header-right{position:relative;}
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column; padding: 1rem 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1); gap: 0.5rem; }
+            .nav-links a { padding: 0.7rem 0; border-bottom: 1px solid #f0f0f0; }
+            .section { padding: 3rem 1.2rem; }
+            .product-hero { padding: 5rem 1.2rem 2.5rem; }
+            .product-hero h1 { font-size: 1.6rem; }
+            .spec-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .features-grid, .benefits-grid { grid-template-columns: 1fr !important; }
+        }
+
+    </style>
+    
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Radio Shuttle Racking">
+    <meta property="og:description" content="Semi-automated radio shuttle racking for high-density pallet storage with FIFO/LIFO access.">
+    <meta property="og:url" content="https://www.rackinghub.com/products/radio-shuttle-racking.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RackingHub">
+    <meta property="og:image" content="https://www.rackinghub.com/images/banner1.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Radio Shuttle Racking">
+    <meta name="twitter:description" content="Semi-automated radio shuttle racking for high-density pallet storage with FIFO/LIFO access.">
+    <meta name="twitter:image" content="https://www.rackinghub.com/images/banner1.jpg">
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HY3B0T73TJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-HY3B0T73TJ');
+    </script>
+
+    <!-- Schema.org Product -->
+    <script type="application/ld+json">
+    {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Radio Shuttle Racking",
+  "description": "Semi-automated radio shuttle racking for high-density pallet storage with FIFO/LIFO access.",
+  "brand": {
+    "@type": "Brand",
+    "name": "RackingHub"
+  },
+  "manufacturer": {
+    "@type": "Organization",
+    "name": "Nanjing Boracs Logistics Equipment Co., Ltd",
+    "url": "https://www.rackinghub.com"
+  },
+  "url": "https://www.rackinghub.com/products/radio-shuttle-racking.html",
+  "category": "Warehouse Racking Systems"
+}
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">
+                <img src="../images/boracs-rackinghub-logo.png" alt="Boracs RackingHub" class="logo-img">
+            </a>
+            <div class="header-right">
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="../products/heavy-duty-racking">Products</a></li>
+                    <li><a href="../about">About</a></li>
+                    <li><a href="../faq">FAQ</a></li>
+                    <li><a href="../contact">Contact</a></li>
+                    <li><a href="../contact" class="nav-cta">Get a Free Quote</a></li>
+                </ul>
+                <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Radio Shuttle Racking</h1>
+        <p>Semi-automated high-density storage solution</p>
+        <div style="margin-top: 2rem;">
+            <a href="../index.html#contact" class="btn btn-primary">Request Quote</a>
+            <a href="https://wa.me/8615348317266" class="btn btn-whatsapp">WhatsApp</a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="product-images">
+            <img src="../images/Shuttle-Radio-Rack-pd531383548.jpg" alt="Radio Shuttle Racking" loading="lazy">
+        </div>
+
+        <p style="font-size: 1.1rem; margin-bottom: 2rem; color: #4a5568;">
+            Radio shuttle racking is a semi-automated high-density storage system that uses a remote-controlled 
+            shuttle cart to store and retrieve pallets. Ideal for warehouses with high throughput and limited space.
+        </p>
+
+        <div class="features">
+            <h3>Key Features</h3>
+            <ul>
+                <li>High-density storage (up to 80% space utilization)</li>
+                <li>Semi-automated operation</li>
+                <li>FIFO or LIFO options</li>
+                <li>Reduced forklift traffic</li>
+                <li>Improved safety</li>
+                <li>Remote-controlled shuttle cart</li>
+            </ul>
+        </div>
+
+        <div class="specs">
+            <h3>Specifications</h3>
+            <table>
+                <tr><td>Material</td><td>Cold-rolled steel Q235</td></tr>
+                <tr><td>Load Capacity</td><td>1000-2000kg per pallet</td></tr>
+                <tr><td>Height</td><td>Up to 15m</td></tr>
+                <tr><td>Depth</td><td>Customizable (1-10 pallets deep)</td></tr>
+                <tr><td>Shuttle Speed</td><td>0.5-2.5 m/s</td></tr>
+                <tr><td>Surface</td><td>Powder coating</td></tr>
+                <tr><td>Control</td><td>Remote control / APP</td></tr>
+            </table>
+        </div>
+
+        <div class="applications">
+            <h3>Applications</h3>
+            <ul style="margin-left: 1.5rem;">
+                <li>Cold storage warehouses</li>
+                <li>Food and beverage industry</li>
+                <li>High-volume distribution centers</li>
+                <li>Batch-managed inventory</li>
+                <li>Limited space warehouses</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin: 3rem 0;">
+            <h3 style="color: #1a365d; margin-bottom: 1rem;">Ready to Get a Quote?</h3>
+            <a href="../index.html#contact" class="btn btn-primary">Contact Us Today</a>
+        </div>
+
+        <div class="related-products">
+            <div class="related-card"><h4>Drive-In Racking</h4><a href="drive-in-racking">View Details →</a></div>
+            <div class="related-card"><h4>Heavy Duty Racking</h4><a href="heavy-duty-racking">View Details →</a></div>
+            <div class="related-card"><h4>Automated Storage</h4><a href="../index.html#products">View Details →</a></div>
+            <div class="related-card"><h4>Mezzanine Racking</h4><a href="mezzanine-racking">View Details →</a></div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-logos">
+            <img src="../images/boracs-rackinghub-logo.png" alt="Boracs RackingHub" class="footer-logo-img">
+        </div>
+        <p>&copy; 2025 Boracs &amp; RackingHub. All Rights Reserved.</p>
+        <p>Warehouse Racking Systems &bull; Factory Direct &bull; Global Shipping</p>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="../about">About</a>
+            <a href="../faq">FAQ</a>
+            <a href="../contact">Contact</a>
+        </div>
+    </footer>
+
+    <!-- Product CTA -->
+    <div class="product-cta" style="background:#f7fafc;border-top:3px solid #fbbf24;padding:3rem 2rem;text-align:center;">
+        <h3 style="color:#1a365d;margin-bottom:0.5rem;font-size:1.5rem;">Interested in This Product?</h3>
+        <p style="color:#4a5568;margin-bottom:1.5rem;max-width:600px;margin-left:auto;margin-right:auto;">Send us your requirements and get a detailed quotation within 24 hours.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="../contact" class="btn btn-primary" style="display:inline-block;padding:0.9rem 2rem;border-radius:5px;font-weight:bold;background:#fbbf24;color:#1a365d;text-decoration:none;">Get a Quote</a>
+            <a href="https://wa.me/8615348317266?text=Hi%2C%20I%20am%20interested%20in%20your%20racking%20products.%20Please%20send%20me%20more%20details." target="_blank" class="btn btn-whatsapp" style="display:inline-block;padding:0.9rem 2rem;border-radius:5px;font-weight:bold;background:#25D366;color:white;text-decoration:none;">&#9742; WhatsApp Us</a>
+        </div>
+    </div>
+
+</body>
+</html>

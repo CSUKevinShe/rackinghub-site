@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.rackinghub.com/sitemap.xml
+
+# Disallow admin/temp files
+Disallow: /preview*
+Disallow: /*.backup*
+Disallow: /*.zip

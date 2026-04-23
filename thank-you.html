@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - RackingHub</title>
+    <meta name="robots" content="noindex">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .checkmark {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: scaleIn 0.5s ease-out;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .checkmark span {
+            color: white;
+            font-size: 60px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: #1a365d;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            color: #666;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        .highlight {
+            color: #1a365d;
+            font-weight: bold;
+        }
+        
+        .response-time {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border-left: 4px solid #1a365d;
+        }
+        
+        .response-time h3 {
+            color: #1a365d;
+            margin-bottom: 10px;
+        }
+        
+        .response-time p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .contact-options {
+            margin: 30px 0;
+        }
+        
+        .contact-options h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #25D366;
+            color: white;
+            padding: 18px 36px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        
+        .whatsapp-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+        
+        .email-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a365d;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        
+        .email-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .info-box p {
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #1a365d;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .whatsapp-btn, .email-btn {
+                display: block;
+                margin: 10px auto;
+            }
+        }
+    </style>
+
+    <link rel="canonical" href="https://www.rackinghub.com/thank-you">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="favicon-32.png" sizes="32x32">
+    <meta property="og:title" content="Thank You">
+    <meta property="og:description" content="Your inquiry has been submitted. RackingHub team will respond within 24 hours.">
+    <meta property="og:url" content="https://www.rackinghub.com/thank-you.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RackingHub">
+    <meta property="og:image" content="https://www.rackinghub.com/images/banner1.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Thank You">
+    <meta name="twitter:description" content="Your inquiry has been submitted. RackingHub team will respond within 24 hours.">
+    <meta name="twitter:image" content="https://www.rackinghub.com/images/banner1.jpg">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HY3B0T73TJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-HY3B0T73TJ');
+    </script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="checkmark">
+            <span>✓</span>
+        </div>
+        
+        <h1>Thank You!</h1>
+        
+        <p class="message">
+            We've received your inquiry and our team is reviewing your requirements.
+            You'll receive a detailed response within <span class="highlight">24 hours</span>.
+        </p>
+        
+        <div class="response-time">
+            <h3>⏱️ What Happens Next?</h3>
+            <p>✓ Our sales engineer will analyze your needs</p>
+            <p>✓ You'll receive a detailed quote within 24 hours</p>
+            <p>✓ Free warehouse layout design available upon request</p>
+        </div>
+        
+        <div class="contact-options">
+            <h3>Need Immediate Assistance?</h3>
+            <a href="https://wa.me/8615348317266" class="whatsapp-btn">
+                💬 Chat on WhatsApp
+            </a>
+            <br>
+            <a href="mailto:info@rackinghub.com" class="email-btn">
+                📧 info@rackinghub.com
+            </a>
+        </div>
+        
+        <div class="info-box">
+            <p><strong>📱 WhatsApp:</strong> +86 153 4831 7266</p>
+            <p><strong>📧 Email:</strong> info@rackinghub.com</p>
+            <p><strong>⏰ Response Time:</strong> Usually within 2 hours</p>
+            <p><strong>🕐 Business Hours:</strong> Mon-Fri, 9:00 AM - 6:00 PM (GMT+8)</p>
+        </div>
+        
+        <a href="/" class="back-link">← Back to Homepage</a>
+    </div>
+    
+    <script>
+        // Auto-redirect after 30 seconds (optional)
+        // setTimeout(() => {
+        //     window.location.href = '/';
+        // }, 30000);
+    </script>
+</body>
+</html>
