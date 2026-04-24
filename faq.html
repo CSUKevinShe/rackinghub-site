@@ -146,6 +146,7 @@
                 flex-direction: column;
                 align-items: center;
             }
+            .nav-links { display: none !important; }
         }
     img { max-width: 100%; height: auto; }
         
@@ -157,12 +158,22 @@
         .logo{display:flex;align-items:center;text-decoration:none;}
         .logo-img{height:30px;object-fit:contain;}
         @media (max-width: 768px) {
-            .hamburger { display: flex; }
-            .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; flex-direction: column; padding: 1rem 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1); gap: 0.5rem; }
-            .nav-links a { padding: 0.7rem 0; border-bottom: 1px solid #f0f0f0; }
+            .hamburger { display: flex !important; }
+            .desktop-nav { display: none !important; }
+            .desktop-only { display: none !important; }
             img { max-width: 100%; height: auto; }
         }
 
+    
+        /* Mobile Menu Overlay */
+        .mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1050;opacity:0;transition:opacity 0.3s;}
+        .mobile-menu.active{display:block;opacity:1;}
+        .mobile-menu-content{position:absolute;right:0;top:0;bottom:0;width:280px;background:#fff;padding:5rem 2rem 2rem;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 0.3s;}
+        .mobile-menu.active .mobile-menu-content{transform:translateX(0);}
+        .mobile-menu-item{color:#333;font-weight:600;font-size:1.1rem;padding:1rem 0;border-bottom:1px solid #f0f0f0;transition:color 0.3s;text-transform:uppercase;letter-spacing:0.5px;}
+        .mobile-menu-item:hover{color:#2c5282;}
+        .mobile-menu-cta{display:block;background:#fbbf24;color:#1a365d;text-align:center;padding:1rem;font-weight:700;font-size:1rem;border-radius:5px;margin-top:1.5rem;text-transform:uppercase;letter-spacing:0.5px;transition:transform 0.3s;}
+        .mobile-menu-cta:hover{transform:translateY(-1px);}
     </style>
     
     <!-- FAQ Schema for SEO -->
@@ -318,8 +329,8 @@
     <nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000;">
         <div style="max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
             <a href="index" class="logo"><img src="images/boracs-rackinghub-logo.png" alt="RackingHub - Warehouse Racking Systems" style="height: 45px; width: auto;" loading="lazy"></a>
-            <div style="color: #1a365d; font-size: 0.9rem; font-weight: 500; margin-left: 1rem;">Official Export Sales</div>
-            <div style="display: flex; gap: 30px; align-items: center;">
+            <div style="color: #1a365d; font-size: 0.9rem; font-weight: 500; margin-left: 1rem;" class="desktop-only">Official Export Sales</div>
+            <div style="display: flex; gap: 30px; align-items: center;" class="desktop-nav">
                 <a href="index" style="text-decoration: none; color: #333; font-weight: 500;">Home</a>
                 <a href="products/heavy-duty-racking" style="text-decoration: none; color: #333; font-weight: 500;">Products</a>
                 <a href="about" style="text-decoration: none; color: #333; font-weight: 500;">About</a>
@@ -327,8 +338,26 @@
                 <a href="faq" style="text-decoration: none; color: #2563eb; font-weight: 500;">FAQ</a>
                 <a href="contact" style="text-decoration: none; color: #333; font-weight: 500;">Contact</a>
             </div>
+            <div class="hamburger" id="hamburger" onclick="toggleMenu()" style="display: none; flex-direction: column; cursor: pointer; gap: 5px; padding: 5px;">
+                <span style="width: 25px; height: 3px; background: #1a365d; border-radius: 2px; display: block;"></span>
+                <span style="width: 25px; height: 3px; background: #1a365d; border-radius: 2px; display: block;"></span>
+                <span style="width: 25px; height: 3px; background: #1a365d; border-radius: 2px; display: block;"></span>
+            </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobileMenu" onclick="closeMenuOutside(event)">
+        <div class="mobile-menu-content">
+            <a href="/" class="mobile-menu-item">HOME</a>
+            <a href="/products" class="mobile-menu-item">PRODUCTS</a>
+            <a href="/about" class="mobile-menu-item">ABOUT US</a>
+            <a href="/blog" class="mobile-menu-item">BLOG</a>
+            <a href="/faq" class="mobile-menu-item">FAQ</a>
+            <a href="/contact" class="mobile-menu-item">CONTACT</a>
+            <a href="/contact" class="mobile-menu-cta">GET A FREE QUOTE</a>
+        </div>
+    </div>
 
     <header style="margin-top: 0;">
         <h1>❓ Frequently Asked Questions</h1>
@@ -499,14 +528,21 @@
             });
         });
     </script>
-<script>
-        function toggleMenu() {
-            document.getElementById('navLinks').classList.toggle('active');
+    <!-- Mobile Menu Toggle -->
+    <script>
+        function toggleMenu(){
+            document.getElementById('mobileMenu').classList.toggle('active');
             document.getElementById('hamburger').classList.toggle('active');
         }
-        document.querySelectorAll('.nav-links a').forEach(function(link) {
-            link.addEventListener('click', function() {
-                document.getElementById('navLinks').classList.remove('active');
+        function closeMenuOutside(e){
+            if(e.target===document.getElementById('mobileMenu')){
+                document.getElementById('mobileMenu').classList.remove('active');
+                document.getElementById('hamburger').classList.remove('active');
+            }
+        }
+        document.querySelectorAll('.mobile-menu-item, .mobile-menu-cta').forEach(function(link){
+            link.addEventListener('click',function(){
+                document.getElementById('mobileMenu').classList.remove('active');
                 document.getElementById('hamburger').classList.remove('active');
             });
         });
