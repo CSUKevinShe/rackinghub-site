@@ -89,6 +89,9 @@ img { max-width: 100%; height: auto; }
     <meta name="twitter:description" content="Contact RackingHub for warehouse racking inquiries. Get free quotes within 24 hours.">
     <meta name="twitter:image" content="https://www.rackinghub.com/images/banner1.jpg">
 
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HY3B0T73TJ"></script>
     <script>
@@ -207,6 +210,10 @@ img { max-width: 100%; height: auto; }
                     <div class="form-group">
                         <label>Message <span class="required">*</span></label>
                         <textarea name="message" required placeholder="Tell us your requirements (warehouse size, load capacity, quantity, etc.)"></textarea>
+                    </div>
+                    <!-- Cloudflare Turnstile -->
+                    <div class="form-group">
+                        <div class="cf-turnstile" data-sitekey="0x4AAAAAADCgroGRx-VECxmg" data-theme="light"></div>
                     </div>
                     <button type="submit" class="btn-submit">Send Inquiry</button>
                 </form>
