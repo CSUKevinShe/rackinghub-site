@@ -402,14 +402,21 @@
         <a href="https://wa.me/8615348317266?text=Hi%2C%20I%20would%20like%20to%20learn%20more%20about%20your%20racking%20systems." target="_blank" class="btn btn-whatsapp" style="margin-left: 1rem;">&#9742; WhatsApp Us</a>
     </section>
 
+    <!-- Mobile Menu Toggle -->
     <script>
-        function toggleMenu() {
-            document.getElementById('navLinks').classList.toggle('active');
+        function toggleMenu(){
+            document.getElementById('mobileMenu').classList.toggle('active');
             document.getElementById('hamburger').classList.toggle('active');
         }
-        document.querySelectorAll('.nav-links a').forEach(function(link) {
-            link.addEventListener('click', function() {
-                document.getElementById('navLinks').classList.remove('active');
+        function closeMenuOutside(e){
+            if(e.target===document.getElementById('mobileMenu')){
+                document.getElementById('mobileMenu').classList.remove('active');
+                document.getElementById('hamburger').classList.remove('active');
+            }
+        }
+        document.querySelectorAll('.mobile-menu-item, .mobile-menu-cta').forEach(function(link){
+            link.addEventListener('click',function(){
+                document.getElementById('mobileMenu').classList.remove('active');
                 document.getElementById('hamburger').classList.remove('active');
             });
         });
