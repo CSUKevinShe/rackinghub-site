@@ -148,8 +148,10 @@
             }
             .nav-links { display: none !important; }
             .desktop-only { display: none !important; }
+            .desktop-nav { display: none !important; }
+            .hamburger { display: flex !important; }
+            img { max-width: 100%; height: auto; }
         }
-    img { max-width: 100%; height: auto; }
         
         .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; padding: 5px; }
         .hamburger span { width: 25px; height: 3px; background: #1a365d; border-radius: 2px; transition: all 0.3s; }
@@ -158,12 +160,7 @@
         .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
         .logo{display:flex;align-items:center;text-decoration:none;}
         .logo-img{height:30px;object-fit:contain;}
-        @media (max-width: 768px) {
-            .hamburger { display: flex !important; }
-            .desktop-nav { display: none !important; }
-            .desktop-only { display: none !important; }
-            img { max-width: 100%; height: auto; }
-        }
+    </style>
 
     
         /* Mobile Menu Overlay */
