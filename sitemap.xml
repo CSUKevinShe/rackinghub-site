@@ -26,44 +26,50 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://www.rackinghub.com/case-studies</loc>
+        <lastmod>2026-04-27</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
         <loc>https://www.rackinghub.com/blog</loc>
-        <lastmod>2026-04-24</lastmod>
+        <lastmod>2026-04-27</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://www.rackinghub.com/blog/how-to-choose-warehouse-racking-system</loc>
-        <lastmod>2026-04-24</lastmod>
+        <lastmod>2026-04-27</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://www.rackinghub.com/blog/pallet-racking-vs-drive-in-racking</loc>
-        <lastmod>2026-04-24</lastmod>
+        <lastmod>2026-04-27</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://www.rackinghub.com/blog/warehouse-racking-installation-guide</loc>
-        <lastmod>2026-04-24</lastmod>
+        <lastmod>2026-04-27</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://www.rackinghub.com/blog/heavy-duty-pallet-racking-guide</loc>
-        <lastmod>2026-04-24</lastmod>
+        <lastmod>2026-04-27</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://www.rackinghub.com/blog/mezzanine-racking-double-your-space</loc>
-        <lastmod>2026-04-24</lastmod>
+        <lastmod>2026-04-27</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://www.rackinghub.com/blog/radio-shuttle-racking-automated</loc>
-        <lastmod>2026-04-24</lastmod>
+        <lastmod>2026-04-27</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
