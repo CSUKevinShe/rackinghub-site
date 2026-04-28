@@ -260,12 +260,12 @@
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="#products">Products</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="blog.html">Blog</a></li>
-                <li><a href="case-studies.html">Case Studies</a></li>
-                <li><a href="faq.html">FAQ</a></li>
-                <li><a href="contact.html">Contact</a></li>
-                <li><a href="contact.html" class="nav-cta">Get a Free Quote</a></li>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/case-studies">Case Studies</a></li>
+                <li><a href="/faq">FAQ</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/contact" class="nav-cta">Get a Free Quote</a></li>
             </ul>
             <div class="hamburger" id="hamburger" onclick="toggleMenu()" role="button" aria-label="Toggle navigation menu" tabindex="0">
                 <span></span><span></span><span></span>
@@ -278,12 +278,12 @@
         <div class="mobile-menu-content">
             <a href="/" class="mobile-menu-item">HOME</a>
             <a href="#products" class="mobile-menu-item">PRODUCTS</a>
-            <a href="about.html" class="mobile-menu-item">ABOUT US</a>
-            <a href="blog.html" class="mobile-menu-item">BLOG</a>
-            <a href="case-studies.html" class="mobile-menu-item">CASE STUDIES</a>
-            <a href="faq.html" class="mobile-menu-item">FAQ</a>
-            <a href="contact.html" class="mobile-menu-item">CONTACT</a>
-            <a href="contact.html" class="mobile-menu-cta">GET A FREE QUOTE</a>
+            <a href="/about" class="mobile-menu-item">ABOUT US</a>
+            <a href="/blog" class="mobile-menu-item">BLOG</a>
+            <a href="/case-studies" class="mobile-menu-item">CASE STUDIES</a>
+            <a href="/faq" class="mobile-menu-item">FAQ</a>
+            <a href="/contact" class="mobile-menu-item">CONTACT</a>
+            <a href="/contact" class="mobile-menu-cta">GET A FREE QUOTE</a>
         </div>
     </div>
 
@@ -338,7 +338,7 @@
     <!-- Cookie Consent Banner -->
     <div class="cookie-banner" id="cookieBanner">
         <div class="cookie-content">
-            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="faq.html#cookies">Learn more</a></p>
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="/faq#cookies">Learn more</a></p>
             <div class="cookie-buttons">
                 <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
                 <button class="cookie-decline" onclick="declineCookies()">Decline</button>
@@ -386,6 +386,19 @@
             });
         });
     </script>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&uarr;</button>
+
+        // Back to top + scroll animations
+        (function(){
+            var btn=document.getElementById('backToTop');
+            if(btn){window.addEventListener('scroll',function(){btn.classList.toggle('visible',window.scrollY>400)},{passive:true})}
+            var secs=document.querySelectorAll('.section,.certifications,.why-choose,.factory,.product-cta');
+            if(secs.length){
+                var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('animated');obs.unobserve(e.target)}})},{threshold:0.1});
+                secs.forEach(function(s){s.classList.add('animate-on-scroll');obs.observe(s)});
+            }
+        })();
 
 </body>
 </html>

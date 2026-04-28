@@ -414,7 +414,7 @@
     <!-- Cookie Consent Banner -->
     <div class="cookie-banner" id="cookieBanner">
         <div class="cookie-content">
-            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="faq.html#cookies">Learn more</a></p>
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="/faq#cookies">Learn more</a></p>
             <div class="cookie-buttons">
                 <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
                 <button class="cookie-decline" onclick="declineCookies()">Decline</button>
@@ -442,6 +442,19 @@
             }
         })();
     </script>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&uarr;</button>
+
+        // Back to top + scroll animations
+        (function(){
+            var btn=document.getElementById('backToTop');
+            if(btn){window.addEventListener('scroll',function(){btn.classList.toggle('visible',window.scrollY>400)},{passive:true})}
+            var secs=document.querySelectorAll('.section,.certifications,.why-choose,.factory,.product-cta');
+            if(secs.length){
+                var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('animated');obs.unobserve(e.target)}})},{threshold:0.1});
+                secs.forEach(function(s){s.classList.add('animate-on-scroll');obs.observe(s)});
+            }
+        })();
 
 </body>
 </html>

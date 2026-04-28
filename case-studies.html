@@ -297,13 +297,13 @@ footer p {
             <div class="header-right">
                 <ul class="nav-links" id="navLinks">
                     <li><a href="/">Home</a></li>
-                    <li><a href="products/heavy-duty-racking.html">Products</a></li>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="case-studies.html">Case Studies</a></li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="faq.html">FAQ</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="contact.html" class="nav-cta">Get a Free Quote</a></li>
+                    <li><a href="/products/heavy-duty-racking">Products</a></li>
+                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/case-studies">Case Studies</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/contact" class="nav-cta">Get a Free Quote</a></li>
                 </ul>
                 <div class="hamburger" id="hamburger" onclick="toggleMenu()">
                     <span></span><span></span><span></span>
@@ -509,7 +509,7 @@ footer p {
         <h2>Need a Similar Solution?</h2>
         <p>Every warehouse is different. Tell us about your space, your products, and your goals — we'll design a racking system that works for you. Free warehouse design, no obligation.</p>
         <div class="cta-buttons" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-            <a href="contact.html" class="btn btn-primary">Get a Free Warehouse Design</a>
+            <a href="/contact" class="btn btn-primary">Get a Free Warehouse Design</a>
             <a href="https://wa.me/8615348317266?text=Hi%2C%20I%20saw%20your%20case%20studies%20and%20I%27d%20like%20a%20free%20warehouse%20design%20consultation." target="_blank" rel="noopener noreferrer" target="_blank" class="btn btn-whatsapp">&#9742; Chat on WhatsApp</a>
         </div>
     </section>
@@ -523,9 +523,9 @@ footer p {
         <p>Warehouse Racking Systems &bull; Factory Direct &bull; Global Shipping</p>
         <div class="footer-links">
             <a href="/">Home</a>
-            <a href="about.html">About</a>
-            <a href="faq.html">FAQ</a>
-            <a href="contact.html">Contact</a>
+            <a href="/about">About</a>
+            <a href="/faq">FAQ</a>
+            <a href="/contact">Contact</a>
         </div>
     </footer>
 
@@ -557,7 +557,7 @@ footer p {
     <!-- Cookie Consent Banner -->
     <div class="cookie-banner" id="cookieBanner">
         <div class="cookie-content">
-            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="faq.html#cookies">Learn more</a></p>
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="/faq#cookies">Learn more</a></p>
             <div class="cookie-buttons">
                 <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
                 <button class="cookie-decline" onclick="declineCookies()">Decline</button>
@@ -585,6 +585,19 @@ footer p {
             }
         })();
     </script>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&uarr;</button>
+
+        // Back to top + scroll animations
+        (function(){
+            var btn=document.getElementById('backToTop');
+            if(btn){window.addEventListener('scroll',function(){btn.classList.toggle('visible',window.scrollY>400)},{passive:true})}
+            var secs=document.querySelectorAll('.section,.certifications,.why-choose,.factory,.product-cta');
+            if(secs.length){
+                var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('animated');obs.unobserve(e.target)}})},{threshold:0.1});
+                secs.forEach(function(s){s.classList.add('animate-on-scroll');obs.observe(s)});
+            }
+        })();
 
 </body>
 </html>

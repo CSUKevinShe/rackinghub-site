@@ -159,14 +159,14 @@
                 <img width="120" height="30" src="../images/boracs-rackinghub-logo.png" alt="Boracs RackingHub" class="logo-img">
             </a>
             <ul class="nav-links" id="navLinks">
-                <li><a href="../">Home</a></li>
+                <li><a href="/">Home</a></li>
                 <li><a href="#">Products</a></li>
-                <li><a href="../about">About Us</a></li>
+                <li><a href="/about">About Us</a></li>
                 <li><a href="../blog">Blog</a></li>
                 <li><a href="../case-studies">Case Studies</a></li>
                 <li><a href="../faq">FAQ</a></li>
-                <li><a href="../contact">Contact</a></li>
-                <li><a href="../contact" class="nav-cta">Get a Free Quote</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/contact" class="nav-cta">Get a Free Quote</a></li>
             </ul>
                             <div id="google_translate_element"></div>
                 <div class="hamburger" id="hamburger" onclick="toggleMenu()">
@@ -194,7 +194,7 @@
         <h1>Radio Shuttle Racking</h1>
         <p>Semi-automated high-density storage solution</p>
         <div style="margin-top: 2rem;">
-            <a href="../index.html#contact" class="btn btn-primary">Request Quote</a>
+            <a href="/contact" class="btn btn-primary">Request Quote</a>
             <a href="https://wa.me/8615348317266" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">WhatsApp</a>
         </div>
     </section>
@@ -249,13 +249,13 @@
 
         <div style="text-align: center; margin: 3rem 0;">
             <h3 style="color: #1a365d; margin-bottom: 1rem;">Ready to Get a Quote?</h3>
-            <a href="../index.html#contact" class="btn btn-primary">Contact Us Today</a>
+            <a href="/contact" class="btn btn-primary">Contact Us Today</a>
         </div>
 
         <div class="related-products">
             <div class="related-card"><h4>Drive-In Racking</h4><a href="drive-in-racking">View Details →</a></div>
             <div class="related-card"><h4>Heavy Duty Racking</h4><a href="heavy-duty-racking">View Details →</a></div>
-            <div class="related-card"><h4>Automated Storage</h4><a href="../index.html#products">View Details →</a></div>
+            <div class="related-card"><h4>Automated Storage</h4><a href="/">View Details →</a></div>
             <div class="related-card"><h4>Mezzanine Racking</h4><a href="mezzanine-racking">View Details →</a></div>
         </div>
     </section>
@@ -268,11 +268,11 @@
         <p>Warehouse Racking Systems &bull; Factory Direct &bull; Global Shipping</p>
         <div class="footer-links">
             <a href="/">Home</a>
-            <a href="../about">About</a>
+            <a href="/about">About</a>
             <a href="../case-studies">Case Studies</a>
             <a href="../blog">Blog</a>
             <a href="../faq">FAQ</a>
-            <a href="../contact">Contact</a>
+            <a href="/contact">Contact</a>
         </div>
     </footer>
 
@@ -281,7 +281,7 @@
         <h3 style="color:#1a365d;margin-bottom:0.5rem;font-size:1.5rem;">Interested in This Product?</h3>
         <p style="color:#4a5568;margin-bottom:1.5rem;max-width:600px;margin-left:auto;margin-right:auto;">Send us your requirements and get a detailed quotation within 24 hours.</p>
         <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-            <a href="../contact" class="btn btn-primary" style="display:inline-block;padding:0.9rem 2rem;border-radius:5px;font-weight:bold;background:#fbbf24;color:#1a365d;text-decoration:none;">Get a Quote</a>
+            <a href="/contact" class="btn btn-primary" style="display:inline-block;padding:0.9rem 2rem;border-radius:5px;font-weight:bold;background:#fbbf24;color:#1a365d;text-decoration:none;">Get a Quote</a>
             <a href="https://wa.me/8615348317266?text=Hi%2C%20I%20am%20interested%20in%20your%20racking%20products.%20Please%20send%20me%20more%20details." target="_blank" rel="noopener noreferrer" target="_blank" class="btn btn-whatsapp" style="display:inline-block;padding:0.9rem 2rem;border-radius:5px;font-weight:bold;background:#25D366;color:white;text-decoration:none;">&#9742; WhatsApp Us</a>
         </div>
     </div>
@@ -319,7 +319,7 @@
     <!-- Cookie Consent Banner -->
     <div class="cookie-banner" id="cookieBanner">
         <div class="cookie-content">
-            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="faq.html#cookies">Learn more</a></p>
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="/faq#cookies">Learn more</a></p>
             <div class="cookie-buttons">
                 <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
                 <button class="cookie-decline" onclick="declineCookies()">Decline</button>
@@ -347,6 +347,19 @@
             }
         })();
     </script>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&uarr;</button>
+
+        // Back to top + scroll animations
+        (function(){
+            var btn=document.getElementById('backToTop');
+            if(btn){window.addEventListener('scroll',function(){btn.classList.toggle('visible',window.scrollY>400)},{passive:true})}
+            var secs=document.querySelectorAll('.section,.certifications,.why-choose,.factory,.product-cta');
+            if(secs.length){
+                var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('animated');obs.unobserve(e.target)}})},{threshold:0.1});
+                secs.forEach(function(s){s.classList.add('animate-on-scroll');obs.observe(s)});
+            }
+        })();
 
 </body>
 </html>

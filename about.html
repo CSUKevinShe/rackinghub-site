@@ -321,12 +321,12 @@ footer p {
             <ul class="nav-links" id="navLinks">
                 <li><a href="/">Home</a></li>
                 <li><a href="/products">Products</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="blog.html">Blog</a></li>
-                <li><a href="case-studies.html">Case Studies</a></li>
-                <li><a href="faq.html">FAQ</a></li>
-                <li><a href="contact.html">Contact</a></li>
-                <li><a href="contact.html" class="nav-cta">Get a Free Quote</a></li>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/case-studies">Case Studies</a></li>
+                <li><a href="/faq">FAQ</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/contact" class="nav-cta">Get a Free Quote</a></li>
             </ul>
             <div class="hamburger" id="hamburger" onclick="toggleMenu()">
                 <span></span><span></span><span></span>
@@ -534,7 +534,7 @@ footer p {
     <section class="cta-section">
         <h2>Ready to Start Your Project?</h2>
         <p>Tell us about your warehouse requirements and get a free quote within 24 hours.</p>
-        <a href="contact.html" class="btn btn-primary">Get a Free Quote</a>
+        <a href="/contact" class="btn btn-primary">Get a Free Quote</a>
         <a href="https://wa.me/8615348317266?text=Hi%2C%20I%20would%20like%20to%20learn%20more%20about%20your%20racking%20systems." target="_blank" rel="noopener noreferrer" target="_blank" class="btn btn-whatsapp" style="margin-left: 1rem;">&#9742; WhatsApp Us</a>
     </section>
 
@@ -567,7 +567,7 @@ footer p {
     <!-- Cookie Consent Banner -->
     <div class="cookie-banner" id="cookieBanner">
         <div class="cookie-content">
-            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="faq.html#cookies">Learn more</a></p>
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="/faq#cookies">Learn more</a></p>
             <div class="cookie-buttons">
                 <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
                 <button class="cookie-decline" onclick="declineCookies()">Decline</button>
@@ -595,6 +595,19 @@ footer p {
             }
         })();
     </script>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&uarr;</button>
+
+        // Back to top + scroll animations
+        (function(){
+            var btn=document.getElementById('backToTop');
+            if(btn){window.addEventListener('scroll',function(){btn.classList.toggle('visible',window.scrollY>400)},{passive:true})}
+            var secs=document.querySelectorAll('.section,.certifications,.why-choose,.factory,.product-cta');
+            if(secs.length){
+                var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('animated');obs.unobserve(e.target)}})},{threshold:0.1});
+                secs.forEach(function(s){s.classList.add('animate-on-scroll');obs.observe(s)});
+            }
+        })();
 
 </body>
 </html>
