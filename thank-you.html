@@ -59,11 +59,7 @@
             animation: scaleIn 0.5s ease-out;
         }
         
-        @keyframes scaleIn {
-            from {
-                transform: scale(0);
-                opacity: 0;
-            }
+        
             to {
                 transform: scale(1);
                 opacity: 1;
@@ -186,11 +182,13 @@
             text-decoration: underline;
         }
         
-        @media (max-width: 600px) {
-    .hamburger { display: flex; }
-    .nav-links { display: none; }
-
-            .container {
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+@media (max-width: 600px) {
+.container {
                 padding: 40px 20px;
             }
             
@@ -202,8 +200,8 @@
                 display: block;
                 margin: 10px auto;
             }
-        }
-    </style>
+}
+</style>
 
     <link rel="canonical" href="https://www.rackinghub.com/thank-you">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
