@@ -208,7 +208,30 @@
         gtag('config', 'G-HY3B0T73TJ');
     </script>
 
-</head>
+
+    <!-- Structured Data: BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.rackinghub.com/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Thank You",
+                "item": "https://www.rackinghub.com/thank-you.html"
+            }
+        ]
+    }
+    </script>
+
+    </head>
 <body>
     <div class="container">
         <div class="checkmark">
@@ -231,7 +254,7 @@
         
         <div class="contact-options">
             <h3>Need Immediate Assistance?</h3>
-            <a href="https://wa.me/8615348317266" class="whatsapp-btn">
+            <a href="https://wa.me/8615348317266" target="_blank" rel="noopener noreferrer" class="whatsapp-btn">
                 💬 Chat on WhatsApp
             </a>
             <br>
@@ -256,5 +279,38 @@
         //     window.location.href = '/';
         // }, 30000);
     </script>
+
+    <!-- Cookie Consent Banner -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-content">
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="faq.html#cookies">Learn more</a></p>
+            <div class="cookie-buttons">
+                <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
+                <button class="cookie-decline" onclick="declineCookies()">Decline</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Cookie consent script -->
+    <script>
+        function acceptCookies() {
+            localStorage.setItem('cookieConsent', 'accepted');
+            document.getElementById('cookieBanner').classList.remove('active');
+        }
+        function declineCookies() {
+            localStorage.setItem('cookieConsent', 'declined');
+            document.getElementById('cookieBanner').classList.remove('active');
+        }
+        (function() {
+            var consent = localStorage.getItem('cookieConsent');
+            if (!consent) {
+                setTimeout(function() {
+                    document.getElementById('cookieBanner').classList.add('active');
+                }, 1000);
+            }
+        })();
+    </script>
+
 </body>
 </html>
