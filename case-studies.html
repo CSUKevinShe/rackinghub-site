@@ -107,23 +107,21 @@
     <!-- Header -->
     <header>
         <nav>
-            <a href="/" class="logo">
-                <img width="120" height="30" src="images/boracs-rackinghub-logo.png" alt="Boracs RackingHub" class="logo-img">
+            <a href="/" class="logo" aria-label="RackingHub Home">
+                <img src="images/boracs-rackinghub-logo.png" alt="RackingHub - Warehouse Racking Systems" class="logo-img" width="120" height="30">
             </a>
-            <div class="header-right">
-                <ul class="nav-links" id="navLinks">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/products/heavy-duty-racking">Products</a></li>
-                    <li><a href="/about">About Us</a></li>
-                    <li><a href="/case-studies">Case Studies</a></li>
-                    <li><a href="/blog">Blog</a></li>
-                    <li><a href="/faq">FAQ</a></li>
-                    <li><a href="/contact">Contact</a></li>
-                    <li><a href="/contact" class="nav-cta">Get a Free Quote</a></li>
-                </ul>
-                <div class="hamburger" id="hamburger" onclick="toggleMenu()">
-                    <span></span><span></span><span></span>
-                </div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="#products">Products</a></li>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/case-studies">Case Studies</a></li>
+                <li><a href="/faq">FAQ</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="#contact" class="nav-cta">Get a Free Quote</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger" onclick="toggleMenu()" role="button" aria-label="Toggle navigation menu" tabindex="0">
+                <span></span><span></span><span></span>
             </div>
         </nav>
     </header>
@@ -333,13 +331,15 @@
     <!-- Footer -->
     <footer>
         <div class="footer-logos">
-            <img width="120" height="30" src="images/boracs-rackinghub-logo.png" alt="Boracs RackingHub" class="footer-logo-img">
+            <img src="images/boracs-rackinghub-logo.png" alt="RackingHub" class="footer-logo-img" width="100" height="24">
         </div>
-        <p>&copy; 2026 Boracs &amp; RackingHub. All Rights Reserved.</p>
+        <p>&copy; 2026 Boracs & RackingHub. All Rights Reserved.</p>
         <p>Warehouse Racking Systems &bull; Factory Direct &bull; Global Shipping</p>
         <div class="footer-links">
             <a href="/">Home</a>
             <a href="/about">About</a>
+            <a href="/case-studies">Case Studies</a>
+            <a href="/blog">Blog</a>
             <a href="/faq">FAQ</a>
             <a href="/contact">Contact</a>
         </div>
