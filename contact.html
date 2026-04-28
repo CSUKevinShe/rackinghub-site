@@ -82,33 +82,40 @@
     color: #4a5568;
 }
 .contact-form {
-    background: white; padding: 2rem; border: 1px solid #e2e8f0; border-radius: 10px;
+    background: #fff; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e8ecf0; transition: box-shadow 0.3s;
 }
 .form-group {
     margin-bottom: 1.5rem;
 }
 .form-group label {
-    display: block; margin-bottom: 0.5rem; color: #2d3748; font-weight: 500;
+    display: block; margin-bottom: 0.4rem; color: #2d3748; font-weight: 600; font-size: 0.9rem;
 }
-.form-group input, .form-group select, .form-group textare
+.form-group input, .form-group select, .form-group textarea {
+    width:100%;padding:0.8rem 1rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:0.95rem;font-family:inherit;color:#333;background:#fafbfc;transition:all 0.25s;box-sizing:border-box;
+}
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    outline: none; border-color: #2c5282;
+    outline:none;border-color:#2c5282;box-shadow:0 0 0 3px rgba(44,82,130,0.12);background:#fff;
 }
-.form-group textare
+.form-group textarea {
+    min-height:120px;resize:vertical;line-height:1.6;
+}
+.form-hint {
+    font-size:0.8rem;color:#718096;margin-top:0.3rem;
+}
 .required {
     color: #e53e3e;
 }
 .btn-submit {
-    width: 100%; background: #1a365d; color: white; border: none; padding: 1rem; border-radius: 5px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.3s;
+    width: 100%; background: linear-gradient(135deg, #1a365d, #2c5282); color: #fff; border: none; padding: 0.95rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; letter-spacing: 0.3px;
 }
 .btn-submit:hover {
-    background: #2c5282;
+    transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,54,93,0.3);
 }
 
 @media (max-width: 768px) {
-    .contact-grid {
-        grid-template-columns: 1fr;
-    }
+    .contact-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .contact-form { padding: 1.5rem; }
 }
     </style>
 </head>
@@ -200,47 +207,64 @@
             <div class="contact-form">
                 <form action="https://formspree.io/f/xeerarqy" method="POST">
                     <input type="hidden" name="_next" value="https://rackinghub.com/thank-you.html">
-                    <div class="form-group">
-                        <label>Your Name <span class="required">*</span></label>
-                        <input type="text" name="name" required placeholder="John Smith">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Your Name <span class="required">*</span></label>
+                            <input type="text" name="name" required placeholder="John Smith">
+                        </div>
+                        <div class="form-group">
+                            <label>Email <span class="required">*</span></label>
+                            <input type="email" name="email" required placeholder="john@company.com">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Email <span class="required">*</span></label>
-                        <input type="email" name="email" required placeholder="john@company.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Company</label>
-                        <input type="text" name="company" placeholder="Your company name">
-                    </div>
-                    <div class="form-group">
-                        <label>Country</label>
-                        <input type="text" name="country" placeholder="Your country">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Company</label>
+                            <input type="text" name="company" placeholder="Your company name">
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <input type="text" name="country" placeholder="Select or type your country" list="countries">
+                            <datalist id="countries">
+                                <option value="United States"><option value="Canada"><option value="United Kingdom"><option value="Germany"><option value="France"><option value="Australia"><option value="Nigeria"><option value="South Africa"><option value="UAE"><option value="Saudi Arabia"><option value="Qatar"><option value="Kenya"><option value="India"><option value="Brazil"><option value="Mexico"><option value="Other">
+                            </datalist>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Product Interest</label>
                         <select name="product">
-                            <option value="">Select a product</option>
-                            <option value="Heavy Duty Racking">Heavy Duty Pallet Racking</option>
-                            <option value="Medium Duty Shelving">Medium Duty Shelving</option>
-                            <option value="Mezzanine Racking">Mezzanine Racking</option>
-                            <option value="Steel Platform">Steel Platform</option>
-                            <option value="Radio Shuttle Racking">Radio Shuttle Racking</option>
-                            <option value="Drive-In Racking">Drive-In Racking</option>
-                            <option value="Plastic Pallets">Plastic Pallets</option>
-                            <option value="Warehouse Cages">Warehouse Cages</option>
+                            <option value="">Select a product (optional)</option>
+                            <optgroup label="Racking Systems">
+                                <option value="Heavy Duty Racking">Heavy Duty Pallet Racking</option>
+                                <option value="Drive-In Racking">Drive-In Racking</option>
+                                <option value="Radio Shuttle Racking">Radio Shuttle Racking</option>
+                                <option value="Mezzanine Racking">Mezzanine Racking</option>
+                            </optgroup>
+                            <optgroup label="Shelving &amp; Platforms">
+                                <option value="Medium Duty Shelving">Medium Duty Shelving</option>
+                                <option value="Steel Platform">Steel Platform</option>
+                            </optgroup>
+                            <optgroup label="Accessories">
+                                <option value="Plastic Pallets">Plastic Pallets</option>
+                                <option value="Warehouse Cages">Warehouse Cages</option>
+                            </optgroup>
                             <option value="Multiple Products">Multiple Products</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Message <span class="required">*</span></label>
-                        <textarea name="message" required placeholder="Tell us your requirements (warehouse size, load capacity, quantity, etc.)"></textarea>
+                        <label>Estimated Warehouse Area (sqm)</label>
+                        <input type="number" name="warehouse_size" placeholder="e.g. 2000" min="0">
+                        <div class="form-hint">Approximate size helps us recommend the right solution</div>
                     </div>
-                    <!-- Cloudflare Turnstile -->
+                    <div class="form-group">
+                        <label>Message <span class="required">*</span></label>
+                        <textarea name="message" required placeholder="Tell us your requirements: warehouse dimensions, load capacity, quantity, delivery timeline..."></textarea>
+                    </div>
                     <div class="form-group">
                         <div class="cf-turnstile" data-sitekey="0x4AAAAAADCgroGRx-VECxmg" data-theme="light"></div>
                     </div>
-                    <button type="submit" class="btn-submit">Send Inquiry</button>
+                    <button type="submit" class="btn-submit">Send Inquiry →</button>
                 </form>
             </div>
         </div>
