@@ -34,13 +34,13 @@
     transform:translateY(-2px);box-shadow:0 6px 20px rgba(251,191,36,0.4);
 }
 
-@media max-width:768px) {
+@media (768px) {
     
 }
-@media max-width:768px) {
+@media (768px) {
     
 }
-@media max-width:768px) {
+@media (768px) {
     .error-code {
         font-size:5rem;
     }
@@ -50,12 +50,35 @@
     opacity:0.6;font-size:0.82rem;
 }
     </style>
-</head>
+
+    <!-- Structured Data: BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.rackinghub.com/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "404",
+                "item": "https://www.rackinghub.com/404.html"
+            }
+        ]
+    }
+    </script>
+
+    </head>
 <body>
     <header>
         <nav>
             <a href="/" class="logo">
-                <img src="images/boracs-rackinghub-logo.png" alt="RackingHub" class="logo-img">
+                <img width="120" height="30" src="images/boracs-rackinghub-logo.png" alt="RackingHub" class="logo-img">
             </a>
             <div class="header-right">
                 <ul class="nav-links" id="navLinks">
@@ -98,7 +121,7 @@
     </section>
 
     <footer class="error-footer">
-        <p>&copy; 2025 Boracs &amp; RackingHub. All Rights Reserved. | <a href="/" style="color:rgba(255,255,255,0.5);text-decoration:none;">Home</a> | <a href="/contact" style="color:rgba(255,255,255,0.5);text-decoration:none;">Contact</a></p>
+        <p>&copy; 2026 Boracs &amp; RackingHub. All Rights Reserved. | <a href="/" style="color:rgba(255,255,255,0.5);text-decoration:none;">Home</a> | <a href="/contact" style="color:rgba(255,255,255,0.5);text-decoration:none;">Contact</a></p>
     </footer>
 
     <script>
@@ -123,5 +146,38 @@
         });
     </script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- Cookie Consent Banner -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-content">
+            <p>We use cookies to enhance your browsing experience and analyze site traffic. By continuing, you agree to our use of cookies. <a href="faq.html#cookies">Learn more</a></p>
+            <div class="cookie-buttons">
+                <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
+                <button class="cookie-decline" onclick="declineCookies()">Decline</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Cookie consent script -->
+    <script>
+        function acceptCookies() {
+            localStorage.setItem('cookieConsent', 'accepted');
+            document.getElementById('cookieBanner').classList.remove('active');
+        }
+        function declineCookies() {
+            localStorage.setItem('cookieConsent', 'declined');
+            document.getElementById('cookieBanner').classList.remove('active');
+        }
+        (function() {
+            var consent = localStorage.getItem('cookieConsent');
+            if (!consent) {
+                setTimeout(function() {
+                    document.getElementById('cookieBanner').classList.add('active');
+                }, 1000);
+            }
+        })();
+    </script>
+
 </body>
 </html>
