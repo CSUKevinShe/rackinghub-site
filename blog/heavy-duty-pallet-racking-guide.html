@@ -72,69 +72,7 @@
 
     
     <link rel="stylesheet" href="../style.css">
-    <style>
-    /* ===== Hamburger Menu (mobile) ===== */
-    .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; padding: 5px; }
-    .hamburger span { width: 25px; height: 3px; background: #1a365d; border-radius: 2px; transition: all 0.3s; }
-    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 6px); }
-    .hamburger.active span:nth-child(2) { opacity: 0; }
-    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
-    .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1050; opacity: 0; transition: opacity 0.3s; }
-    .mobile-menu.active { display: block; opacity: 1; }
-    .mobile-menu-content { position: absolute; right: 0; top: 0; bottom: 0; width: 280px; background: #fff; padding: 5rem 2rem 2rem; display: flex; flex-direction: column; box-shadow: -4px 0 20px rgba(0,0,0,0.15); transform: translateX(100%); transition: transform 0.3s; }
-    .mobile-menu.active .mobile-menu-content { transform: translateX(0); }
-    .mobile-menu-item { color: #333; font-weight: 600; font-size: 1.1rem; padding: 1rem 0; border-bottom: 1px solid #f0f0f0; transition: color 0.3s; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; }
-    .mobile-menu-item:hover { color: #2c5282; }
-    .mobile-menu-cta { display: block; background: #fbbf24; color: #1a365d; text-align: center; padding: 1rem; font-weight: 700; font-size: 1rem; border-radius: 5px; margin-top: 1.5rem; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.3s; }
-    .mobile-menu-cta:hover { transform: translateY(-1px); }
-
-.article td {
-    background: #fff;
-}
-.article tr:hover td {
-    background: #f7fafc;
-}
-
-.article .info-box {
-    border-left: 4px solid #2c5282; padding: 1rem 1.5rem; background: #ebf5ff; margin: 1.5rem 0; border-radius: 0 8px 8px 0;
-}
-.article .info-box p {
-    margin-bottom: 0; color: #1a365d;
-}
-.article .checklist {
-    list-style: none; margin-left: 0; padding-left: 0;
-}
-.article .checklist li {
-    padding-left: 1.5rem; position: relative;
-}
-.article .checklist li::before {
-    content: "✓"; position: absolute; left: 0; color: #2c5282; font-weight: bold;
-}
-.step-cards {
-    display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 1.5rem 0;
-}
-.step-card {
-    background: #f7fafc; border-radius: 8px; padding: 1.5rem; border-left: 4px solid #2c5282;
-}
-.step-card h4 {
-    color: #1a365d; margin-bottom: 0.5rem;
-}
-.step-card p {
-    margin-bottom: 0; font-size: 0.95rem;
-}
-.step-number {
-    display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #2c5282; color: white; border-radius: 50%; font-size: 0.85rem; font-weight: bold; margin-right: 0.5rem;
-}
-.pitfall {
-    background: #fef2f2; border-left: 4px solid #e53e3e; border-radius: 8px; padding: 1rem 1.5rem; margin: 1rem 0;
-}
-.pitfall h4 {
-    color: #e53e3e; margin-bottom: 0.25rem;
-}
-.pitfall p {
-    margin-bottom: 0; font-size: 0.95rem; color: #e53e3e;
-}
-</style>
+    <link rel="stylesheet" href="../style.css">
 </head>
 <body>
     <!-- Header -->
