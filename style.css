@@ -343,9 +343,9 @@ nav {
 }
 .factory-images img {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 260px;
     object-fit: cover;
-    object-position: top center;
+    object-position: center;
     border-radius: var(--radius);
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
