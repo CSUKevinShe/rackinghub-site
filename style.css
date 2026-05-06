@@ -343,10 +343,11 @@ nav {
 }
 .factory-images img {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
-    object-position: center;
+    object-position: top center;
     border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .factory-features {
     display: grid;
