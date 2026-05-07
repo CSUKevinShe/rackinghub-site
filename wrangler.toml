@@ -1,4 +1,4 @@
-name = "trackinghub-site"
+name = "rackinghub-site"
 pages_build_output_dir = "."
 
 # Cloudflare Pages 配置
@@ -6,12 +6,12 @@ pages_build_output_dir = "."
 
 [vars]
   ENVIRONMENT = "production"
-  SITE_URL = "https://trackinghub.com"
+  SITE_URL = "https://rackinghub.com"
 
 # 环境变量（生产环境）
 [env.production.vars]
   ENVIRONMENT = "production"
-  SITE_URL = "https://trackinghub.com"
+  SITE_URL = "https://rackinghub.com"
   CONTACT_EMAIL = "Kevin@boracs.com"
   FORMSPREE_ID = "xeerarqy"
   GA_ID = "G-HY3B0T73TJ"
@@ -19,12 +19,12 @@ pages_build_output_dir = "."
 # 绑定（未来扩展）
 # [[d1_databases]]
 # binding = "DB"
-# database_name = "trackinghub-db"
+# database_name = "rackinghub-db"
 # database_id = "your-d1-database-id"
 
 # [[r2_buckets]]
 # binding = "BUCKET"
-# bucket_name = "trackinghub-images"
+# bucket_name = "rackinghub-images"
 
 # [[kv_namespaces]]
 # binding = "CACHE"
