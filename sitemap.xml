@@ -26,6 +26,12 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://www.rackinghub.com/privacy-policy</loc>
+        <lastmod>2026-05-08</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
         <loc>https://www.rackinghub.com/case-studies</loc>
         <lastmod>2026-05-05</lastmod>
         <changefreq>monthly</changefreq>
