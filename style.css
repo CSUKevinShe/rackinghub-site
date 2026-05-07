@@ -1189,3 +1189,90 @@ footer a { color: var(--color-accent); }
 .brand-card-body { padding: 1.5rem; }
 .cf-turnstile { margin: 1rem 0; }
 .site-header { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.08); position: fixed; width: 100%; top: 0; z-index: 1000; }
+
+/* ============================================
+   Product Page Utility Classes (extracted from inline styles)
+   ============================================ */
+
+.product-description {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: #4a5568;
+}
+
+.product-overview-title {
+    font-size: 1.6rem;
+    color: #1a365d;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.applications-list {
+    margin-top: 1rem;
+    margin-left: 1.5rem;
+}
+
+.product-cta-section {
+    text-align: center;
+    margin: 3rem 0;
+}
+
+.product-cta-section h3 {
+    color: #1a365d;
+    margin-bottom: 1rem;
+}
+
+.product-cta-banner {
+    background: #f7fafc;
+    border-top: 3px solid #fbbf24;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.product-cta-banner h3 {
+    color: #1a365d;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.product-cta-banner p {
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.product-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary-solid {
+    display: inline-block;
+    padding: 0.9rem 2rem;
+    border-radius: 5px;
+    font-weight: bold;
+    background: #fbbf24;
+    color: #1a365d;
+    text-decoration: none;
+}
+
+.btn-whatsapp-solid {
+    display: inline-block;
+    padding: 0.9rem 2rem;
+    border-radius: 5px;
+    font-weight: bold;
+    background: #25D366;
+    color: white;
+    text-decoration: none;
+}
+
+.mt-2 { margin-top: 2rem; }
+
+
+/* FAQ utility classes */
+.faq-category { margin-top: 10px; }
+.faq-submit-btn { margin-top: 20px; opacity: 0.9; }

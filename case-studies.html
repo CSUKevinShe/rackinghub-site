@@ -107,7 +107,7 @@
     <header>
         <nav>
             <a href="/" class="logo" aria-label="RackingHub Home">
-                <img src="images/logos/boracs-rackinghub-logo.png" alt="RackingHub - Warehouse Racking Systems" class="logo-img" width="120" height="30">
+                <img loading="lazy" src="images/logos/boracs-rackinghub-logo.png" alt="RackingHub - Warehouse Racking Systems" class="logo-img" width="120" height="30">
             </a>
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
@@ -330,7 +330,7 @@
     <!-- Footer -->
     <footer>
         <div class="footer-logos">
-            <img src="images/logos/boracs-rackinghub-logo.png" alt="RackingHub" class="footer-logo-img" width="100" height="24">
+            <img loading="lazy" src="images/logos/boracs-rackinghub-logo.png" alt="RackingHub" class="footer-logo-img" width="100" height="24">
         </div>
         <p>&copy; 2026 Boracs & RackingHub. All Rights Reserved.</p>
         <p>Warehouse Racking Systems &bull; Factory Direct &bull; Global Shipping</p>
@@ -403,6 +403,7 @@
 
     <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&uarr;</button>
 
+    <script>
         // Back to top + scroll animations
         (function(){
             var btn=document.getElementById('backToTop');
@@ -413,6 +414,7 @@
                 secs.forEach(function(s){s.classList.add('animate-on-scroll');obs.observe(s)});
             }
         })();
+    </script>
 
 </body>
 </html>
