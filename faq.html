@@ -509,20 +509,33 @@
     </a>
     
     <script>
-        // FAQ accordion: toggle all content within each faq-item
-        document.querySelectorAll('.faq-item h3').forEach(item => {
-            item.style.cursor = 'pointer';
-            item.addEventListener('click', () => {
-                const faqItem = item.closest('.faq-item');
-                const allContent = faqItem.querySelectorAll('p, ul, ol');
-                const isHidden = allContent[0] && allContent[0].style.display === 'none';
-                allContent.forEach(el => {
-                    el.style.display = isHidden ? '' : 'none';
+        // FAQ accordion: toggle all content within each faq-item, close others on open
+        document.querySelectorAll('.faq-item').forEach(function(faqItem) {
+            var question = faqItem.querySelector('h3');
+            if (question) {
+                question.style.cursor = 'pointer';
+                question.addEventListener('click', function() {
+                    var isActive = faqItem.classList.contains('active');
+                    // Close all others
+                    document.querySelectorAll('.faq-item.active').forEach(function(activeItem) {
+                        if (activeItem !== faqItem) {
+                            activeItem.classList.remove('active');
+                            activeItem.querySelectorAll('p, ul, ol').forEach(function(el) { el.style.display = 'none'; });
+                        }
+                    });
+                    // Toggle current
+                    var contents = faqItem.querySelectorAll('p, ul, ol');
+                    if (isActive) {
+                        faqItem.classList.remove('active');
+                        contents.forEach(function(el) { el.style.display = 'none'; });
+                    } else {
+                        faqItem.classList.add('active');
+                        contents.forEach(function(el) { el.style.display = 'block'; });
+                    }
                 });
-                item.classList.toggle('active');
-            });
-            // Initialize: ensure all content is visible by default
-            // (CSS should handle the collapsed state if needed)
+                // Default: all open
+                faqItem.classList.add('active');
+            }
         });
     </script>
     <!-- Mobile Menu Toggle -->
