@@ -315,6 +315,94 @@
                             </div>
                         </fieldset>
 
+                        <!-- Interactive Layout Preview -->
+                        <div class="interactive-preview" id="interactive-preview">
+                            <div class="interactive-header">
+                                <h3>Live Layout Preview</h3>
+                                <p class="interactive-sub">Adjust parameters to see your warehouse layout update in real time</p>
+                            </div>
+                            <div class="interactive-body">
+                                <div class="param-panel">
+                                    <div class="param-group">
+                                        <label class="param-label">
+                                            Warehouse Length
+                                            <span class="param-value" id="interactive-length-value">60m</span>
+                                        </label>
+                                        <input type="range" id="interactive-length" class="param-slider" min="10" max="200" value="60" step="5">
+                                        <div class="param-range-labels"><span>10m</span><span>200m</span></div>
+                                    </div>
+                                    <div class="param-group">
+                                        <label class="param-label">
+                                            Warehouse Width
+                                            <span class="param-value" id="interactive-width-value">40m</span>
+                                        </label>
+                                        <input type="range" id="interactive-width" class="param-slider" min="10" max="100" value="40" step="5">
+                                        <div class="param-range-labels"><span>10m</span><span>100m</span></div>
+                                    </div>
+                                    <div class="param-group">
+                                        <label class="param-label">Racking Type</label>
+                                        <select id="interactive-racking" class="param-select">
+                                            <option value="selective-heavy">Heavy-Duty Selective</option>
+                                            <option value="selective-medium">Medium-Duty Selective</option>
+                                            <option value="drive-in">Drive-In Racking</option>
+                                            <option value="radio-shuttle">Radio Shuttle</option>
+                                            <option value="vna">VNA (Very Narrow Aisle)</option>
+                                            <option value="push-back">Push-Back Racking</option>
+                                        </select>
+                                    </div>
+                                    <div class="param-group">
+                                        <label class="param-label">
+                                            Aisle Width
+                                            <span class="param-value" id="interactive-aisle-value">3.2m</span>
+                                        </label>
+                                        <input type="range" id="interactive-aisle" class="param-slider" min="1.5" max="5.0" value="3.2" step="0.1">
+                                        <div class="param-range-labels"><span>1.5m</span><span>5.0m</span></div>
+                                    </div>
+                                    <div class="param-group">
+                                        <label class="param-label">
+                                            Levels
+                                            <span class="param-value" id="interactive-levels-value">4</span>
+                                        </label>
+                                        <input type="range" id="interactive-levels" class="param-slider" min="1" max="10" value="4" step="1">
+                                        <div class="param-range-labels"><span>1</span><span>10</span></div>
+                                    </div>
+                                    <div class="param-group">
+                                        <label class="param-label">
+                                            Pallets per Bay
+                                            <span class="param-value" id="interactive-pallets-value">3</span>
+                                        </label>
+                                        <input type="range" id="interactive-pallets" class="param-slider" min="1" max="10" value="3" step="1">
+                                        <div class="param-range-labels"><span>1</span><span>10</span></div>
+                                    </div>
+                                </div>
+                                <div class="canvas-panel">
+                                    <canvas id="interactive-canvas"></canvas>
+                                    <div class="stats-panel">
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="stat-positions">0</div>
+                                            <div class="stat-label">Pallet Positions</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="stat-utilization">0%</div>
+                                            <div class="stat-label">Space Utilization</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="stat-rows">0</div>
+                                            <div class="stat-label">Rack Rows</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value" id="stat-cost">0</div>
+                                            <div class="stat-label">Est. Cost</div>
+                                        </div>
+                                        <div class="stat-item stat-full">
+                                            <div class="stat-value" id="stat-recommendation">Select a racking type</div>
+                                            <div class="stat-label">Recommended</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-actions">
                             <button type="button" class="btn btn-outline" onclick="App.goToStep(2)">← Back</button>
                             <button type="submit" class="btn btn-primary btn-lg">
@@ -421,7 +509,8 @@
         </div>
     </footer>
 
-    <script src="app.js?v=20260509d"></script>
+    <script src="layout-engine.js?v=20260510a"></script>
+    <script src="app.js?v=20260510a"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {

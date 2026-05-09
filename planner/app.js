@@ -189,15 +189,22 @@
         var form = document.getElementById('specs-form');
         var formData = new FormData(form);
 
+        // If interactive layout has been used, take params from it
+        var useInteractive = (typeof LayoutEngine !== 'undefined' && LayoutEngine.stats.totalPositions > 0);
+        var interactiveParams = useInteractive ? LayoutEngine.params : null;
+
         state.specsData = {
-            length: parseFloat(formData.get('length')) || 60,
-            width: parseFloat(formData.get('width')) || 40,
+            length: interactiveParams ? interactiveParams.warehouseLength : (parseFloat(formData.get('length')) || 60),
+            width: interactiveParams ? interactiveParams.warehouseWidth : (parseFloat(formData.get('width')) || 40),
             height: parseFloat(formData.get('height')) || 9,
             floorLoad: parseFloat(formData.get('floorLoad')) || 5000,
             palletWeight: parseFloat(formData.get('palletWeight')) || 1000,
             skuCount: parseInt(formData.get('skuCount')) || 500,
             frequency: formData.get('frequency') || 'medium',
-            rotation: formData.get('rotation') || 'either'
+            rotation: formData.get('rotation') || 'either',
+            interactiveLevels: interactiveParams ? interactiveParams.levels : null,
+            interactivePallets: interactiveParams ? interactiveParams.palletsPerLevel : null,
+            interactiveRackingType: interactiveParams ? interactiveParams.rackingType : null
         };
 
         saveProgress();
@@ -924,6 +931,49 @@
             document.addEventListener('DOMContentLoaded', initHeroPreview);
         } else {
             setTimeout(initHeroPreview, 200);
+        }
+
+        // ===== Interactive Layout Engine initialization =====
+        if (typeof LayoutEngine !== 'undefined') {
+            // Delay to ensure DOM is fully rendered
+            setTimeout(function () {
+                var canvas = document.getElementById('interactive-canvas');
+                if (canvas) {
+                    LayoutEngine.initInteractive();
+
+                    // Sync specs form fields → interactive sliders
+                    var specLength = document.getElementById('spec-length');
+                    var specWidth = document.getElementById('spec-width');
+                    if (specLength) {
+                        specLength.addEventListener('input', function () {
+                            var slider = document.getElementById('interactive-length');
+                            if (slider) {
+                                slider.value = this.value;
+                                LayoutEngine.params.warehouseLength = parseFloat(this.value) || 60;
+                                document.getElementById('interactive-length-value').textContent = this.value + 'm';
+                                LayoutEngine.calculate();
+                                LayoutEngine.draw('interactive-canvas');
+                                LayoutEngine.updateStats();
+                                LayoutEngine.updateRecommendation();
+                            }
+                        });
+                    }
+                    if (specWidth) {
+                        specWidth.addEventListener('input', function () {
+                            var slider = document.getElementById('interactive-width');
+                            if (slider) {
+                                slider.value = this.value;
+                                LayoutEngine.params.warehouseWidth = parseFloat(this.value) || 40;
+                                document.getElementById('interactive-width-value').textContent = this.value + 'm';
+                                LayoutEngine.calculate();
+                                LayoutEngine.draw('interactive-canvas');
+                                LayoutEngine.updateStats();
+                                LayoutEngine.updateRecommendation();
+                            }
+                        });
+                    }
+                }
+            }, 300);
         }
 
         // 加载数据
