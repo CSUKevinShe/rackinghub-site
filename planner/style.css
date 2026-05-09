@@ -60,7 +60,6 @@ button { cursor: pointer; font-family: inherit; }
 .hero {
     position: relative;
     padding: 5rem 1.5rem 4rem;
-    text-align: center;
     background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #1a365d 100%);
     color: white;
     overflow: hidden;
@@ -73,11 +72,18 @@ button { cursor: pointer; font-family: inherit; }
         radial-gradient(ellipse at 80% 50%, rgba(44,82,130,0.3) 0%, transparent 50%);
     pointer-events: none;
 }
-.hero-content {
+.hero-container {
     position: relative;
     z-index: 1;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+.hero-content {
+    text-align: left;
 }
 .hero-badge {
     display: inline-block;
@@ -102,18 +108,33 @@ button { cursor: pointer; font-family: inherit; }
 .hero-sub {
     font-size: 1.15rem;
     color: rgba(255,255,255,0.85);
-    max-width: 650px;
-    margin: 0 auto 2rem;
+    max-width: 550px;
+    margin: 0 0 2rem;
     line-height: 1.7;
 }
 .hero-cta-group { margin-bottom: 1.5rem; }
+.hero-cta-group .btn { margin-right: 1rem; margin-bottom: 0.5rem; }
 .hero-trust {
     display: flex;
-    justify-content: center;
     gap: 1.5rem;
     flex-wrap: wrap;
     font-size: 0.85rem;
     color: rgba(255,255,255,0.7);
+}
+
+/* Hero Preview Canvas */
+.hero-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.hero-preview canvas {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    background: #ffffff;
 }
 
 /* ===== Buttons ===== */
@@ -798,6 +819,12 @@ button { cursor: pointer; font-family: inherit; }
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .hero { padding: 3rem 1.2rem 2.5rem; }
+    .hero-container { grid-template-columns: 1fr; gap: 2rem; }
+    .hero-content { text-align: center; }
+    .hero-sub { margin: 0 auto 2rem; }
+    .hero-trust { justify-content: center; }
+    .hero-preview { order: -1; }
+    .hero-preview canvas { max-width: 360px; }
     .hero h1 { font-size: 1.8rem; }
     .hero-sub { font-size: 1rem; }
     .how-steps { grid-template-columns: 1fr; gap: 1.5rem; }

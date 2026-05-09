@@ -56,21 +56,28 @@
             <!-- Hero -->
             <div class="hero">
                 <div class="hero-bg"></div>
-                <div class="hero-content">
-                    <span class="hero-badge">Free Tool — No Registration Required</span>
-                    <h1>Design Your Warehouse Racking System in <span class="highlight">3 Minutes</span></h1>
-                    <p class="hero-sub">Get instant racking recommendations, layout diagrams, and cost estimates — tailored to your warehouse specs. Trusted by 200+ warehouses worldwide.</p>
-                    <div class="hero-cta-group">
-                        <button class="btn btn-primary btn-lg" onclick="App.goToStep(2)">
-                            Start Planning — It's Free
-                            <span class="btn-arrow">→</span>
-                        </button>
-                        <a href="/" class="btn btn-secondary btn-sm">🏠 Browse All Products on Main Site →</a>
+                <div class="hero-container">
+                    <!-- Left: Copy + CTA -->
+                    <div class="hero-content">
+                        <span class="hero-badge">Free Tool — No Registration Required</span>
+                        <h1>Design Your Warehouse Racking System in <span class="highlight">3 Minutes</span></h1>
+                        <p class="hero-sub">Get instant racking recommendations, layout diagrams, and cost estimates — tailored to your warehouse specs. Trusted by 200+ warehouses worldwide.</p>
+                        <div class="hero-cta-group">
+                            <button class="btn btn-primary btn-lg" onclick="App.goToStep(2)">
+                                Start Planning — It's Free
+                                <span class="btn-arrow">→</span>
+                            </button>
+                            <a href="/" class="btn btn-secondary btn-sm">🏠 Browse All Products on Main Site →</a>
+                        </div>
+                        <div class="hero-trust">
+                            <span>✓ 100% Free</span>
+                            <span>✓ No Email Required to Start</span>
+                            <span>✓ Instant Results</span>
+                        </div>
                     </div>
-                    <div class="hero-trust">
-                        <span>✓ 100% Free</span>
-                        <span>✓ No Email Required to Start</span>
-                        <span>✓ Instant Results</span>
+                    <!-- Right: Preview Canvas -->
+                    <div class="hero-preview">
+                        <canvas id="hero-preview-canvas" width="600" height="400"></canvas>
                     </div>
                 </div>
             </div>

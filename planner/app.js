@@ -772,6 +772,126 @@
             });
         }
 
+    // ===== Hero Preview Canvas =====
+    function drawHeroPreview() {
+        var canvas = document.getElementById('hero-preview-canvas');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+        var w = 600, h = 400;
+        canvas.width = w * 2; // 2x for retina
+        canvas.height = h * 2;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.scale(2, 2);
+
+        // 白色背景
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+
+        var pad = 40;
+        var drawW = w - pad * 2;
+        var drawH = h - pad * 2;
+
+        // 仓库外框
+        ctx.strokeStyle = '#1a365d';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(pad, pad, drawW, drawH);
+
+        // 仓库标签
+        ctx.fillStyle = '#1a365d';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Typical Warehouse Layout — 60m × 40m', w / 2, pad - 10);
+
+        // 预设参数：6条通道，每条通道 2.5m + 双排货架 2.8m
+        var numAisles = 6;
+        var aisleWidth = 2.5;
+        var doubleRackDepth = 2.8;
+        var unitWidth = aisleWidth + doubleRackDepth;
+        var totalUnits = numAisles * unitWidth;
+        var scale = drawW / 40; // 40m 仓库宽度
+
+        // 绘制双排货架 + 通道
+        var y = pad;
+        var colors = ['#1a365d', '#2c5282', '#1a365d', '#2c5282', '#1a365d', '#2c5282'];
+
+        for (var i = 0; i < numAisles; i++) {
+            var rackPx = doubleRackDepth * scale;
+            var aislePx = aisleWidth * scale;
+
+            // 双排货架（深蓝色矩形）
+            ctx.fillStyle = colors[i % 2] === '#1a365d' ? 'rgba(26, 54, 93, 0.8)' : 'rgba(44, 82, 130, 0.7)';
+            ctx.fillRect(pad, y, drawW, rackPx);
+
+            // 货架上的横梁线
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            var beamCount = Math.floor(drawW / 25);
+            for (var b = 0; b < beamCount; b++) {
+                var bx = pad + 25 + b * 25;
+                ctx.beginPath();
+                ctx.moveTo(bx, y);
+                ctx.lineTo(bx, y + rackPx);
+                ctx.stroke();
+            }
+
+            y += rackPx;
+
+            // 通道（浅黄色）
+            if (i < numAisles - 1) {
+                ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
+                ctx.fillRect(pad, y, drawW, aislePx);
+
+                ctx.fillStyle = '#d97706';
+                ctx.font = '9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Aisle ' + (i + 1), w / 2, y + aislePx / 2 + 3);
+
+                y += aislePx;
+            }
+        }
+
+        // 入口标注
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('\uD83D\uDEAA Entrance', pad + 5, pad + 14);
+
+        // 比例尺
+        var scaleBarM = 10;
+        var scaleBarPx = scaleBarM * scale;
+        var sbX = w - pad - scaleBarPx;
+        var sbY = h - 12;
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sbX, sbY);
+        ctx.lineTo(sbX + scaleBarPx, sbY);
+        ctx.stroke();
+
+        // 比例尺端点
+        ctx.beginPath();
+        ctx.moveTo(sbX, sbY - 4);
+        ctx.lineTo(sbX, sbY + 4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(sbX + scaleBarPx, sbY - 4);
+        ctx.lineTo(sbX + scaleBarPx, sbY + 4);
+        ctx.stroke();
+
+        ctx.fillStyle = '#333';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(scaleBarM + 'm', sbX + scaleBarPx / 2, sbY - 6);
+
+        // 右上角小标签
+        ctx.fillStyle = '#1a365d';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('RackingHub Planner', w - pad, pad - 10);
+    }
+
         // Canvas 布局响应式重绘
         var resizeTimer;
         window.addEventListener('resize', function () {
@@ -797,6 +917,9 @@
 
         // 加载数据
         loadData();
+
+        // 绘制 Hero 预览图
+        drawHeroPreview();
     });
 
 })();
