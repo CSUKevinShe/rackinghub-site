@@ -61,6 +61,7 @@ nav {
     font-size: 0.95rem;
 }
 .nav-links a:hover { color: var(--color-primary); }
+.nav-links .nav-active { color: var(--color-primary); font-weight: 700; border-bottom: 2px solid var(--color-primary); }
 .nav-links .nav-cta {
     background: var(--color-accent);
     color: var(--color-primary) !important;

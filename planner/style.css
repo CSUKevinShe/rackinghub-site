@@ -42,60 +42,7 @@ img { max-width: 100%; height: auto; display: block; }
 ul { list-style: none; }
 button { cursor: pointer; font-family: inherit; }
 
-/* ===== Header ===== */
-.planner-header {
-    background: var(--color-bg);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-.planner-header-inner {
-    max-width: var(--max-width);
-    margin: 0 auto;
-    padding: 0.75rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.planner-logo {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: var(--color-primary);
-}
-.planner-logo-icon { font-size: 1.5rem; }
-.planner-logo-sub {
-    font-weight: 400;
-    color: var(--color-accent);
-    font-size: 0.85rem;
-}
-.planner-header-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-.planner-header-btn {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    transition: all var(--transition);
-}
-.planner-header-btn:hover {
-    background: var(--color-bg-alt);
-    border-color: var(--color-primary);
-}
-.planner-header-cta {
-    font-size: 0.85rem;
-    color: var(--color-text-muted);
-    transition: color var(--transition);
-}
-.planner-header-cta:hover { color: var(--color-primary); }
+/* ===== Header — now uses main site's nav styles from /style.css ===== */
 
 /* ===== Container ===== */
 .container {
@@ -831,7 +778,7 @@ button { cursor: pointer; font-family: inherit; }
 
 /* ===== Print Styles ===== */
 @media print {
-    .planner-header,
+    header,
     .planner-footer,
     .progress-bar,
     .btn,
@@ -862,7 +809,6 @@ button { cursor: pointer; font-family: inherit; }
     .hero-trust { gap: 0.8rem; }
     .progress-step span { display: none; }
     .progress-line { width: 40px; }
-    .planner-header-cta { display: none; }
     .rec-metrics { grid-template-columns: repeat(2, 1fr); }
     .results-specs-summary { gap: 0.5rem; }
 }

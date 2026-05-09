@@ -8,24 +8,47 @@
     <link rel="canonical" href="https://www.rackinghub.com/planner/">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="style.css?v=20260509">
+    <link rel="stylesheet" href="/style.css?v=20260509f">
+    <link rel="stylesheet" href="style.css?v=20260509b">
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
-    <!-- ===== Header ===== -->
-    <header class="planner-header">
-        <div class="planner-header-inner">
-            <a href="/" class="planner-logo">
-                <span class="planner-logo-icon">🏭</span>
-                <span class="planner-logo-text">RackingHub <span class="planner-logo-sub">Planner</span></span>
+    <!-- ===== Header (matches main site) ===== -->
+    <header>
+        <nav>
+            <a href="/" class="logo" aria-label="RackingHub Home">
+                <img src="/images/logos/boracs-rackinghub-logo.png" alt="RackingHub - Warehouse Racking Systems" class="logo-img" width="120" height="30">
             </a>
-            <div class="planner-header-right">
-                <a href="/" class="planner-header-btn">🏠 Browse Products</a>
-                <a href="/" class="planner-header-cta">← Back to RackingHub.com</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#products">Products</a></li>
+                <li><a href="/planner/" class="nav-active">Planner</a></li>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/case-studies">Case Studies</a></li>
+                <li><a href="/faq">FAQ</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/contact" class="nav-cta">Get a Free Quote</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger" onclick="toggleMenu()" role="button" aria-label="Toggle navigation menu" tabindex="0">
+                <span></span><span></span><span></span>
             </div>
-        </div>
+        </nav>
     </header>
+    <div class="mobile-menu" id="mobileMenu" onclick="closeMenuOutside(event)">
+        <div class="mobile-menu-content">
+            <a href="/" class="mobile-menu-item">HOME</a>
+            <a href="/#products" class="mobile-menu-item">PRODUCTS</a>
+            <a href="/planner/" class="mobile-menu-item">🔧 PLANNER</a>
+            <a href="/about" class="mobile-menu-item">ABOUT US</a>
+            <a href="/blog" class="mobile-menu-item">BLOG</a>
+            <a href="/case-studies" class="mobile-menu-item">CASE STUDIES</a>
+            <a href="/faq" class="mobile-menu-item">FAQ</a>
+            <a href="/contact" class="mobile-menu-item">CONTACT</a>
+            <a href="/contact" class="mobile-menu-cta">GET A FREE QUOTE</a>
+        </div>
+    </div>
 
     <main id="app">
         <!-- ===== Page 1: Landing ===== -->
@@ -392,5 +415,18 @@
     </footer>
 
     <script src="app.js?v=20260509"></script>
+    <script>
+        // Mobile menu (matches main site)
+        function toggleMenu() {
+            document.getElementById('hamburger').classList.toggle('active');
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+        function closeMenuOutside(e) {
+            if (e.target === document.getElementById('mobileMenu')) {
+                document.getElementById('hamburger').classList.remove('active');
+                document.getElementById('mobileMenu').classList.remove('active');
+            }
+        }
+    </script>
 </body>
 </html>
