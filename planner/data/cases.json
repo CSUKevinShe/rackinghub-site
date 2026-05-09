@@ -1,0 +1,59 @@
+[
+  {
+    "id": "case-sea-ecommerce",
+    "region": "Southeast Asia",
+    "title": "E-commerce Fulfillment Warehouse",
+    "location": "Bangkok, Thailand",
+    "warehouse_area": "2,000 m²",
+    "warehouse_length": 50,
+    "warehouse_width": 40,
+    "ceiling_height": 9,
+    "pallet_positions": 5000,
+    "racking_type": "Heavy-Duty Selective Racking",
+    "racking_icon": "🏗️",
+    "description": "A fast-growing e-commerce company needed a flexible storage solution for 5,000+ SKUs with frequent daily picking operations. Heavy-duty selective racking provided 100% access to every pallet position, enabling efficient order fulfillment.",
+    "highlights": [
+      "5,000 pallet positions across 9m height",
+      "100% SKU accessibility for fast picking",
+      "Completed in 45 days including installation"
+    ]
+  },
+  {
+    "id": "case-eu-cold-chain",
+    "region": "Europe",
+    "title": "Frozen Food Cold Storage",
+    "location": "Rotterdam, Netherlands",
+    "warehouse_area": "800 m²",
+    "warehouse_length": 40,
+    "warehouse_width": 20,
+    "ceiling_height": 11,
+    "pallet_positions": 2400,
+    "racking_type": "Radio Shuttle (FIFO)",
+    "racking_icon": "❄️",
+    "description": "A food distributor needed high-density cold storage with strict FIFO rotation for perishable goods. Radio Shuttle system maximized storage density in expensive cold space while maintaining automated FIFO operation.",
+    "highlights": [
+      "2,400 pallet positions in just 800 m²",
+      "FIFO automation for food safety compliance",
+      "40% cost savings vs. traditional racking"
+    ]
+  },
+  {
+    "id": "case-latam-auto",
+    "region": "Latin America",
+    "title": "Automotive Parts Warehouse",
+    "location": "São Paulo, Brazil",
+    "warehouse_area": "1,500 m²",
+    "warehouse_length": 60,
+    "warehouse_width": 25,
+    "ceiling_height": 8,
+    "pallet_positions": 4800,
+    "racking_type": "Drive-In Racking",
+    "racking_icon": "🚗",
+    "description": "An auto parts manufacturer stored large volumes of uniform components with low SKU variety. Drive-in racking achieved maximum density at minimum cost, with LIFO rotation perfectly matching their production flow.",
+    "highlights": [
+      "4,800 pallet positions at lowest cost per pallet",
+      "LIFO rotation matched production scheduling",
+      "75% floor space utilization achieved"
+    ]
+  }
+]

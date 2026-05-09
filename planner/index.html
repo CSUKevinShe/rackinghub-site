@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RackingHub Planner — Free Warehouse Racking Calculator</title>
+    <meta name="description" content="Free warehouse racking planner tool. Get customized racking recommendations, layout diagrams, and cost estimates in minutes. No registration required.">
+    <link rel="canonical" href="https://www.rackinghub.com/planner/">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="style.css?v=20260509">
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+    <!-- ===== Header ===== -->
+    <header class="planner-header">
+        <div class="planner-header-inner">
+            <a href="/" class="planner-logo">
+                <span class="planner-logo-icon">🏭</span>
+                <span class="planner-logo-text">RackingHub <span class="planner-logo-sub">Planner</span></span>
+            </a>
+            <a href="/" class="planner-header-cta">← Back to RackingHub.com</a>
+        </div>
+    </header>
+
+    <main id="app">
+        <!-- ===== Page 1: Landing ===== -->
+        <section id="page-landing" class="page active">
+            <!-- Hero -->
+            <div class="hero">
+                <div class="hero-bg"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">Free Tool — No Registration Required</span>
+                    <h1>Design Your Warehouse Racking System in <span class="highlight">3 Minutes</span></h1>
+                    <p class="hero-sub">Get instant racking recommendations, layout diagrams, and cost estimates — tailored to your warehouse specs. Trusted by 200+ warehouses worldwide.</p>
+                    <div class="hero-cta-group">
+                        <button class="btn btn-primary btn-lg" onclick="App.goToStep(2)">
+                            Start Planning — It's Free
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                    <div class="hero-trust">
+                        <span>✓ 100% Free</span>
+                        <span>✓ No Email Required to Start</span>
+                        <span>✓ Instant Results</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <section class="section section-how">
+                <div class="container">
+                    <h2 class="section-title">How It Works</h2>
+                    <p class="section-subtitle">Three simple steps to your custom racking plan</p>
+                    <div class="how-steps">
+                        <div class="how-step">
+                            <div class="how-step-num">1</div>
+                            <div class="how-step-icon">📋</div>
+                            <h3>Tell Us About Yourself</h3>
+                            <p>Share your contact info so we can send you the detailed plan and follow up with a custom quote.</p>
+                        </div>
+                        <div class="how-step">
+                            <div class="how-step-num">2</div>
+                            <div class="how-step-icon">📐</div>
+                            <h3>Describe Your Warehouse</h3>
+                            <p>Enter warehouse dimensions, load requirements, SKU count, and access preferences (FIFO/LIFO).</p>
+                        </div>
+                        <div class="how-step">
+                            <div class="how-step-num">3</div>
+                            <div class="how-step-icon">📊</div>
+                            <h3>Get Your Plan</h3>
+                            <p>Receive 2-3 optimized racking solutions with cost estimates, layout diagrams, and efficiency comparisons.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Case Studies -->
+            <section class="section section-cases">
+                <div class="container">
+                    <h2 class="section-title">Real Warehouse Solutions</h2>
+                    <p class="section-subtitle">See how our racking systems transformed these operations</p>
+                    <div class="cases-grid" id="cases-grid">
+                        <!-- Cases injected by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="section section-cta-final">
+                <div class="container">
+                    <div class="cta-box">
+                        <h2>Ready to Optimize Your Warehouse?</h2>
+                        <p>Join 200+ businesses that used RackingHub Planner to design efficient storage solutions.</p>
+                        <button class="btn btn-primary btn-lg" onclick="App.goToStep(2)">
+                            Get Your Free Racking Plan
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- ===== Page 2: Contact Info ===== -->
+        <section id="page-contact" class="page">
+            <div class="container narrow">
+                <!-- Progress bar -->
+                <div class="progress-bar">
+                    <div class="progress-step active" data-step="1">
+                        <div class="progress-dot">1</div>
+                        <span>Contact Info</span>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-step="2">
+                        <div class="progress-dot">2</div>
+                        <span>Warehouse Specs</span>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-step="3">
+                        <div class="progress-dot">3</div>
+                        <span>Your Plan</span>
+                    </div>
+                </div>
+
+                <div class="card contact-card">
+                    <h2>Tell Us About Yourself</h2>
+                    <p class="card-subtitle">We'll send your racking plan to your email. Fields marked with * are required.</p>
+                    <form id="contact-form" class="form">
+                        <div class="form-row">
+                            <div class="form-group required">
+                                <label for="contact-name">Full Name</label>
+                                <input type="text" id="contact-name" name="name" required placeholder="John Smith">
+                            </div>
+                            <div class="form-group required">
+                                <label for="contact-email">Work Email</label>
+                                <input type="email" id="contact-email" name="email" required placeholder="john@company.com">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact-company">Company</label>
+                                <input type="text" id="contact-company" name="company" placeholder="Acme Logistics">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-phone">Phone</label>
+                                <input type="tel" id="contact-phone" name="phone" placeholder="+1 234 567 8900">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact-country">Country</label>
+                                <select id="contact-country" name="country">
+                                    <option value="">Select country...</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="SG">Singapore</option>
+                                    <option value="MY">Malaysia</option>
+                                    <option value="TH">Thailand</option>
+                                    <option value="VN">Vietnam</option>
+                                    <option value="PH">Philippines</option>
+                                    <option value="ID">Indonesia</option>
+                                    <option value="IN">India</option>
+                                    <option value="AE">UAE</option>
+                                    <option value="SA">Saudi Arabia</option>
+                                    <option value="BR">Brazil</option>
+                                    <option value="MX">Mexico</option>
+                                    <option value="ZA">South Africa</option>
+                                    <option value="NG">Nigeria</option>
+                                    <option value="CN">China</option>
+                                    <option value="JP">Japan</option>
+                                    <option value="KR">South Korea</option>
+                                    <option value="NL">Netherlands</option>
+                                    <option value="FR">France</option>
+                                    <option value="ES">Spain</option>
+                                    <option value="IT">Italy</option>
+                                    <option value="PL">Poland</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" onclick="App.goToStep(1)">← Back</button>
+                            <button type="submit" class="btn btn-primary">Continue to Warehouse Specs →</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Page 3: Warehouse Specs ===== -->
+        <section id="page-specs" class="page">
+            <div class="container narrow">
+                <!-- Progress bar -->
+                <div class="progress-bar">
+                    <div class="progress-step completed" data-step="1">
+                        <div class="progress-dot">✓</div>
+                        <span>Contact Info</span>
+                    </div>
+                    <div class="progress-line active"></div>
+                    <div class="progress-step active" data-step="2">
+                        <div class="progress-dot">2</div>
+                        <span>Warehouse Specs</span>
+                    </div>
+                    <div class="progress-line"></div>
+                    <div class="progress-step" data-step="3">
+                        <div class="progress-dot">3</div>
+                        <span>Your Plan</span>
+                    </div>
+                </div>
+
+                <div class="card specs-card">
+                    <h2>Describe Your Warehouse</h2>
+                    <p class="card-subtitle">Fill in your warehouse details to get accurate racking recommendations.</p>
+                    <form id="specs-form" class="form">
+                        <!-- Warehouse Dimensions -->
+                        <fieldset class="form-fieldset">
+                            <legend>📐 Warehouse Dimensions</legend>
+                            <div class="form-row">
+                                <div class="form-group required">
+                                    <label for="spec-length">Length (meters)</label>
+                                    <input type="number" id="spec-length" name="length" required min="10" max="500" placeholder="60">
+                                </div>
+                                <div class="form-group required">
+                                    <label for="spec-width">Width (meters)</label>
+                                    <input type="number" id="spec-width" name="width" required min="10" max="500" placeholder="40">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group required">
+                                    <label for="spec-height">Clear Ceiling Height (meters)</label>
+                                    <input type="number" id="spec-height" name="height" required min="3" max="30" step="0.5" placeholder="9">
+                                </div>
+                                <div class="form-group">
+                                    <label for="spec-floor">Floor Load Capacity (kg/m²)</label>
+                                    <input type="number" id="spec-floor" name="floorLoad" min="1000" max="50000" placeholder="5000">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Pallet & Load -->
+                        <fieldset class="form-fieldset">
+                            <legend>📦 Pallet & Load Requirements</legend>
+                            <div class="form-row">
+                                <div class="form-group required">
+                                    <label for="spec-pallet-weight">Max Pallet Weight (kg)</label>
+                                    <input type="number" id="spec-pallet-weight" name="palletWeight" required min="50" max="5000" placeholder="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="spec-sku">Number of SKUs</label>
+                                    <input type="number" id="spec-sku" name="skuCount" min="1" max="50000" placeholder="500">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Access Pattern -->
+                        <fieldset class="form-fieldset">
+                            <legend>🔄 Access Pattern</legend>
+                            <div class="form-row">
+                                <div class="form-group required">
+                                    <label for="spec-frequency">Access Frequency</label>
+                                    <select id="spec-frequency" name="frequency" required>
+                                        <option value="">Select frequency...</option>
+                                        <option value="high">High — Multiple times per day per SKU</option>
+                                        <option value="medium">Medium — Daily or every few days</option>
+                                        <option value="low">Low — Weekly or less frequent</option>
+                                    </select>
+                                </div>
+                                <div class="form-group required">
+                                    <label for="spec-rotation">Inventory Rotation</label>
+                                    <select id="spec-rotation" name="rotation" required>
+                                        <option value="">Select rotation...</option>
+                                        <option value="fifo">FIFO (First In, First Out) — Required</option>
+                                        <option value="lifo">LIFO (Last In, First Out) — OK</option>
+                                        <option value="either">Either is fine</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" onclick="App.goToStep(2)">← Back</button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Generate My Racking Plan
+                                <span class="btn-arrow">→</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Page 4: Results ===== -->
+        <section id="page-results" class="page">
+            <div class="container">
+                <!-- Progress bar -->
+                <div class="progress-bar">
+                    <div class="progress-step completed" data-step="1">
+                        <div class="progress-dot">✓</div>
+                        <span>Contact Info</span>
+                    </div>
+                    <div class="progress-line completed"></div>
+                    <div class="progress-step completed" data-step="2">
+                        <div class="progress-dot">✓</div>
+                        <span>Warehouse Specs</span>
+                    </div>
+                    <div class="progress-line completed"></div>
+                    <div class="progress-step active" data-step="3">
+                        <div class="progress-dot">3</div>
+                        <span>Your Plan</span>
+                    </div>
+                </div>
+
+                <!-- Summary header -->
+                <div class="results-header">
+                    <h2>Your Custom Racking Plan</h2>
+                    <p>Based on your warehouse specs, here are our top recommendations:</p>
+                    <div class="results-specs-summary" id="results-summary"></div>
+                </div>
+
+                <!-- Loading state -->
+                <div id="results-loading" class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Analyzing your warehouse requirements...</p>
+                </div>
+
+                <!-- Results content -->
+                <div id="results-content" class="results-content" style="display:none;">
+                    <!-- Recommendation cards -->
+                    <div class="recommendations" id="recommendations"></div>
+
+                    <!-- Comparison table -->
+                    <div class="comparison-section">
+                        <h3>Solution Comparison</h3>
+                        <div class="table-responsive">
+                            <table class="comparison-table" id="comparison-table"></table>
+                        </div>
+                    </div>
+
+                    <!-- Canvas layout -->
+                    <div class="layout-section">
+                        <h3>Recommended Layout Diagram</h3>
+                        <p class="layout-note">Top-down view of the recommended racking configuration (simplified)</p>
+                        <canvas id="layout-canvas" class="layout-canvas"></canvas>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <div class="disclaimer">
+                        <h4>⚠️ Important Disclaimer</h4>
+                        <p>This plan is a preliminary estimate generated by an automated tool. Actual racking design requires professional engineering assessment including:</p>
+                        <ul>
+                            <li>Structural engineering calculations and seismic analysis</li>
+                            <li>On-site measurement and floor condition assessment</li>
+                            <li>Local building code and fire safety compliance</li>
+                            <li>Custom CAD drawings and 3D modeling</li>
+                        </ul>
+                        <p><strong>Prices shown are rough estimates and may vary based on steel market rates, shipping costs, and project specifics. Contact our team for a detailed, binding quotation.</strong></p>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="cta-box">
+                        <h2>Get a Detailed Quotation</h2>
+                        <p>Our engineering team will review your requirements and provide a comprehensive quote with CAD drawings, structural calculations, and delivery timeline.</p>
+                        <div class="cta-actions">
+                            <button class="btn btn-primary btn-lg" onclick="App.requestQuote()">
+                                Get Detailed Quote
+                                <span class="btn-arrow">→</span>
+                            </button>
+                            <button class="btn btn-outline" onclick="window.print()">
+                                📄 Print / Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="planner-footer">
+        <div class="container">
+            <p>© <span id="footer-year"></span> RackingHub — Free Warehouse Planning Tool</p>
+            <p><a href="https://www.rackinghub.com" target="_blank">www.rackinghub.com</a> | <a href="/privacy-policy.html">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <script src="app.js?v=20260509"></script>
+</body>
+</html>

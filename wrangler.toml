@@ -16,16 +16,10 @@ pages_build_output_dir = "."
   FORMSPREE_ID = "xeerarqy"
   GA_ID = "G-HY3B0T73TJ"
 
-# 绑定（未来扩展）
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "rackinghub-db"
-# database_id = "your-d1-database-id"
+# KV 绑定（Planner 线索存储）
+[[kv_namespaces]]
+binding = "PLANNER_LEADS"
+id = "planner_leads"
 
-# [[r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "rackinghub-images"
-
-# [[kv_namespaces]]
-# binding = "CACHE"
-# id = "your-kv-namespace-id"
+# 注意：环境变量 FEISHU_WEBHOOK_URL 通过 Cloudflare Dashboard 配置
+# Pages Functions 通过 env.FEISHU_WEBHOOK_URL 访问
