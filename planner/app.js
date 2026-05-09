@@ -915,11 +915,19 @@
             showPage(pageId);
         }
 
+        // 绘制 Hero 预览图（立即 + DOMContentLoaded 兜底）
+        function initHeroPreview() {
+            if (typeof drawHeroPreview === 'function') drawHeroPreview();
+        }
+        initHeroPreview();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initHeroPreview);
+        } else {
+            setTimeout(initHeroPreview, 200);
+        }
+
         // 加载数据
         loadData();
-
-        // 绘制 Hero 预览图
-        drawHeroPreview();
     });
 
 })();
