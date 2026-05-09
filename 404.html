@@ -12,7 +12,7 @@
     <link rel="canonical" href="https://www.rackinghub.com/">
     
     
-    <link rel="stylesheet" href="/style.css?v=20260509">
+    <link rel="stylesheet" href="/style.css?v=20260509c">
 <!-- Structured Data: BreadcrumbList -->
     <script type="application/ld+json">
     {
@@ -168,6 +168,12 @@
             if(secs.length){
                 var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('animated');obs.unobserve(e.target)}})},{threshold:0.1});
                 secs.forEach(function(s){s.classList.add('animate-on-scroll');obs.observe(s)});
+            // Fallback: force show all after 3s if observer didn't trigger
+            setTimeout(function() {
+                document.querySelectorAll('.animate-on-scroll:not(.animated)').forEach(function(el) {
+                    el.classList.add('animated');
+                });
+            }, 3000);
             }
         })();
     </script>

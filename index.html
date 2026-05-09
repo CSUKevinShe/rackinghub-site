@@ -83,7 +83,7 @@
         ]
     }
     </script>
-    <link rel="stylesheet" href="/style.css?v=20260509">
+    <link rel="stylesheet" href="/style.css?v=20260509c">
 </head>
 <body>
     <header>
@@ -593,6 +593,12 @@
                 section.classList.add('animate-on-scroll');
                 observer.observe(section);
             });
+            // Fallback: force show all after 3s if observer didn't trigger
+            setTimeout(function() {
+                document.querySelectorAll('.animate-on-scroll:not(.animated)').forEach(function(el) {
+                    el.classList.add('animated');
+                });
+            }, 3000);
         })();
     </script>
 </body>
