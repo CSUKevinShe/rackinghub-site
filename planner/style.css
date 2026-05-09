@@ -72,6 +72,24 @@ button { cursor: pointer; font-family: inherit; }
     color: var(--color-accent);
     font-size: 0.85rem;
 }
+.planner-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.planner-header-btn {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    transition: all var(--transition);
+}
+.planner-header-btn:hover {
+    background: var(--color-bg-alt);
+    border-color: var(--color-primary);
+}
 .planner-header-cta {
     font-size: 0.85rem;
     color: var(--color-text-muted);
