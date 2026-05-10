@@ -9,9 +9,18 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260510c">
+    <link rel="stylesheet" href="style.css?v=20260510e">
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <!-- Three.js for 3D Preview -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -253,42 +262,110 @@
                     <div class="planner-layout">
                         <!-- Left: Parameter Sidebar -->
                         <div class="param-sidebar">
-                            <div class="param-group">
-                                <h4>Warehouse Dimensions</h4>
-                                <div class="param-slider">
-                                    <label>Length: <span id="interactive-length-value">60</span>m</label>
-                                    <input type="range" id="interactive-length" min="10" max="200" value="60" step="5">
-                                </div>
-                                <div class="param-slider">
-                                    <label>Width: <span id="interactive-width-value">40</span>m</label>
-                                    <input type="range" id="interactive-width" min="10" max="100" value="40" step="5">
+                            <!-- Warehouse Dimensions (default: expanded) -->
+                            <div class="param-group collapsible" data-group="warehouse-dims">
+                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
+                                    <span class="toggle-icon">▼</span>
+                                    <span class="toggle-label">📐 Warehouse Dimensions</span>
+                                </button>
+                                <div class="collapsible-content">
+                                    <div class="param-slider">
+                                        <label>Length: <span id="interactive-length-value">60</span>m</label>
+                                        <input type="range" id="interactive-length" min="10" max="200" value="60" step="5">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Width: <span id="interactive-width-value">40</span>m</label>
+                                        <input type="range" id="interactive-width" min="10" max="100" value="40" step="5">
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="param-group">
-                                <h4>Racking Configuration</h4>
-                                <div class="param-select">
-                                    <label>Racking Type</label>
-                                    <select id="interactive-racking">
-                                        <option value="selective-heavy">Heavy-Duty Selective</option>
-                                        <option value="selective-medium">Medium-Duty Selective</option>
-                                        <option value="drive-in">Drive-In Racking</option>
-                                        <option value="radio-shuttle">Radio Shuttle</option>
-                                        <option value="vna">VNA (Very Narrow Aisle)</option>
-                                        <option value="push-back">Push-Back Racking</option>
-                                    </select>
+                            <!-- Racking Configuration (default: expanded) -->
+                            <div class="param-group collapsible" data-group="racking-config">
+                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
+                                    <span class="toggle-icon">▼</span>
+                                    <span class="toggle-label">🏗️ Racking Configuration</span>
+                                </button>
+                                <div class="collapsible-content">
+                                    <div class="param-select">
+                                        <label>Racking Type</label>
+                                        <select id="interactive-racking">
+                                            <option value="selective-heavy">Heavy-Duty Selective</option>
+                                            <option value="selective-medium">Medium-Duty Selective</option>
+                                            <option value="drive-in">Drive-In Racking</option>
+                                            <option value="radio-shuttle">Radio Shuttle</option>
+                                            <option value="vna">VNA (Very Narrow Aisle)</option>
+                                            <option value="push-back">Push-Back Racking</option>
+                                        </select>
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Aisle Width: <span id="interactive-aisle-value">3.2</span>m</label>
+                                        <input type="range" id="interactive-aisle" min="1.5" max="5.0" value="3.2" step="0.1">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Levels: <span id="interactive-levels-value">4</span></label>
+                                        <input type="range" id="interactive-levels" min="1" max="10" value="4" step="1">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Pallets/Bay: <span id="interactive-pallets-value">3</span></label>
+                                        <input type="range" id="interactive-pallets" min="1" max="10" value="3" step="1">
+                                    </div>
                                 </div>
-                                <div class="param-slider">
-                                    <label>Aisle Width: <span id="interactive-aisle-value">3.2</span>m</label>
-                                    <input type="range" id="interactive-aisle" min="1.5" max="5.0" value="3.2" step="0.1">
+                            </div>
+
+                            <!-- Pallet & Rack Details (default: collapsed) -->
+                            <div class="param-group collapsible collapsed" data-group="pallet-details">
+                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
+                                    <span class="toggle-icon">▼</span>
+                                    <span class="toggle-label">📦 Pallet & Rack Details</span>
+                                </button>
+                                <div class="collapsible-content">
+                                    <div class="param-slider">
+                                        <label>Pallet Width: <span id="pallet-width-value">800</span>mm</label>
+                                        <input type="range" id="pallet-width" min="600" max="1400" value="800" step="50">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Pallet Depth: <span id="pallet-depth-value">1200</span>mm</label>
+                                        <input type="range" id="pallet-depth" min="800" max="1600" value="1200" step="50">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Pallet Height: <span id="pallet-height-value">1000</span>mm</label>
+                                        <input type="range" id="pallet-height" min="600" max="1800" value="1000" step="50">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Beam Height: <span id="beam-height-value">120</span>mm</label>
+                                        <input type="range" id="beam-height" min="80" max="200" value="120" step="10">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Upright Depth: <span id="upright-depth-value">1050</span>mm</label>
+                                        <input type="range" id="upright-depth" min="600" max="1200" value="1050" step="50">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Inter-Pallet Gap: <span id="pallet-gap-value">100</span>mm</label>
+                                        <input type="range" id="pallet-gap" min="50" max="200" value="100" step="10">
+                                    </div>
                                 </div>
-                                <div class="param-slider">
-                                    <label>Levels: <span id="interactive-levels-value">4</span></label>
-                                    <input type="range" id="interactive-levels" min="1" max="10" value="4" step="1">
-                                </div>
-                                <div class="param-slider">
-                                    <label>Pallets/Bay: <span id="interactive-pallets-value">3</span></label>
-                                    <input type="range" id="interactive-pallets" min="1" max="10" value="3" step="1">
+                            </div>
+
+                            <!-- Building Structure (default: collapsed) -->
+                            <div class="param-group collapsible collapsed" data-group="building-structure">
+                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
+                                    <span class="toggle-icon">▼</span>
+                                    <span class="toggle-label">🏢 Building Structure</span>
+                                </button>
+                                <div class="collapsible-content">
+                                    <div class="param-slider">
+                                        <label>Column Spacing X: <span id="column-spacing-x-value">15</span>m</label>
+                                        <input type="range" id="column-spacing-x" min="10" max="30" value="15" step="1">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Column Spacing Y: <span id="column-spacing-y-value">12</span>m</label>
+                                        <input type="range" id="column-spacing-y" min="8" max="20" value="12" step="1">
+                                    </div>
+                                    <div class="param-slider">
+                                        <label>Column Size: <span id="column-size-value">400</span>mm</label>
+                                        <input type="range" id="column-size" min="300" max="600" value="400" step="50">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -307,6 +384,11 @@
                                 <div class="view-panel">
                                     <div class="view-label">Side View — Section</div>
                                     <canvas id="canvas-side" class="view-canvas"></canvas>
+                                </div>
+                                <div class="view-panel view-panel-3d">
+                                    <div class="view-label">3D Preview — Drag to Rotate</div>
+                                    <div id="3d-loading" class="view-label" style="display:none;">Loading 3D engine...</div>
+                                    <canvas id="canvas-3d" class="view-canvas-3d"></canvas>
                                 </div>
                             </div>
                             <div class="stats-bar">
@@ -405,6 +487,11 @@
                                 <div class="view-label">Side View — Section</div>
                                 <canvas id="canvas-side" class="view-canvas"></canvas>
                             </div>
+                            <div class="view-panel view-panel-3d">
+                                <div class="view-label">3D Preview — Drag to Rotate</div>
+                                <div id="3d-loading" class="view-label" style="display:none;">Loading 3D engine...</div>
+                                <canvas id="canvas-3d" class="view-canvas-3d"></canvas>
+                            </div>
                         </div>
                     </div>
 
@@ -448,8 +535,9 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260510c"></script>
-    <script src="app.js?v=20260510c"></script>
+    <script src="layout-engine.js?v=20260510e"></script>
+    <script src="app.js?v=20260510e"></script>
+    <script src="three-view.js?v=20260510e"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {
@@ -460,6 +548,18 @@
             if (e.target === document.getElementById('mobileMenu')) {
                 document.getElementById('hamburger').classList.remove('active');
                 document.getElementById('mobileMenu').classList.remove('active');
+            }
+        }
+        // Collapsible panel toggle
+        function toggleCollapsible(btn) {
+            btn.parentElement.classList.toggle('collapsed');
+            // Persist preference
+            var group = btn.parentElement.getAttribute('data-group');
+            if (group) {
+                try {
+                    localStorage.setItem('planner_collapsed_' + group,
+                        btn.parentElement.classList.contains('collapsed') ? '1' : '0');
+                } catch(e) {}
             }
         }
     </script>

@@ -927,7 +927,7 @@ button { cursor: pointer; font-family: inherit; }
 .views-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
+    grid-template-rows: auto auto auto;
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -939,6 +939,9 @@ button { cursor: pointer; font-family: inherit; }
     min-height: 200px;
 }
 .view-panel:first-child {
+    grid-column: 1 / -1;
+}
+.view-panel-3d {
     grid-column: 1 / -1;
 }
 .view-label {
@@ -1226,6 +1229,101 @@ button { cursor: pointer; font-family: inherit; }
     }
     .view-panel:first-child {
         grid-column: auto;
+    }
+}
+
+/* ===== Collapsible Parameter Panels ===== */
+.param-group.collapsible {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.param-group.collapsible:last-child {
+    border-bottom: none;
+}
+
+.collapsible-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    padding: 0.75rem 0 0.5rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #1a365d;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    transition: color 0.2s;
+}
+
+.collapsible-toggle:hover {
+    color: #2c5282;
+}
+
+.toggle-icon {
+    transition: transform 0.2s;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+}
+
+.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.toggle-label {
+    flex: 1;
+}
+
+.collapsible-content {
+    max-height: 800px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
+    opacity: 1;
+    padding-bottom: 1rem;
+}
+
+.collapsed .collapsible-content {
+    max-height: 0;
+    opacity: 0;
+    padding-bottom: 0;
+    pointer-events: none;
+}
+
+/* ===== 3D Preview Canvas ===== */
+.view-panel-3d {
+    grid-column: 1 / -1;
+}
+
+.view-canvas-3d {
+    width: 100%;
+    height: 320px;
+    display: block;
+    border-radius: 4px;
+    cursor: grab;
+    background: #f8fafc;
+}
+
+.view-canvas-3d:active {
+    cursor: grabbing;
+}
+
+#3d-loading {
+    text-align: center;
+    padding: 1rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* ===== Dimension Lines on Canvas (styling handled in JS) ===== */
+
+/* ===== Responsive: 3D canvas height ===== */
+@media (max-width: 768px) {
+    .view-canvas-3d {
+        height: 240px !important;
     }
 }
 

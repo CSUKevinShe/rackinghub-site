@@ -97,6 +97,16 @@
         saveProgress();
         var pageMap = { 1: 'page-landing', 2: 'page-contact', 3: 'page-specs', 4: 'page-results' };
         showPage(pageMap[step] || 'page-landing');
+
+        // Initialize 3D preview when entering specs or results page
+        if ((step === 3 || step === 4) && typeof ThreePreview !== 'undefined' && !ThreePreview.initialized) {
+            setTimeout(function () {
+                var canvas3d = document.getElementById('canvas-3d');
+                if (canvas3d && canvas3d.offsetParent !== null) {
+                    ThreePreview.init();
+                }
+            }, 600);
+        }
     };
 
     // ===== 数据加载 =====
@@ -586,6 +596,13 @@
 
         LayoutEngine.calculate();
         LayoutEngine.drawAll();
+
+        // Initialize 3D preview on results page
+        if (typeof ThreePreview !== 'undefined' && document.getElementById('canvas-3d')) {
+            setTimeout(function () {
+                ThreePreview.init();
+            }, 300);
+        }
     }
 
     // ===== 请求报价（EmailJS 集成） =====
@@ -832,6 +849,46 @@
                     LayoutEngine.initInteractive();
                 }
             }, 300);
+        }
+
+        // ===== Restore collapsed panel state from localStorage =====
+        var collapsibleGroups = document.querySelectorAll('.param-group.collapsible');
+        collapsibleGroups.forEach(function (group) {
+            var key = 'planner_collapsed_' + group.getAttribute('data-group');
+            try {
+                var val = localStorage.getItem(key);
+                if (val === '0') {
+                    group.classList.remove('collapsed');
+                }
+            } catch(e) {}
+        });
+
+        // ===== 3D Preview initialization =====
+        if (typeof ThreePreview !== 'undefined') {
+            // Delay 3D init until after canvas is visible on specs page
+            var init3DOnSpecs = function () {
+                if (document.getElementById('canvas-3d') && document.getElementById('page-specs').classList.contains('active')) {
+                    ThreePreview.init();
+                }
+            };
+            setTimeout(init3DOnSpecs, 800);
+
+            // Rebuild 3D when LayoutEngine params change
+            var origSetParam = LayoutEngine.setParam;
+            if (origSetParam) {
+                // Hook into the debounced draw to also rebuild 3D
+                var threeRebuildTimer = null;
+                var _origDrawAll = LayoutEngine.drawAll;
+                LayoutEngine.drawAll = function () {
+                    _origDrawAll.apply(this, arguments);
+                    clearTimeout(threeRebuildTimer);
+                    threeRebuildTimer = setTimeout(function () {
+                        if (ThreePreview.initialized) {
+                            ThreePreview.rebuild();
+                        }
+                    }, 400);
+                };
+            }
         }
 
         // 加载数据
