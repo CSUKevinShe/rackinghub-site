@@ -923,13 +923,58 @@ button { cursor: pointer; font-family: inherit; }
     gap: 1rem;
 }
 
-.canvas-area canvas {
+/* Three-view grid */
+.views-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.view-panel {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-height: 200px;
+}
+.view-panel:first-child {
+    grid-column: 1 / -1;
+}
+.view-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+}
+.view-canvas {
+    width: 100%;
+    height: 200px;
+    display: block;
+    border-radius: 4px;
+}
+.view-panel:first-child .view-canvas {
+    height: 260px;
+}
+
+.canvas-area canvas,
+.view-canvas {
     flex: 1;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     width: 100%;
     min-height: 400px;
+}
+
+.view-canvas {
+    flex: none;
+    border-radius: 4px;
+    box-shadow: none;
+    min-height: unset;
 }
 
 /* Bottom Stats Bar (dark cards) */
@@ -1171,10 +1216,17 @@ button { cursor: pointer; font-family: inherit; }
     .param-sidebar { order: 2; max-height: none; }
     .canvas-area { order: 1; }
     .canvas-area canvas { min-height: 300px; }
+    .view-canvas { min-height: unset; }
 }
 
 @media (max-width: 640px) {
     .stats-bar { grid-template-columns: repeat(2, 1fr) !important; }
+    .views-grid {
+        grid-template-columns: 1fr;
+    }
+    .view-panel:first-child {
+        grid-column: auto;
+    }
 }
 
 @media (max-width: 480px) {

@@ -190,8 +190,8 @@
             };
         },
 
-        // ===== Draw 2D top-down view on Canvas =====
-        draw: function (canvasId) {
+        // ===== Draw top-down view (Plan) =====
+        drawTopView: function (canvasId) {
             var canvas = document.getElementById(canvasId);
             if (!canvas) return;
 
@@ -201,13 +201,13 @@
 
             // Responsive sizing
             var container = canvas.parentElement;
-            var maxW = container ? container.clientWidth - 10 : 800;
+            var maxW = container ? container.clientWidth - 16 : 600;
             maxW = Math.min(900, Math.max(300, maxW));
 
             var aspect = p.warehouseLength / p.warehouseWidth;
             var w = maxW;
             var h = Math.round(w / aspect);
-            h = Math.max(300, Math.min(600, h));
+            h = Math.max(200, Math.min(400, h));
 
             // Handle retina display
             var dpr = window.devicePixelRatio || 1;
@@ -217,7 +217,7 @@
             canvas.style.height = h + 'px';
             ctx.scale(dpr, dpr);
 
-            var pad = 45;
+            var pad = 40;
             var drawW = w - pad * 2;
             var drawH = h - pad * 2;
             var scale = drawW / p.warehouseLength;
@@ -276,7 +276,6 @@
                     var aisleStartPx = pad + (this.rows[i - 1].y + this.rows[i - 1].blockDepth) * scale;
                     ctx.fillRect(pad, aisleStartPx, drawW, rowYPx - aisleStartPx);
 
-                    // Aisle label
                     ctx.fillStyle = '#b45309';
                     ctx.font = '9px -apple-system, sans-serif';
                     ctx.textAlign = 'center';
@@ -316,7 +315,7 @@
                     ctx.stroke();
                 }
 
-                // Upright markers (small dots at bay corners)
+                // Upright markers
                 ctx.fillStyle = 'rgba(255,255,255,0.5)';
                 for (var b = 0; b <= row.baysPerRow; b++) {
                     var ux = pad + 10 + b * bayPx;
@@ -342,13 +341,13 @@
             }
 
             // Entrance zone
-            var entranceSize = 3; // 3m entrance zone
+            var entranceSize = 3;
             ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
             ctx.fillRect(pad, pad + drawH - entranceSize * scale, drawW, entranceSize * scale);
             ctx.fillStyle = '#10b981';
             ctx.font = 'bold 10px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('🚪 Loading Zone (' + entranceSize + 'm)', pad + drawW / 2, pad + drawH - entranceSize * scale / 2 + 3);
+            ctx.fillText('Loading Zone (' + entranceSize + 'm)', pad + drawW / 2, pad + drawH - entranceSize * scale / 2 + 3);
 
             // Scale bar
             var scaleBarM = this.getScaleBarM(p.warehouseLength);
@@ -381,6 +380,342 @@
             ctx.fillText(preset.name + ' — ' + this.rows.length + ' row(s), ' + this.stats.totalPositions.toLocaleString() + ' positions', pad + drawW / 2, h - 3);
         },
 
+        // ===== Draw front elevation view =====
+        drawFrontView: function (canvasId) {
+            var canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            var ctx = canvas.getContext('2d');
+            var p = this.params;
+            var preset = RACKING_PRESETS[p.rackingType] || RACKING_PRESETS['selective-heavy'];
+
+            var dpr = window.devicePixelRatio || 1;
+            var container = canvas.parentElement;
+            var w = container ? container.clientWidth - 16 : 400;
+            w = Math.min(600, Math.max(250, w));
+            var h = 200;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            ctx.scale(dpr, dpr);
+
+            var pad = 45;
+            var drawW = w - pad * 2;
+            var drawH = h - pad * 2;
+
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+
+            var levels = p.levels;
+            var palletsPerBay = p.palletsPerLevel;
+            var bayWidth = preset.rackWidth;
+            var warehouseHeight = levels * 2.0; // approximate height per level
+
+            // Compute scale: fit the bay width * palletsPerBay horizontally, and warehouseHeight vertically
+            var totalBayW = bayWidth * palletsPerBay;
+            var scaleX = drawW / totalBayW;
+            var scaleY = drawH / warehouseHeight;
+            var sc = Math.min(scaleX, scaleY);
+
+            var rackW = totalBayW * sc;
+            var rackH = warehouseHeight * sc;
+            var offsetX = pad + (drawW - rackW) / 2;
+            var offsetY = pad + (drawH - rackH); // bottom-aligned
+
+            // Ground line
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(pad - 10, pad + drawH);
+            ctx.lineTo(pad + drawW + 10, pad + drawH);
+            ctx.stroke();
+
+            // Ground hatch pattern
+            ctx.strokeStyle = 'rgba(71, 85, 105, 0.3)';
+            ctx.lineWidth = 0.5;
+            for (var gx = pad - 10; gx < pad + drawW + 10; gx += 8) {
+                ctx.beginPath();
+                ctx.moveTo(gx, pad + drawH);
+                ctx.lineTo(gx - 6, pad + drawH + 6);
+                ctx.stroke();
+            }
+
+            // Draw upright frames (vertical columns) — blue
+            var uprightWidth = 0.08; // meters (visual width)
+            var uprightPxW = uprightWidth * sc;
+            var numUprights = palletsPerBay + 1;
+
+            ctx.fillStyle = '#1e40af';
+            for (var u = 0; u < numUprights; u++) {
+                var ux = offsetX + u * bayWidth * sc - uprightPxW / 2;
+                ctx.fillRect(ux, offsetY, uprightPxW, rackH);
+            }
+
+            // Draw beams (horizontal) — orange
+            var beamH = 0.06; // visual height
+            var beamPxH = beamH * sc;
+            var levelHeight = warehouseHeight / levels;
+
+            ctx.fillStyle = '#f59e0b';
+            for (var lv = 0; lv < levels; lv++) {
+                var ly = offsetY + rackH - (lv + 1) * levelHeight * sc - beamPxH / 2;
+                ctx.fillRect(offsetX, ly, rackW, beamPxH);
+
+                // Pallet on this level — gray
+                var palletH = levelHeight * 0.6;
+                var palletPxH = palletH * sc;
+                var palletGap = 0.15; // gap between pallets
+                var palletPxGap = palletGap * sc;
+
+                ctx.fillStyle = '#94a3b8';
+                for (var pl = 0; pl < palletsPerBay; pl++) {
+                    var px = offsetX + pl * bayWidth * sc + palletPxGap;
+                    var pw = bayWidth * sc - palletPxGap * 2;
+                    var py = ly - palletPxH;
+                    ctx.fillRect(px, py, pw, palletPxH);
+
+                    // Pallet outline
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(px, py, pw, palletPxH);
+                }
+                ctx.fillStyle = '#f59e0b';
+            }
+
+            // Dimension annotations
+            // Total height on left
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            var dimX = offsetX - 15;
+            ctx.beginPath();
+            ctx.moveTo(dimX, offsetY);
+            ctx.lineTo(dimX, offsetY + rackH);
+            ctx.stroke();
+            // Arrows
+            ctx.beginPath();
+            ctx.moveTo(dimX - 3, offsetY + 5);
+            ctx.lineTo(dimX, offsetY);
+            ctx.lineTo(dimX + 3, offsetY + 5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(dimX - 3, offsetY + rackH - 5);
+            ctx.lineTo(dimX, offsetY + rackH);
+            ctx.lineTo(dimX + 3, offsetY + rackH - 5);
+            ctx.stroke();
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 9px -apple-system, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(warehouseHeight.toFixed(1) + 'm', dimX - 3, offsetY + rackH / 2 + 3);
+
+            // Level height annotations on right
+            ctx.font = '8px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#64748b';
+            for (var lv2 = 0; lv2 < levels; lv2++) {
+                var levelY = offsetY + rackH - (lv2 + 0.5) * levelHeight * sc;
+                ctx.fillText('L' + (lv2 + 1), offsetX + rackW + 5, levelY + 3);
+            }
+
+            // Bottom: bay width
+            ctx.fillStyle = '#334155';
+            ctx.font = '9px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(bayWidth.toFixed(1) + 'm × ' + palletsPerBay + ' pallets', offsetX + rackW / 2, pad + drawH + 15);
+
+            // Top label
+            ctx.fillStyle = '#1e40af';
+            ctx.font = 'bold 9px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(preset.name + ' — Elevation', w / 2, pad - 10);
+        },
+
+        // ===== Draw side section view =====
+        drawSideView: function (canvasId) {
+            var canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            var ctx = canvas.getContext('2d');
+            var p = this.params;
+            var preset = RACKING_PRESETS[p.rackingType] || RACKING_PRESETS['selective-heavy'];
+
+            var dpr = window.devicePixelRatio || 1;
+            var container = canvas.parentElement;
+            var w = container ? container.clientWidth - 16 : 400;
+            w = Math.min(600, Math.max(250, w));
+            var h = 200;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            ctx.scale(dpr, dpr);
+
+            var pad = 45;
+            var drawW = w - pad * 2;
+            var drawH = h - pad * 2;
+
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+
+            var levels = p.levels;
+            var rackDepth = preset.rackDepth; // single side depth
+            var aisleW = p.aisleWidth || preset.aisleWidth;
+            var warehouseHeight = levels * 2.0;
+
+            // Scale: fit rackDepth + aisleWidth horizontally, warehouseHeight vertically
+            var totalW = rackDepth + aisleW;
+            var scaleX = drawW / totalW;
+            var scaleY = drawH / warehouseHeight;
+            var sc = Math.min(scaleX, scaleY);
+
+            var rackW = rackDepth * sc;
+            var aisleW_Px = aisleW * sc;
+            var rackH = warehouseHeight * sc;
+            var offsetX = pad + (drawW - rackW - aisleW_Px) / 2;
+            var offsetY = pad + (drawH - rackH);
+
+            // Ground line
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(pad - 10, pad + drawH);
+            ctx.lineTo(pad + drawW + 10, pad + drawH);
+            ctx.stroke();
+
+            // Ground hatch
+            ctx.strokeStyle = 'rgba(71, 85, 105, 0.3)';
+            ctx.lineWidth = 0.5;
+            for (var gx = pad - 10; gx < pad + drawW + 10; gx += 8) {
+                ctx.beginPath();
+                ctx.moveTo(gx, pad + drawH);
+                ctx.lineTo(gx - 6, pad + drawH + 6);
+                ctx.stroke();
+            }
+
+            // Rack block (side profile) — blue
+            ctx.fillStyle = '#1e40af';
+            ctx.globalAlpha = 0.8;
+            ctx.fillRect(offsetX, offsetY, rackW, rackH);
+            ctx.globalAlpha = 1.0;
+
+            // Rack outline
+            ctx.strokeStyle = '#1e40af';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(offsetX, offsetY, rackW, rackH);
+
+            // Level dividers
+            var levelHeight = warehouseHeight / levels;
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            for (var lv = 1; lv < levels; lv++) {
+                var ly = offsetY + lv * levelHeight * sc;
+                ctx.beginPath();
+                ctx.moveTo(offsetX, ly);
+                ctx.lineTo(offsetX + rackW, ly);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // Level labels inside rack
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.font = '8px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            for (var lv2 = 0; lv2 < levels; lv2++) {
+                var levelY2 = offsetY + rackH - (lv2 + 0.5) * levelHeight * sc;
+                ctx.fillText('L' + (lv2 + 1), offsetX + 3, levelY2 + 3);
+            }
+
+            // Aisle zone — dashed rectangle
+            var aisleX = offsetX + rackW;
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 4]);
+            ctx.strokeRect(aisleX, offsetY, aisleW_Px, rackH);
+            ctx.setLineDash([]);
+
+            // Aisle label
+            ctx.fillStyle = '#b45309';
+            ctx.font = '9px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Aisle', aisleX + aisleW_Px / 2, offsetY + rackH / 2 - 5);
+            ctx.fillText('(' + aisleW.toFixed(1) + 'm)', aisleX + aisleW_Px / 2, offsetY + rackH / 2 + 8);
+
+            // Forklift icon (simplified)
+            var forkX = aisleX + aisleW_Px / 2;
+            var forkY = offsetY + rackH - 15;
+            ctx.fillStyle = '#f59e0b';
+            // Body
+            ctx.fillRect(forkX - 12, forkY - 8, 24, 10);
+            // Wheels
+            ctx.fillStyle = '#475569';
+            ctx.beginPath();
+            ctx.arc(forkX - 8, forkY + 4, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(forkX + 8, forkY + 4, 3, 0, Math.PI * 2);
+            ctx.fill();
+            // Mast
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(forkX - 10, forkY - 8);
+            ctx.lineTo(forkX - 10, forkY - 20);
+            ctx.stroke();
+            // Forks
+            ctx.beginPath();
+            ctx.moveTo(forkX - 10, forkY - 18);
+            ctx.lineTo(forkX - 4, forkY - 18);
+            ctx.stroke();
+
+            // Dimension annotations
+            // Rack depth on top
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            var dimTopY = offsetY - 12;
+            ctx.beginPath();
+            ctx.moveTo(offsetX, dimTopY);
+            ctx.lineTo(offsetX + rackW, dimTopY);
+            ctx.stroke();
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 9px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Rack ' + rackDepth.toFixed(1) + 'm', offsetX + rackW / 2, dimTopY - 3);
+
+            // Aisle width on top
+            ctx.beginPath();
+            ctx.moveTo(aisleX, dimTopY);
+            ctx.lineTo(aisleX + aisleW_Px, dimTopY);
+            ctx.stroke();
+            ctx.fillText(aisleW.toFixed(1) + 'm', aisleX + aisleW_Px / 2, dimTopY - 3);
+
+            // Total height on left
+            var dimX = offsetX - 15;
+            ctx.strokeStyle = '#334155';
+            ctx.beginPath();
+            ctx.moveTo(dimX, offsetY);
+            ctx.lineTo(dimX, offsetY + rackH);
+            ctx.stroke();
+            ctx.font = 'bold 9px -apple-system, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(warehouseHeight.toFixed(1) + 'm', dimX - 3, offsetY + rackH / 2 + 3);
+
+            // Top label
+            ctx.fillStyle = '#1e40af';
+            ctx.font = 'bold 9px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(preset.name + ' — Section', w / 2, pad - 10);
+        },
+
+        // ===== Draw all three views =====
+        drawAll: function () {
+            this.drawTopView('canvas-top');
+            this.drawFrontView('canvas-front');
+            this.drawSideView('canvas-side');
+        },
+
         // ===== Scale bar helper =====
         getScaleBarM: function (length) {
             if (length < 30) return 5;
@@ -407,7 +742,7 @@
 
             var debouncedDraw = debounce(function () {
                 engine.calculate();
-                engine.draw('layout-canvas');
+                engine.drawAll();
                 engine.updateStats();
                 engine.updateRecommendation();
             }, 150);
@@ -453,7 +788,7 @@
             // Initial draw
             engine.calculate();
             setTimeout(function () {
-                engine.draw('layout-canvas');
+                engine.drawAll();
                 engine.updateStats();
                 engine.updateRecommendation();
             }, 100);

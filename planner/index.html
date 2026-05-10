@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260510b">
+    <link rel="stylesheet" href="style.css?v=20260510c">
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
@@ -295,7 +295,20 @@
 
                         <!-- Right: Canvas Area + Stats -->
                         <div class="canvas-area">
-                            <canvas id="layout-canvas"></canvas>
+                            <div class="views-grid">
+                                <div class="view-panel">
+                                    <div class="view-label">Top View — Plan</div>
+                                    <canvas id="canvas-top" class="view-canvas"></canvas>
+                                </div>
+                                <div class="view-panel">
+                                    <div class="view-label">Front View — Elevation</div>
+                                    <canvas id="canvas-front" class="view-canvas"></canvas>
+                                </div>
+                                <div class="view-panel">
+                                    <div class="view-label">Side View — Section</div>
+                                    <canvas id="canvas-side" class="view-canvas"></canvas>
+                                </div>
+                            </div>
                             <div class="stats-bar">
                                 <div class="stat-item">
                                     <span class="stat-value" id="stat-positions">0</span>
@@ -378,8 +391,21 @@
                     <!-- Canvas layout -->
                     <div class="layout-section">
                         <h3>Recommended Layout Diagram</h3>
-                        <p class="layout-note">Top-down view of the recommended racking configuration (simplified)</p>
-                        <canvas id="layout-canvas" class="layout-canvas"></canvas>
+                        <p class="layout-note">Multi-view projection of the recommended racking configuration (simplified)</p>
+                        <div class="views-grid">
+                            <div class="view-panel">
+                                <div class="view-label">Top View — Plan</div>
+                                <canvas id="canvas-top" class="view-canvas"></canvas>
+                            </div>
+                            <div class="view-panel">
+                                <div class="view-label">Front View — Elevation</div>
+                                <canvas id="canvas-front" class="view-canvas"></canvas>
+                            </div>
+                            <div class="view-panel">
+                                <div class="view-label">Side View — Section</div>
+                                <canvas id="canvas-side" class="view-canvas"></canvas>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Disclaimer -->
@@ -422,8 +448,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260510b"></script>
-    <script src="app.js?v=20260510b"></script>
+    <script src="layout-engine.js?v=20260510c"></script>
+    <script src="app.js?v=20260510c"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {

@@ -554,151 +554,38 @@
         table.innerHTML = html;
     }
 
-    // ===== Canvas 2D 仓库布局示意图 =====
+    // ===== Canvas 2D warehouse layout — three-view rendering =====
     function renderLayout(rec) {
-        var canvas = document.getElementById('layout-canvas');
-        if (!canvas || !rec) return;
+        if (!rec) return;
 
         var specs = state.specsData;
-        var ctx = canvas.getContext('2d');
-
-        // 设置 Canvas 尺寸 — 响应式适配
-        var maxW = Math.min(900, window.innerWidth - 80);
-        maxW = Math.max(280, maxW); // 最小 280px
-        var aspect = specs.length / specs.width;
-        var w = maxW;
-        var h = Math.round(w / aspect);
-        h = Math.max(280, Math.min(600, h));
-        canvas.width = w;
-        canvas.height = h;
-
-        var pad = 50;
-        var drawW = w - pad * 2;
-        var drawH = h - pad * 2;
-
-        // 清空画布 — 白色背景
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, w, h);
-
-        // 仓库外框
-        ctx.strokeStyle = '#1a365d';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(pad, pad, drawW, drawH);
-
-        // 仓库标签
-        ctx.fillStyle = '#1a365d';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Warehouse: ' + specs.length + 'm × ' + specs.width + 'm', w / 2, pad - 15);
-
-        // 计算货架排数和通道
         var product = rec.product;
-        var aisleWidthM = product.aisle_width;
-        var rackDepthM = 1.0; // 单排货架深度
-        var doubleRackDepthM = rackDepthM * 2 + 0.8; // 双排背靠背 + 中间间隙
-        var unitWidth = aisleWidthM + doubleRackDepthM;
 
-        var numAisles = Math.max(1, Math.floor((specs.width - 2) / unitWidth));
-        var numAisles = Math.min(numAisles, 8); // 最多画 8 条通道
+        // Populate LayoutEngine params from results data and reuse drawAll
+        var levels = specs.interactiveLevels || Math.max(2, Math.floor(specs.height / 1.5));
+        var pallets = specs.interactivePallets || 3;
+        var rackingType = specs.interactiveRackingType || 'selective-heavy';
 
-        // 计算每条通道的实际分配空间
-        var totalRackSpace = numAisles * doubleRackDepthM;
-        var totalAisleSpace = numAisles * aisleWidthM;
-        var totalUnits = totalRackSpace + totalAisleSpace;
-        var scale = drawW / specs.width;
+        LayoutEngine.params.warehouseLength = specs.length;
+        LayoutEngine.params.warehouseWidth = specs.width;
+        LayoutEngine.params.rackingType = rackingType;
+        LayoutEngine.params.levels = levels;
+        LayoutEngine.params.palletsPerLevel = pallets;
 
-        // 绘制双排货架 + 通道
-        var y = pad;
-        var remainingH = drawH;
+        // Apply preset defaults
+        var RACKING_PRESETS = {
+            'selective-heavy': { aisleWidth: 3.2, rackDepth: 1.0, rackWidth: 2.7 },
+            'selective-medium': { aisleWidth: 3.0, rackDepth: 0.9, rackWidth: 2.5 },
+            'drive-in': { aisleWidth: 3.0, rackDepth: 1.0, rackWidth: 2.4 },
+            'radio-shuttle': { aisleWidth: 3.0, rackDepth: 1.0, rackWidth: 2.7 },
+            'vna': { aisleWidth: 1.8, rackDepth: 1.0, rackWidth: 2.4 },
+            'push-back': { aisleWidth: 3.2, rackDepth: 1.0, rackWidth: 2.4 }
+        };
+        var preset = RACKING_PRESETS[rackingType] || RACKING_PRESETS['selective-heavy'];
+        LayoutEngine.params.aisleWidth = preset.aisleWidth;
 
-        for (var i = 0; i < numAisles && remainingH > 30; i++) {
-            var aislePx = aisleWidthM * scale;
-            var rackPx = doubleRackDepthM * scale;
-
-            // 双排货架（深蓝色矩形）
-            ctx.fillStyle = 'rgba(26, 54, 93, 0.75)';
-            ctx.fillRect(pad, y, drawW, rackPx);
-
-            // 货架上的横梁线
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.lineWidth = 1;
-            var beamCount = Math.floor(drawW / 30);
-            for (var b = 0; b < beamCount; b++) {
-                var bx = pad + 30 + b * 30;
-                ctx.beginPath();
-                ctx.moveTo(bx, y);
-                ctx.lineTo(bx, y + rackPx);
-                ctx.stroke();
-            }
-
-            y += rackPx;
-
-            // 通道（浅黄色，标注宽度）
-            if (i < numAisles - 1 || remainingH > aislePx + 20) {
-                ctx.fillStyle = 'rgba(251, 191, 36, 0.15)';
-                ctx.fillRect(pad, y, drawW, aislePx);
-
-                ctx.fillStyle = '#d97706';
-                ctx.font = '10px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Aisle ' + (i + 1) + ' (' + aisleWidthM + 'm)', w / 2, y + aislePx / 2 + 4);
-
-                y += aislePx;
-            }
-
-            remainingH -= (rackPx + aislePx);
-        }
-
-        // 最后一排货架（如果有剩余空间）
-        if (remainingH > 20 && y < pad + drawH - 20) {
-            ctx.fillStyle = 'rgba(26, 54, 93, 0.75)';
-            ctx.fillRect(pad, y, drawW, Math.min(remainingH, rackPx));
-        }
-
-        // 入口标注
-        ctx.fillStyle = '#10b981';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('\u{1F6AA} Entrance', pad + 40, pad + 15);
-
-        // 比例尺
-        var scaleBarM = getScaleBarM(specs.length);
-        var scaleBarPx = scaleBarM * scale;
-        var sbX = pad;
-        var sbY = h - 15;
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(sbX, sbY);
-        ctx.lineTo(sbX + scaleBarPx, sbY);
-        ctx.stroke();
-        // 刻度
-        ctx.beginPath();
-        ctx.moveTo(sbX, sbY - 4);
-        ctx.lineTo(sbX, sbY + 4);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(sbX + scaleBarPx, sbY - 4);
-        ctx.lineTo(sbX + scaleBarPx, sbY + 4);
-        ctx.stroke();
-        ctx.fillStyle = '#333';
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(scaleBarM + 'm', sbX + scaleBarPx / 2, sbY - 6);
-
-        // 底部备注
-        ctx.fillStyle = '#718096';
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Top-down view — ' + numAisles + ' aisle(s) × ' + product.name, w / 2, h - 4);
-    }
-
-    // 选择合适的比例尺刻度
-    function getScaleBarM(length) {
-        if (length < 30) return 5;
-        if (length < 60) return 10;
-        if (length < 120) return 20;
-        return 50;
+        LayoutEngine.calculate();
+        LayoutEngine.drawAll();
     }
 
     // ===== 请求报价（EmailJS 集成） =====
@@ -899,13 +786,16 @@
         ctx.fillText('RackingHub Planner', w - pad, pad - 10);
     }
 
-        // Canvas 布局响应式重绘
+        // Canvas layout responsive redraw
         var resizeTimer;
         window.addEventListener('resize', function () {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function () {
                 if (state.recommendations.length > 0 && state.currentStep === 4) {
                     renderLayout(state.recommendations[0]);
+                }
+                if (typeof LayoutEngine !== 'undefined' && document.getElementById('canvas-top')) {
+                    LayoutEngine.drawAll();
                 }
             }, 250);
         });
@@ -937,7 +827,7 @@
         if (typeof LayoutEngine !== 'undefined') {
             // Delay to ensure DOM is fully rendered
             setTimeout(function () {
-                var canvas = document.getElementById('layout-canvas');
+                var canvas = document.getElementById('canvas-top');
                 if (canvas) {
                     LayoutEngine.initInteractive();
                 }
