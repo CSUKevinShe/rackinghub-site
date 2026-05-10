@@ -800,19 +800,22 @@ button { cursor: pointer; font-family: inherit; }
 /* ===== Split Layout (Specs Page) ===== */
 .planner-layout {
     display: grid;
-    grid-template-columns: 360px 1fr;
-    gap: 2rem;
-    min-height: 500px;
+    grid-template-columns: 500px 1fr;
+    gap: 1.5rem;
+    min-height: 600px;
     margin-top: 1.5rem;
+    max-width: 1600px;
 }
 
 /* Left: Parameter Sidebar */
 .param-sidebar {
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
     overflow-y: auto;
-    max-height: 600px;
+    max-height: 700px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 /* Override old .param-group styling for sidebar context */
@@ -833,37 +836,42 @@ button { cursor: pointer; font-family: inherit; }
     font-weight: 700;
 }
 
-/* P0: Inline label + value + slider layout */
+/* P0: 3-column layout — label | value badge | slider */
 .param-sidebar .param-slider {
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
+    display: grid;
+    grid-template-columns: 95px 52px 1fr;
+    align-items: center;
+    gap: 0 0.5rem;
 }
 
-.param-sidebar .param-slider label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.param-sidebar .param-slider .slider-label {
     font-size: 0.8rem;
     color: #4b5563;
-    margin-bottom: 0.35rem;
     font-weight: 500;
-    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.param-sidebar .param-slider label span {
+.param-sidebar .param-slider .slider-value {
     font-weight: 700;
-    color: #ff6b35;
-    font-size: 0.85rem;
-    background: rgba(255, 107, 53, 0.08);
-    padding: 0.1rem 0.45rem;
+    color: #1a365d;
+    font-size: 0.8rem;
+    background: #f1f5f9;
+    padding: 0.15rem 0.4rem;
     border-radius: 4px;
     white-space: nowrap;
+    border: 1px solid #e2e8f0;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
 }
 
 .param-sidebar .param-slider input[type="range"] {
     width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: #e5e7eb;
+    height: 4px;
+    border-radius: 2px;
+    background: #d1d5db;
     outline: none;
     -webkit-appearance: none;
     appearance: none;
@@ -872,10 +880,10 @@ button { cursor: pointer; font-family: inherit; }
 
 .param-sidebar .param-slider input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: #ff6b35;
+    background: #ffffff;
     border: 2px solid #1a365d;
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
@@ -883,39 +891,43 @@ button { cursor: pointer; font-family: inherit; }
 }
 
 .param-sidebar .param-slider input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    transform: scale(1.2);
+    box-shadow: 0 2px 8px rgba(26, 54, 93, 0.25);
 }
 
 .param-sidebar .param-slider input[type="range"]::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: #ff6b35;
+    background: #ffffff;
     border: 2px solid #1a365d;
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
-/* Override old .param-select for sidebar context */
+/* Override old .param-select for sidebar context — aligned with 3-col slider layout */
 .param-sidebar .param-select {
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
+    display: grid;
+    grid-template-columns: 95px 1fr;
+    align-items: center;
+    gap: 0 0.5rem;
 }
 
 .param-sidebar .param-select label {
-    display: block;
     font-size: 0.8rem;
     color: #4b5563;
-    margin-bottom: 0.35rem;
     font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
 }
 
 .param-sidebar .param-select select {
     width: 100%;
-    padding: 0.5rem 0.7rem;
+    padding: 0.4rem 0.5rem;
     border: 1px solid #d1d5db;
     border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: 0.825rem;
     font-family: inherit;
     background: #fff;
     color: var(--color-text);
@@ -935,80 +947,101 @@ button { cursor: pointer; font-family: inherit; }
     gap: 1rem;
 }
 
+/* Specs page heading */
+#page-specs > .container > h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1a365d;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
 /* Three-view grid */
 .views-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 .view-panel {
     background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
     padding: 0;
-    min-height: 200px;
+    min-height: 180px;
     overflow: hidden;
+    position: relative;
 }
 .view-panel:first-child {
     grid-column: 1 / -1;
+    min-height: 380px;
 }
 .view-label {
     font-size: 0.7rem;
-    font-weight: 700;
-    color: #ffffff;
-    background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%);
+    font-weight: 600;
+    color: #64748b;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 0.75rem;
     margin-bottom: 0;
+    position: relative;
+    z-index: 1;
 }
 .view-canvas {
     width: 100%;
-    height: 200px;
+    height: 360px;
     display: block;
     background: #ffffff;
 }
 .view-panel:first-child .view-canvas {
-    height: 260px;
+    height: 360px;
 }
-/* Add padding below title bar for canvases */
 .view-panel .view-canvas,
 .view-panel .view-canvas-3d {
-    padding: 0.5rem;
+    padding: 0;
 }
 
-/* Bottom Stats Bar (dark cards) */
+/* Bottom Stats Bar — light CAD-style cards */
 .stats-bar {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
 }
 
 .stats-bar .stat-item {
-    background: #1a365d;
-    color: white;
-    padding: 1rem;
+    background: #f8fafc;
+    color: #1a365d;
+    padding: 0.85rem 0.75rem;
     border-radius: 8px;
     text-align: center;
-    border: none;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stats-bar .stat-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .stats-bar .stat-value {
     display: block;
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 0.25rem;
-    color: white;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.2rem;
+    color: #1a365d;
+    letter-spacing: -0.02em;
 }
 
 .stats-bar .stat-label {
-    font-size: 0.75rem;
-    opacity: 0.8;
-    color: white;
-    text-transform: none;
-    letter-spacing: 0;
+    font-size: 0.65rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
     margin-top: 0;
 }
 
@@ -1245,32 +1278,32 @@ button { cursor: pointer; font-family: inherit; }
 .collapsible-toggle {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     background: none;
     border: none;
-    padding: 0.85rem 0.75rem;
-    margin: 0 -0.75rem;
+    padding: 0.6rem 0.5rem;
+    margin: 0 -0.5rem;
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 0.825rem;
     color: #1a365d;
     cursor: pointer;
     width: 100%;
     text-align: left;
     font-family: inherit;
     transition: color 0.2s, background-color 0.2s;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .collapsible-toggle:hover {
     color: #2c5282;
-    background-color: rgba(26, 54, 93, 0.04);
+    background-color: rgba(26, 54, 93, 0.03);
 }
 
 .collapsible-toggle:active {
-    background-color: rgba(26, 54, 93, 0.08);
+    background-color: rgba(26, 54, 93, 0.06);
 }
 
-/* CSS chevron arrow replacing Unicode ▼ */
+/* CSS chevron arrow */
 .toggle-icon {
     width: 16px;
     height: 16px;
@@ -1309,77 +1342,17 @@ button { cursor: pointer; font-family: inherit; }
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
     opacity: 1;
-    padding-bottom: 1rem;
+    padding: 0 0.25rem 0.75rem 0.25rem;
 }
 
 .collapsed .collapsible-content {
     max-height: 0;
     opacity: 0;
-    padding-bottom: 0;
+    padding: 0;
     pointer-events: none;
 }
 
-/* ===== 3D Preview Panel ===== */
-.view-panel-3d {
-    grid-column: 1 / -1;
-    background: linear-gradient(180deg, #f0f4f8 0%, #f8fafc 100%);
-    position: relative;
-}
-
-.view-panel-3d .view-label {
-    background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%);
-    color: #ffffff;
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0;
-    border-radius: 7px 7px 0 0;
-    letter-spacing: 0.08em;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-}
-
-.view-canvas-3d {
-    width: 100%;
-    height: 320px;
-    display: block;
-    border-radius: 0 0 4px 4px;
-    cursor: grab;
-    background: linear-gradient(180deg, #e8ecf0 0%, #f8fafc 100%);
-}
-
-.view-canvas-3d:active {
-    cursor: grabbing;
-}
-
-/* 3D Loading spinner */
-#3d-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    padding: 3rem 1rem;
-    color: #64748b;
-    font-style: normal;
-    font-size: 0.85rem;
-}
-
-#3d-loading::before {
-    content: '';
-    width: 18px;
-    height: 18px;
-    border: 2px solid #e2e8f0;
-    border-top-color: #1a365d;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
 /* ===== Dimension Lines on Canvas (styling handled in JS) ===== */
-
-/* ===== Responsive: 3D canvas height ===== */
-@media (max-width: 768px) {
-    .view-canvas-3d {
-        height: 240px !important;
-    }
-}
 
 @media (max-width: 480px) {
     .hero h1 { font-size: 1.5rem; }
