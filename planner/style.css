@@ -797,7 +797,175 @@ button { cursor: pointer; font-family: inherit; }
     text-decoration: underline;
 }
 
-/* ===== Interactive Layout Preview ===== */
+/* ===== Split Layout (Specs Page) ===== */
+.planner-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 2rem;
+    min-height: 500px;
+    margin-top: 1.5rem;
+}
+
+/* Left: Parameter Sidebar */
+.param-sidebar {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+/* Override old .param-group styling for sidebar context */
+.param-sidebar .param-group {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.param-sidebar .param-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.param-sidebar .param-group h4 {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #1a365d;
+    font-weight: 700;
+}
+
+/* Override old .param-slider for sidebar context */
+.param-sidebar .param-slider {
+    margin-bottom: 1.2rem;
+}
+
+.param-sidebar .param-slider label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.param-sidebar .param-slider label span {
+    font-weight: 700;
+    color: #1a365d;
+    font-size: 0.9rem;
+}
+
+.param-sidebar .param-slider input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #e5e7eb;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.param-sidebar .param-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: 2px solid #1a365d;
+    cursor: pointer;
+}
+
+.param-sidebar .param-slider input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: 2px solid #1a365d;
+    cursor: pointer;
+}
+
+/* Override old .param-select for sidebar context */
+.param-sidebar .param-select {
+    margin-bottom: 1.2rem;
+}
+
+.param-sidebar .param-select label {
+    display: block;
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.param-sidebar .param-select select {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: #fff;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: border-color var(--transition);
+}
+
+.param-sidebar .param-select select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Right: Canvas Area */
+.canvas-area {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.canvas-area canvas {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    width: 100%;
+    min-height: 400px;
+}
+
+/* Bottom Stats Bar (dark cards) */
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.stats-bar .stat-item {
+    background: #1a365d;
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    border: none;
+}
+
+.stats-bar .stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: white;
+}
+
+.stats-bar .stat-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    color: white;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 0;
+}
+
+/* ===== Interactive Layout Preview (Legacy — kept for backward compat) ===== */
 .interactive-preview {
     margin-top: 1.5rem;
     padding: 1.5rem;
@@ -999,6 +1167,14 @@ button { cursor: pointer; font-family: inherit; }
     .param-panel { order: 2; }
     .canvas-panel { order: 1; }
     .stats-panel { grid-template-columns: repeat(2, 1fr) !important; }
+    .planner-layout { grid-template-columns: 1fr !important; }
+    .param-sidebar { order: 2; max-height: none; }
+    .canvas-area { order: 1; }
+    .canvas-area canvas { min-height: 300px; }
+}
+
+@media (max-width: 640px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
 @media (max-width: 480px) {

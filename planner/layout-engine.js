@@ -407,7 +407,7 @@
 
             var debouncedDraw = debounce(function () {
                 engine.calculate();
-                engine.draw('interactive-canvas');
+                engine.draw('layout-canvas');
                 engine.updateStats();
                 engine.updateRecommendation();
             }, 150);
@@ -453,7 +453,7 @@
             // Initial draw
             engine.calculate();
             setTimeout(function () {
-                engine.draw('interactive-canvas');
+                engine.draw('layout-canvas');
                 engine.updateStats();
                 engine.updateRecommendation();
             }, 100);

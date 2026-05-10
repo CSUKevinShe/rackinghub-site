@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260509b">
+    <link rel="stylesheet" href="style.css?v=20260510b">
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
@@ -227,7 +227,7 @@
 
         <!-- ===== Page 3: Warehouse Specs ===== -->
         <section id="page-specs" class="page">
-            <div class="container narrow">
+            <div class="container">
                 <!-- Progress bar -->
                 <div class="progress-bar">
                     <div class="progress-step completed" data-step="1">
@@ -246,172 +246,85 @@
                     </div>
                 </div>
 
-                <div class="card specs-card">
-                    <h2>Describe Your Warehouse</h2>
-                    <p class="card-subtitle">Fill in your warehouse details to get accurate racking recommendations.</p>
-                    <form id="specs-form" class="form">
-                        <!-- Warehouse Dimensions -->
-                        <fieldset class="form-fieldset">
-                            <legend>📐 Warehouse Dimensions</legend>
-                            <div class="form-row">
-                                <div class="form-group required">
-                                    <label for="spec-length">Length (meters)</label>
-                                    <input type="number" id="spec-length" name="length" required min="10" max="500" placeholder="60">
-                                </div>
-                                <div class="form-group required">
-                                    <label for="spec-width">Width (meters)</label>
-                                    <input type="number" id="spec-width" name="width" required min="10" max="500" placeholder="40">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group required">
-                                    <label for="spec-height">Clear Ceiling Height (meters)</label>
-                                    <input type="number" id="spec-height" name="height" required min="3" max="30" step="0.5" placeholder="9">
-                                </div>
-                                <div class="form-group">
-                                    <label for="spec-floor">Floor Load Capacity (kg/m²)</label>
-                                    <input type="number" id="spec-floor" name="floorLoad" min="1000" max="50000" placeholder="5000">
-                                </div>
-                            </div>
-                        </fieldset>
+                <h2>Describe Your Warehouse</h2>
 
-                        <!-- Pallet & Load -->
-                        <fieldset class="form-fieldset">
-                            <legend>📦 Pallet & Load Requirements</legend>
-                            <div class="form-row">
-                                <div class="form-group required">
-                                    <label for="spec-pallet-weight">Max Pallet Weight (kg)</label>
-                                    <input type="number" id="spec-pallet-weight" name="palletWeight" required min="50" max="5000" placeholder="1000">
+                <!-- Split layout: left param sidebar + right canvas -->
+                <form id="specs-form" class="form">
+                    <div class="planner-layout">
+                        <!-- Left: Parameter Sidebar -->
+                        <div class="param-sidebar">
+                            <div class="param-group">
+                                <h4>Warehouse Dimensions</h4>
+                                <div class="param-slider">
+                                    <label>Length: <span id="interactive-length-value">60</span>m</label>
+                                    <input type="range" id="interactive-length" min="10" max="200" value="60" step="5">
                                 </div>
-                                <div class="form-group">
-                                    <label for="spec-sku">Number of SKUs</label>
-                                    <input type="number" id="spec-sku" name="skuCount" min="1" max="50000" placeholder="500">
+                                <div class="param-slider">
+                                    <label>Width: <span id="interactive-width-value">40</span>m</label>
+                                    <input type="range" id="interactive-width" min="10" max="100" value="40" step="5">
                                 </div>
                             </div>
-                        </fieldset>
 
-                        <!-- Access Pattern -->
-                        <fieldset class="form-fieldset">
-                            <legend>🔄 Access Pattern</legend>
-                            <div class="form-row">
-                                <div class="form-group required">
-                                    <label for="spec-frequency">Access Frequency</label>
-                                    <select id="spec-frequency" name="frequency" required>
-                                        <option value="">Select frequency...</option>
-                                        <option value="high">High — Multiple times per day per SKU</option>
-                                        <option value="medium">Medium — Daily or every few days</option>
-                                        <option value="low">Low — Weekly or less frequent</option>
+                            <div class="param-group">
+                                <h4>Racking Configuration</h4>
+                                <div class="param-select">
+                                    <label>Racking Type</label>
+                                    <select id="interactive-racking">
+                                        <option value="selective-heavy">Heavy-Duty Selective</option>
+                                        <option value="selective-medium">Medium-Duty Selective</option>
+                                        <option value="drive-in">Drive-In Racking</option>
+                                        <option value="radio-shuttle">Radio Shuttle</option>
+                                        <option value="vna">VNA (Very Narrow Aisle)</option>
+                                        <option value="push-back">Push-Back Racking</option>
                                     </select>
                                 </div>
-                                <div class="form-group required">
-                                    <label for="spec-rotation">Inventory Rotation</label>
-                                    <select id="spec-rotation" name="rotation" required>
-                                        <option value="">Select rotation...</option>
-                                        <option value="fifo">FIFO (First In, First Out) — Required</option>
-                                        <option value="lifo">LIFO (Last In, First Out) — OK</option>
-                                        <option value="either">Either is fine</option>
-                                    </select>
+                                <div class="param-slider">
+                                    <label>Aisle Width: <span id="interactive-aisle-value">3.2</span>m</label>
+                                    <input type="range" id="interactive-aisle" min="1.5" max="5.0" value="3.2" step="0.1">
                                 </div>
-                            </div>
-                        </fieldset>
-
-                        <!-- Interactive Layout Preview -->
-                        <div class="interactive-preview" id="interactive-preview">
-                            <div class="interactive-header">
-                                <h3>Live Layout Preview</h3>
-                                <p class="interactive-sub">Adjust parameters to see your warehouse layout update in real time</p>
-                            </div>
-                            <div class="interactive-body">
-                                <div class="param-panel">
-                                    <div class="param-group">
-                                        <label class="param-label">
-                                            Warehouse Length
-                                            <span class="param-value" id="interactive-length-value">60m</span>
-                                        </label>
-                                        <input type="range" id="interactive-length" class="param-slider" min="10" max="200" value="60" step="5">
-                                        <div class="param-range-labels"><span>10m</span><span>200m</span></div>
-                                    </div>
-                                    <div class="param-group">
-                                        <label class="param-label">
-                                            Warehouse Width
-                                            <span class="param-value" id="interactive-width-value">40m</span>
-                                        </label>
-                                        <input type="range" id="interactive-width" class="param-slider" min="10" max="100" value="40" step="5">
-                                        <div class="param-range-labels"><span>10m</span><span>100m</span></div>
-                                    </div>
-                                    <div class="param-group">
-                                        <label class="param-label">Racking Type</label>
-                                        <select id="interactive-racking" class="param-select">
-                                            <option value="selective-heavy">Heavy-Duty Selective</option>
-                                            <option value="selective-medium">Medium-Duty Selective</option>
-                                            <option value="drive-in">Drive-In Racking</option>
-                                            <option value="radio-shuttle">Radio Shuttle</option>
-                                            <option value="vna">VNA (Very Narrow Aisle)</option>
-                                            <option value="push-back">Push-Back Racking</option>
-                                        </select>
-                                    </div>
-                                    <div class="param-group">
-                                        <label class="param-label">
-                                            Aisle Width
-                                            <span class="param-value" id="interactive-aisle-value">3.2m</span>
-                                        </label>
-                                        <input type="range" id="interactive-aisle" class="param-slider" min="1.5" max="5.0" value="3.2" step="0.1">
-                                        <div class="param-range-labels"><span>1.5m</span><span>5.0m</span></div>
-                                    </div>
-                                    <div class="param-group">
-                                        <label class="param-label">
-                                            Levels
-                                            <span class="param-value" id="interactive-levels-value">4</span>
-                                        </label>
-                                        <input type="range" id="interactive-levels" class="param-slider" min="1" max="10" value="4" step="1">
-                                        <div class="param-range-labels"><span>1</span><span>10</span></div>
-                                    </div>
-                                    <div class="param-group">
-                                        <label class="param-label">
-                                            Pallets per Bay
-                                            <span class="param-value" id="interactive-pallets-value">3</span>
-                                        </label>
-                                        <input type="range" id="interactive-pallets" class="param-slider" min="1" max="10" value="3" step="1">
-                                        <div class="param-range-labels"><span>1</span><span>10</span></div>
-                                    </div>
+                                <div class="param-slider">
+                                    <label>Levels: <span id="interactive-levels-value">4</span></label>
+                                    <input type="range" id="interactive-levels" min="1" max="10" value="4" step="1">
                                 </div>
-                                <div class="canvas-panel">
-                                    <canvas id="interactive-canvas"></canvas>
-                                    <div class="stats-panel">
-                                        <div class="stat-item">
-                                            <div class="stat-value" id="stat-positions">0</div>
-                                            <div class="stat-label">Pallet Positions</div>
-                                        </div>
-                                        <div class="stat-item">
-                                            <div class="stat-value" id="stat-utilization">0%</div>
-                                            <div class="stat-label">Space Utilization</div>
-                                        </div>
-                                        <div class="stat-item">
-                                            <div class="stat-value" id="stat-rows">0</div>
-                                            <div class="stat-label">Rack Rows</div>
-                                        </div>
-                                        <div class="stat-item">
-                                            <div class="stat-value" id="stat-cost">0</div>
-                                            <div class="stat-label">Est. Cost</div>
-                                        </div>
-                                        <div class="stat-item stat-full">
-                                            <div class="stat-value" id="stat-recommendation">Select a racking type</div>
-                                            <div class="stat-label">Recommended</div>
-                                        </div>
-                                    </div>
+                                <div class="param-slider">
+                                    <label>Pallets/Bay: <span id="interactive-pallets-value">3</span></label>
+                                    <input type="range" id="interactive-pallets" min="1" max="10" value="3" step="1">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-outline" onclick="App.goToStep(2)">← Back</button>
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                Generate My Racking Plan
-                                <span class="btn-arrow">→</span>
-                            </button>
+                        <!-- Right: Canvas Area + Stats -->
+                        <div class="canvas-area">
+                            <canvas id="layout-canvas"></canvas>
+                            <div class="stats-bar">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-positions">0</span>
+                                    <span class="stat-label">Pallet Positions</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-utilization">0%</span>
+                                    <span class="stat-label">Space Utilization</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-rows">0</span>
+                                    <span class="stat-label">Rack Rows</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-cost">¥0</span>
+                                    <span class="stat-label">Est. Cost</span>
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 2rem;">
+                        <button type="button" class="btn btn-outline" onclick="App.goToStep(2)">← Back</button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Generate My Racking Plan
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </section>
 
@@ -505,12 +418,12 @@
     <footer class="planner-footer">
         <div class="container">
             <p>© <span id="footer-year"></span> RackingHub — Free Warehouse Planning Tool</p>
-            <p><a href="/">🏠 Main Site</a> | <a href="/products/heavy-duty-racking">Pallet Racking</a> | <a href="/contact">Get a Quote</a> | <a href="/privacy-policy.html">Privacy Policy</a></p>
+            <p><a href="/">🏠 Main Site</a> | <a href="/products/heavy-duty-racking">Pallet Racking</a> | <a href="/contact">Get a Quote</a> | <a href="/privacy-policy">Privacy Policy</a></p>
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260510a"></script>
-    <script src="app.js?v=20260510a"></script>
+    <script src="layout-engine.js?v=20260510b"></script>
+    <script src="app.js?v=20260510b"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {

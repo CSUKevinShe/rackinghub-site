@@ -937,41 +937,9 @@
         if (typeof LayoutEngine !== 'undefined') {
             // Delay to ensure DOM is fully rendered
             setTimeout(function () {
-                var canvas = document.getElementById('interactive-canvas');
+                var canvas = document.getElementById('layout-canvas');
                 if (canvas) {
                     LayoutEngine.initInteractive();
-
-                    // Sync specs form fields → interactive sliders
-                    var specLength = document.getElementById('spec-length');
-                    var specWidth = document.getElementById('spec-width');
-                    if (specLength) {
-                        specLength.addEventListener('input', function () {
-                            var slider = document.getElementById('interactive-length');
-                            if (slider) {
-                                slider.value = this.value;
-                                LayoutEngine.params.warehouseLength = parseFloat(this.value) || 60;
-                                document.getElementById('interactive-length-value').textContent = this.value + 'm';
-                                LayoutEngine.calculate();
-                                LayoutEngine.draw('interactive-canvas');
-                                LayoutEngine.updateStats();
-                                LayoutEngine.updateRecommendation();
-                            }
-                        });
-                    }
-                    if (specWidth) {
-                        specWidth.addEventListener('input', function () {
-                            var slider = document.getElementById('interactive-width');
-                            if (slider) {
-                                slider.value = this.value;
-                                LayoutEngine.params.warehouseWidth = parseFloat(this.value) || 40;
-                                document.getElementById('interactive-width-value').textContent = this.value + 'm';
-                                LayoutEngine.calculate();
-                                LayoutEngine.draw('interactive-canvas');
-                                LayoutEngine.updateStats();
-                                LayoutEngine.updateRecommendation();
-                            }
-                        });
-                    }
                 }
             }, 300);
         }
