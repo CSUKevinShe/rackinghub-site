@@ -9,10 +9,9 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260510g">
+    <link rel="stylesheet" href="style.css?v=20260510h">
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <!-- Three.js importmap disabled — 3D preview hidden -->
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -41,7 +40,7 @@
         <div class="mobile-menu-content">
             <a href="/" class="mobile-menu-item">HOME</a>
             <a href="/#products" class="mobile-menu-item">PRODUCTS</a>
-            <a href="/planner/" class="mobile-menu-item">🔧 PLANNER</a>
+            <a href="/planner/" class="mobile-menu-item">PLANNER</a>
             <a href="/about" class="mobile-menu-item">ABOUT US</a>
             <a href="/blog" class="mobile-menu-item">BLOG</a>
             <a href="/case-studies" class="mobile-menu-item">CASE STUDIES</a>
@@ -68,7 +67,7 @@
                                 Start Planning — It's Free
                                 <span class="btn-arrow">→</span>
                             </button>
-                            <a href="/" class="btn btn-secondary btn-sm">🏠 Browse All Products on Main Site →</a>
+                            <a href="/" class="btn btn-secondary btn-sm">Browse All Products on Main Site →</a>
                         </div>
                         <div class="hero-trust">
                             <span>✓ 100% Free</span>
@@ -226,201 +225,276 @@
             </div>
         </section>
 
-        <!-- ===== Page 3: Warehouse Specs ===== -->
-        <section id="page-specs" class="page">
-            <div class="container">
+        <!-- ===== Page 3: Warehouse Specs (BENCHMARK STRUCTURE) ===== -->
+        <section id="page-specs" class="page page-specs-benchmark">
+            <div class="specs-container">
                 <!-- Progress bar -->
-                <div class="progress-bar">
-                    <div class="progress-step completed" data-step="1">
-                        <div class="progress-dot">✓</div>
-                        <span>Contact Info</span>
-                    </div>
-                    <div class="progress-line active"></div>
-                    <div class="progress-step active" data-step="2">
-                        <div class="progress-dot">2</div>
-                        <span>Warehouse Specs</span>
-                    </div>
-                    <div class="progress-line"></div>
-                    <div class="progress-step" data-step="3">
-                        <div class="progress-dot">3</div>
-                        <span>Your Plan</span>
+                <div class="specs-progress">
+                    <div class="progress-bar">
+                        <div class="progress-step completed" data-step="1">
+                            <div class="progress-dot">✓</div>
+                            <span>Contact Info</span>
+                        </div>
+                        <div class="progress-line active"></div>
+                        <div class="progress-step active" data-step="2">
+                            <div class="progress-dot">2</div>
+                            <span>Warehouse Specs</span>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step" data-step="3">
+                            <div class="progress-dot">3</div>
+                            <span>Your Plan</span>
+                        </div>
                     </div>
                 </div>
 
-                <h2>Describe Your Warehouse</h2>
-
-                <!-- Split layout: left param sidebar + right canvas -->
-                <form id="specs-form" class="form">
-                    <div class="planner-layout">
-                        <!-- Left: Parameter Sidebar -->
-                        <div class="param-sidebar">
-                            <!-- Warehouse Dimensions (default: expanded) -->
-                            <div class="param-group collapsible" data-group="warehouse-dims">
-                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
-                                    <span class="toggle-icon"></span>
-                                    <span class="toggle-label">📐 Warehouse Dimensions</span>
-                                </button>
-                                <div class="collapsible-content">
-                                    <div class="param-slider">
-                                        <span class="slider-label">Length</span>
-                                        <span class="slider-value" id="interactive-length-value">60 m</span>
-                                        <input type="range" id="interactive-length" min="10" max="200" value="60" step="5">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Width</span>
-                                        <span class="slider-value" id="interactive-width-value">40 m</span>
-                                        <input type="range" id="interactive-width" min="10" max="100" value="40" step="5">
-                                    </div>
+                <!-- Main planner layout: left params + right canvas -->
+                <div class="planner-workspace">
+                    <!-- ===== LEFT: Parameter Panel (benchmark: collapsible sections with numeric inputs) ===== -->
+                    <aside class="params-panel">
+                        <!-- 1. Warehouse Dimensions -->
+                        <div class="param-section collapsible" data-group="warehouse-dims">
+                            <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
+                                <span class="param-section-icon"></span>
+                                <span class="param-section-title">Warehouse Dimensions</span>
+                            </button>
+                            <div class="param-section-body">
+                                <div class="param-field">
+                                    <label for="param-length">Width</label>
+                                    <input type="number" id="param-length" value="60" min="10" max="200" step="1" class="param-input">
+                                    <span class="param-unit">m</span>
                                 </div>
-                            </div>
-
-                            <!-- Racking Configuration (default: expanded) -->
-                            <div class="param-group collapsible" data-group="racking-config">
-                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
-                                    <span class="toggle-icon"></span>
-                                    <span class="toggle-label">🏗️ Racking Configuration</span>
-                                </button>
-                                <div class="collapsible-content">
-                                    <div class="param-select">
-                                        <label>Racking Type</label>
-                                        <select id="interactive-racking">
-                                            <option value="selective-heavy">Heavy-Duty Selective</option>
-                                            <option value="selective-medium">Medium-Duty Selective</option>
-                                            <option value="drive-in">Drive-In Racking</option>
-                                            <option value="radio-shuttle">Radio Shuttle</option>
-                                            <option value="vna">VNA (Very Narrow Aisle)</option>
-                                            <option value="push-back">Push-Back Racking</option>
-                                        </select>
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Aisle Width</span>
-                                        <span class="slider-value" id="interactive-aisle-value">3.2 m</span>
-                                        <input type="range" id="interactive-aisle" min="1.5" max="5.0" value="3.2" step="0.1">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Levels</span>
-                                        <span class="slider-value" id="interactive-levels-value">4</span>
-                                        <input type="range" id="interactive-levels" min="1" max="10" value="4" step="1">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Pallets/Bay</span>
-                                        <span class="slider-value" id="interactive-pallets-value">3</span>
-                                        <input type="range" id="interactive-pallets" min="1" max="10" value="3" step="1">
-                                    </div>
+                                <div class="param-field">
+                                    <label for="param-width">Length</label>
+                                    <input type="number" id="param-width" value="40" min="10" max="100" step="1" class="param-input">
+                                    <span class="param-unit">m</span>
                                 </div>
-                            </div>
-
-                            <!-- Pallet & Rack Details (default: collapsed) -->
-                            <div class="param-group collapsible collapsed" data-group="pallet-details">
-                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
-                                    <span class="toggle-icon"></span>
-                                    <span class="toggle-label">📦 Pallet & Rack Details</span>
-                                </button>
-                                <div class="collapsible-content">
-                                    <div class="param-slider">
-                                        <span class="slider-label">Pallet Width</span>
-                                        <span class="slider-value" id="pallet-width-value">800 mm</span>
-                                        <input type="range" id="pallet-width" min="600" max="1400" value="800" step="50">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Pallet Depth</span>
-                                        <span class="slider-value" id="pallet-depth-value">1200 mm</span>
-                                        <input type="range" id="pallet-depth" min="800" max="1600" value="1200" step="50">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Pallet Height</span>
-                                        <span class="slider-value" id="pallet-height-value">1000 mm</span>
-                                        <input type="range" id="pallet-height" min="600" max="1800" value="1000" step="50">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Beam Height</span>
-                                        <span class="slider-value" id="beam-height-value">120 mm</span>
-                                        <input type="range" id="beam-height" min="80" max="200" value="120" step="10">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Upright Depth</span>
-                                        <span class="slider-value" id="upright-depth-value">1050 mm</span>
-                                        <input type="range" id="upright-depth" min="600" max="1200" value="1050" step="50">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Inter-Pallet Gap</span>
-                                        <span class="slider-value" id="pallet-gap-value">100 mm</span>
-                                        <input type="range" id="pallet-gap" min="50" max="200" value="100" step="10">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Building Structure (default: collapsed) -->
-                            <div class="param-group collapsible collapsed" data-group="building-structure">
-                                <button type="button" class="collapsible-toggle" onclick="toggleCollapsible(this)">
-                                    <span class="toggle-icon"></span>
-                                    <span class="toggle-label">🏢 Building Structure</span>
-                                </button>
-                                <div class="collapsible-content">
-                                    <div class="param-slider">
-                                        <span class="slider-label">Column Spacing X</span>
-                                        <span class="slider-value" id="column-spacing-x-value">15 m</span>
-                                        <input type="range" id="column-spacing-x" min="10" max="30" value="15" step="1">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Column Spacing Y</span>
-                                        <span class="slider-value" id="column-spacing-y-value">12 m</span>
-                                        <input type="range" id="column-spacing-y" min="8" max="20" value="12" step="1">
-                                    </div>
-                                    <div class="param-slider">
-                                        <span class="slider-label">Column Size</span>
-                                        <span class="slider-value" id="column-size-value">400 mm</span>
-                                        <input type="range" id="column-size" min="300" max="600" value="400" step="50">
-                                    </div>
+                                <div class="param-field">
+                                    <label for="param-height">Height</label>
+                                    <input type="number" id="param-height" value="6" min="3" max="15" step="0.5" class="param-input">
+                                    <span class="param-unit">m</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Right: Canvas Area + Stats -->
-                        <div class="canvas-area">
-                            <div class="views-grid">
-                                <div class="view-panel">
-                                    <div class="view-label">Top View — Plan</div>
-                                    <canvas id="canvas-top" class="view-canvas"></canvas>
+                        <!-- 2. Column Spacing -->
+                        <div class="param-section collapsible" data-group="column-spacing">
+                            <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
+                                <span class="param-section-icon"></span>
+                                <span class="param-section-title">Column Spacing</span>
+                            </button>
+                            <div class="param-section-body">
+                                <div class="param-field">
+                                    <label for="param-col-x">X</label>
+                                    <input type="number" id="param-col-x" value="15" min="8" max="30" step="1" class="param-input">
+                                    <span class="param-unit">m</span>
                                 </div>
-                                <div class="view-panel">
-                                    <div class="view-label">Front View — Elevation</div>
-                                    <canvas id="canvas-front" class="view-canvas"></canvas>
-                                </div>
-                                <div class="view-panel">
-                                    <div class="view-label">Side View — Section</div>
-                                    <canvas id="canvas-side" class="view-canvas"></canvas>
-                                </div>
-                            </div>
-                            <div class="stats-bar">
-                                <div class="stat-item">
-                                    <span class="stat-value" id="stat-positions">0</span>
-                                    <span class="stat-label">Pallet Positions</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-value" id="stat-utilization">0%</span>
-                                    <span class="stat-label">Space Utilization</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-value" id="stat-rows">0</span>
-                                    <span class="stat-label">Rack Rows</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-value" id="stat-cost">¥0</span>
-                                    <span class="stat-label">Est. Cost</span>
+                                <div class="param-field">
+                                    <label for="param-col-y">Y</label>
+                                    <input type="number" id="param-col-y" value="12" min="6" max="20" step="1" class="param-input">
+                                    <span class="param-unit">m</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-actions" style="margin-top: 2rem;">
-                        <button type="button" class="btn btn-outline" onclick="App.goToStep(2)">← Back</button>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            Generate My Racking Plan
-                            <span class="btn-arrow">→</span>
-                        </button>
+                        <!-- 3. Pallet Dimensions -->
+                        <div class="param-section collapsible collapsed" data-group="pallet-dims">
+                            <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
+                                <span class="param-section-icon"></span>
+                                <span class="param-section-title">Pallet Dimensions</span>
+                            </button>
+                            <div class="param-section-body">
+                                <div class="param-field">
+                                    <label for="param-pallet-w">Width</label>
+                                    <input type="number" id="param-pallet-w" value="1200" min="800" max="1600" step="50" class="param-input">
+                                    <span class="param-unit">mm</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-pallet-d">Depth</label>
+                                    <input type="number" id="param-pallet-d" value="800" min="600" max="1400" step="50" class="param-input">
+                                    <span class="param-unit">mm</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-pallet-h">Height</label>
+                                    <input type="number" id="param-pallet-h" value="1500" min="600" max="2000" step="50" class="param-input">
+                                    <span class="param-unit">mm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Rack Specifications -->
+                        <div class="param-section collapsible" data-group="rack-specs">
+                            <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
+                                <span class="param-section-icon"></span>
+                                <span class="param-section-title">Rack Specifications</span>
+                            </button>
+                            <div class="param-section-body">
+                                <div class="param-field">
+                                    <label for="param-rack-type">Racking Type</label>
+                                    <select id="param-rack-type" class="param-input param-select">
+                                        <option value="selective-heavy">Heavy-Duty Selective</option>
+                                        <option value="selective-medium">Medium-Duty Selective</option>
+                                        <option value="drive-in">Drive-In Racking</option>
+                                        <option value="radio-shuttle">Radio Shuttle</option>
+                                        <option value="vna">VNA (Very Narrow Aisle)</option>
+                                        <option value="push-back">Push-Back Racking</option>
+                                    </select>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-rack-width">Rack Width (Bay)</label>
+                                    <input type="number" id="param-rack-width" value="2.7" min="1.5" max="4.0" step="0.1" class="param-input">
+                                    <span class="param-unit">m</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-rack-depth">Rack Depth</label>
+                                    <input type="number" id="param-rack-depth" value="1.0" min="0.6" max="1.5" step="0.1" class="param-input">
+                                    <span class="param-unit">m</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-rack-height">Rack Height</label>
+                                    <input type="number" id="param-rack-height" value="6.0" min="2" max="15" step="0.5" class="param-input">
+                                    <span class="param-unit">m</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-beam-h">Beam Height</label>
+                                    <input type="number" id="param-beam-h" value="120" min="80" max="200" step="10" class="param-input">
+                                    <span class="param-unit">mm</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-upright-d">Upright Depth</label>
+                                    <input type="number" id="param-upright-d" value="80" min="60" max="120" step="10" class="param-input">
+                                    <span class="param-unit">mm</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-levels">Number of Levels</label>
+                                    <input type="number" id="param-levels" value="4" min="1" max="10" step="1" class="param-input">
+                                    <span class="param-unit"></span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-pallets-level">Pallets Per Level</label>
+                                    <input type="number" id="param-pallets-level" value="2" min="1" max="10" step="1" class="param-input">
+                                    <span class="param-unit"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Aisle Width -->
+                        <div class="param-section collapsible" data-group="aisle-width">
+                            <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
+                                <span class="param-section-icon"></span>
+                                <span class="param-section-title">Aisle Width</span>
+                            </button>
+                            <div class="param-section-body">
+                                <div class="param-field param-field-slider">
+                                    <label for="param-aisle-selective">Selective Pallet</label>
+                                    <input type="number" id="param-aisle-selective" value="3.2" min="1.5" max="5.0" step="0.1" class="param-input param-input-slider">
+                                    <span class="param-unit">m</span>
+                                    <input type="range" class="param-slider-track" id="slider-aisle-selective" min="1.5" max="5.0" step="0.1" value="3.2">
+                                </div>
+                                <div class="param-field param-field-slider">
+                                    <label for="param-aisle-drivein">Drive-In Racking</label>
+                                    <input type="number" id="param-aisle-drivein" value="3.0" min="1.5" max="5.0" step="0.1" class="param-input param-input-slider">
+                                    <span class="param-unit">m</span>
+                                    <input type="range" class="param-slider-track" id="slider-aisle-drivein" min="1.5" max="5.0" step="0.1" value="3.0">
+                                </div>
+                                <div class="param-field param-field-slider">
+                                    <label for="param-aisle-shuttle">Radio Shuttle</label>
+                                    <input type="number" id="param-aisle-shuttle" value="3.0" min="1.5" max="5.0" step="0.1" class="param-input param-input-slider">
+                                    <span class="param-unit">m</span>
+                                    <input type="range" class="param-slider-track" id="slider-aisle-shuttle" min="1.5" max="5.0" step="0.1" value="3.0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Stats Summary (inline, not collapsible) -->
+                        <div class="stats-inline">
+                            <div class="stat-inline-item">
+                                <span class="stat-inline-value" id="stat-positions">0</span>
+                                <span class="stat-inline-label">Positions</span>
+                            </div>
+                            <div class="stat-inline-item">
+                                <span class="stat-inline-value" id="stat-utilization">0%</span>
+                                <span class="stat-inline-label">Utilization</span>
+                            </div>
+                            <div class="stat-inline-item">
+                                <span class="stat-inline-value" id="stat-rows">0</span>
+                                <span class="stat-inline-label">Rows</span>
+                            </div>
+                            <div class="stat-inline-item">
+                                <span class="stat-inline-value" id="stat-cost">¥0</span>
+                                <span class="stat-inline-label">Est. Cost</span>
+                            </div>
+                        </div>
+
+                        <!-- Recommendation mini -->
+                        <div class="rec-mini">
+                            <span class="rec-mini-label">Recommendation:</span>
+                            <span class="rec-mini-text" id="stat-recommendation">—</span>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="param-actions">
+                            <button type="button" class="btn-param btn-param-outline" onclick="App.goToStep(2)">← Back</button>
+                            <button type="button" class="btn-param btn-param-primary" id="btn-generate-plan">Generate Plan →</button>
+                        </div>
+                    </aside>
+
+                    <!-- ===== RIGHT: Canvas Area (benchmark: large top-down + front + side) ===== -->
+                    <div class="canvas-workspace">
+                        <!-- Top nav tabs -->
+                        <div class="canvas-tabs">
+                            <button class="canvas-tab active" data-tab="2d">2D Layout</button>
+                            <button class="canvas-tab" data-tab="3d">3D Preview</button>
+                        </div>
+
+                        <!-- 2D Layout View -->
+                        <div class="canvas-view active" id="view-2d">
+                            <!-- Main top-down plan view -->
+                            <div class="canvas-main">
+                                <div class="canvas-header">
+                                    <span class="canvas-title">Top View — Warehouse Plan</span>
+                                </div>
+                                <canvas id="canvas-top" class="view-canvas"></canvas>
+                            </div>
+
+                            <!-- Bottom: Front + Side views side by side -->
+                            <div class="canvas-bottom">
+                                <div class="canvas-sub">
+                                    <div class="canvas-header">
+                                        <span class="canvas-title">Front View — Elevation</span>
+                                    </div>
+                                    <canvas id="canvas-front" class="view-canvas-sub"></canvas>
+                                </div>
+                                <div class="canvas-sub">
+                                    <div class="canvas-header">
+                                        <span class="canvas-title">Side View — Section</span>
+                                    </div>
+                                    <canvas id="canvas-side" class="view-canvas-sub"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3D Preview View (placeholder) -->
+                        <div class="canvas-view" id="view-3d">
+                            <div class="canvas-main">
+                                <div class="canvas-header">
+                                    <span class="canvas-title">3D Preview</span>
+                                </div>
+                                <div class="canvas-3d-placeholder" id="canvas-3d-container">
+                                    <canvas id="canvas-3d"></canvas>
+                                    <div class="canvas-3d-hint">3D preview loading...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom status bar -->
+                        <div class="canvas-status">
+                            <span class="canvas-status-item" id="status-racking-type">Heavy-Duty Selective</span>
+                            <span class="canvas-status-item" id="status-positions">0 pallet positions</span>
+                            <span class="canvas-status-item" id="status-dimensions">60m × 40m</span>
+                        </div>
                     </div>
-                </form>
+                </div>
             </div>
         </section>
 
@@ -474,19 +548,19 @@
                     <!-- Canvas layout -->
                     <div class="layout-section">
                         <h3>Recommended Layout Diagram</h3>
-                        <p class="layout-note">Multi-view projection of the recommended racking configuration (simplified)</p>
+                        <p class="layout-note">Multi-view projection of the recommended racking configuration</p>
                         <div class="views-grid">
                             <div class="view-panel">
                                 <div class="view-label">Top View — Plan</div>
-                                <canvas id="canvas-top" class="view-canvas"></canvas>
+                                <canvas id="canvas-top-results" class="view-canvas"></canvas>
                             </div>
                             <div class="view-panel">
                                 <div class="view-label">Front View — Elevation</div>
-                                <canvas id="canvas-front" class="view-canvas"></canvas>
+                                <canvas id="canvas-front-results" class="view-canvas"></canvas>
                             </div>
                             <div class="view-panel">
                                 <div class="view-label">Side View — Section</div>
-                                <canvas id="canvas-side" class="view-canvas"></canvas>
+                                <canvas id="canvas-side-results" class="view-canvas"></canvas>
                             </div>
                         </div>
                     </div>
@@ -514,7 +588,7 @@
                                 <span class="btn-arrow">→</span>
                             </button>
                             <button class="btn btn-outline" onclick="window.print()">
-                                📄 Print / Save as PDF
+                                Print / Save as PDF
                             </button>
                         </div>
                     </div>
@@ -527,13 +601,12 @@
     <footer class="planner-footer">
         <div class="container">
             <p>© <span id="footer-year"></span> RackingHub — Free Warehouse Planning Tool</p>
-            <p><a href="/">🏠 Main Site</a> | <a href="/products/heavy-duty-racking">Pallet Racking</a> | <a href="/contact">Get a Quote</a> | <a href="/privacy-policy">Privacy Policy</a></p>
+            <p><a href="/">Main Site</a> | <a href="/products/heavy-duty-racking">Pallet Racking</a> | <a href="/contact">Get a Quote</a> | <a href="/privacy-policy">Privacy Policy</a></p>
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260510g"></script>
-    <script src="app.js?v=20260510g"></script>
-    <!-- <script src="three-view.js?v=20260510f"></script> -->
+    <script src="layout-engine.js?v=20260510h"></script>
+    <script src="app.js?v=20260510h"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {
@@ -549,7 +622,6 @@
         // Collapsible panel toggle
         function toggleCollapsible(btn) {
             btn.parentElement.classList.toggle('collapsed');
-            // Persist preference
             var group = btn.parentElement.getAttribute('data-group');
             if (group) {
                 try {
