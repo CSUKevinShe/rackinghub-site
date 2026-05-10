@@ -604,16 +604,17 @@
                 // Pallets — tan/beige blocks sitting on beam
                 var palletH = levelHeight * 0.55;
                 var palletPxH = palletH * sc;
-                var palletGap = 0.1;
-                var palletPxGap = palletGap * sc;
+                var palletGapM = 0.08; // 8cm gap between pallets
+                var palletPxGap = palletGapM * sc;
+                var singlePalletW = bayWidth / palletsPerBay; // width of one pallet
+                var singlePalletPxW = singlePalletW * sc - palletPxGap * 2;
                 ctx.fillStyle = C.palletBg;
                 ctx.strokeStyle = C.pallet;
                 ctx.lineWidth = 0.6;
                 for (var pl = 0; pl < palletsPerBay; pl++) {
-                    var px = offsetX + pl * bayWidth * sc + palletPxGap;
-                    var pw = bayWidth * sc - palletPxGap * 2;
-                    ctx.fillRect(px, ly - palletPxH, pw, palletPxH);
-                    ctx.strokeRect(px, ly - palletPxH, pw, palletPxH);
+                    var px = offsetX + pl * singlePalletW * sc + palletPxGap;
+                    ctx.fillRect(px, ly - palletPxH, singlePalletPxW, palletPxH);
+                    ctx.strokeRect(px, ly - palletPxH, singlePalletPxW, palletPxH);
                 }
             }
 
