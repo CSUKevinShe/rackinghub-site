@@ -817,15 +817,13 @@ button { cursor: pointer; font-family: inherit; }
 
 /* Override old .param-group styling for sidebar context */
 .param-sidebar .param-group {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.param-sidebar .param-group:last-child {
-    border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
+    border-bottom: none;
+}
+
+.param-sidebar .param-group:not(:last-child) {
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .param-sidebar .param-group h4 {
@@ -835,24 +833,30 @@ button { cursor: pointer; font-family: inherit; }
     font-weight: 700;
 }
 
-/* Override old .param-slider for sidebar context */
+/* P0: Inline label + value + slider layout */
 .param-sidebar .param-slider {
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
 }
 
 .param-sidebar .param-slider label {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #4b5563;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
     font-weight: 500;
+    line-height: 1.3;
 }
 
 .param-sidebar .param-slider label span {
     font-weight: 700;
-    color: #1a365d;
-    font-size: 0.9rem;
+    color: #ff6b35;
+    font-size: 0.85rem;
+    background: rgba(255, 107, 53, 0.08);
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 .param-sidebar .param-slider input[type="range"] {
@@ -871,36 +875,44 @@ button { cursor: pointer; font-family: inherit; }
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: #ff6b35;
     border: 2px solid #1a365d;
     cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.param-sidebar .param-slider input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
 .param-sidebar .param-slider input[type="range"]::-moz-range-thumb {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: #ff6b35;
     border: 2px solid #1a365d;
     cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
 /* Override old .param-select for sidebar context */
 .param-sidebar .param-select {
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
 }
 
 .param-sidebar .param-select label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #4b5563;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
     font-weight: 500;
 }
 
 .param-sidebar .param-select select {
     width: 100%;
-    padding: 0.6rem 0.8rem;
+    padding: 0.5rem 0.7rem;
     border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -935,49 +947,36 @@ button { cursor: pointer; font-family: inherit; }
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 0.5rem;
+    padding: 0;
     min-height: 200px;
+    overflow: hidden;
 }
 .view-panel:first-child {
     grid-column: 1 / -1;
 }
-.view-panel-3d {
-    grid-column: 1 / -1;
-}
 .view-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-    padding-left: 0.25rem;
+    letter-spacing: 0.08em;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0;
 }
 .view-canvas {
     width: 100%;
     height: 200px;
     display: block;
-    border-radius: 4px;
+    background: #ffffff;
 }
 .view-panel:first-child .view-canvas {
     height: 260px;
 }
-
-.canvas-area canvas,
-.view-canvas {
-    flex: 1;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    width: 100%;
-    min-height: 400px;
-}
-
-.view-canvas {
-    flex: none;
-    border-radius: 4px;
-    box-shadow: none;
-    min-height: unset;
+/* Add padding below title bar for canvases */
+.view-panel .view-canvas,
+.view-panel .view-canvas-3d {
+    padding: 0.5rem;
 }
 
 /* Bottom Stats Bar (dark cards) */
@@ -1246,10 +1245,11 @@ button { cursor: pointer; font-family: inherit; }
 .collapsible-toggle {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
     background: none;
     border: none;
-    padding: 0.75rem 0 0.5rem;
+    padding: 0.85rem 0.75rem;
+    margin: 0 -0.75rem;
     font-weight: 700;
     font-size: 0.875rem;
     color: #1a365d;
@@ -1257,17 +1257,43 @@ button { cursor: pointer; font-family: inherit; }
     width: 100%;
     text-align: left;
     font-family: inherit;
-    transition: color 0.2s;
+    transition: color 0.2s, background-color 0.2s;
+    border-radius: 6px;
 }
 
 .collapsible-toggle:hover {
     color: #2c5282;
+    background-color: rgba(26, 54, 93, 0.04);
 }
 
+.collapsible-toggle:active {
+    background-color: rgba(26, 54, 93, 0.08);
+}
+
+/* CSS chevron arrow replacing Unicode ▼ */
 .toggle-icon {
-    transition: transform 0.2s;
-    font-size: 0.65rem;
+    width: 16px;
+    height: 16px;
+    position: relative;
     flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.toggle-icon::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 3px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #1a365d;
+    border-bottom: 2px solid #1a365d;
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+}
+
+.collapsible-toggle:hover .toggle-icon::before {
+    border-color: #2c5282;
 }
 
 .collapsed .toggle-icon {
@@ -1293,29 +1319,57 @@ button { cursor: pointer; font-family: inherit; }
     pointer-events: none;
 }
 
-/* ===== 3D Preview Canvas ===== */
+/* ===== 3D Preview Panel ===== */
 .view-panel-3d {
     grid-column: 1 / -1;
+    background: linear-gradient(180deg, #f0f4f8 0%, #f8fafc 100%);
+    position: relative;
+}
+
+.view-panel-3d .view-label {
+    background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%);
+    color: #ffffff;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0;
+    border-radius: 7px 7px 0 0;
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    text-transform: uppercase;
 }
 
 .view-canvas-3d {
     width: 100%;
     height: 320px;
     display: block;
-    border-radius: 4px;
+    border-radius: 0 0 4px 4px;
     cursor: grab;
-    background: #f8fafc;
+    background: linear-gradient(180deg, #e8ecf0 0%, #f8fafc 100%);
 }
 
 .view-canvas-3d:active {
     cursor: grabbing;
 }
 
+/* 3D Loading spinner */
 #3d-loading {
-    text-align: center;
-    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 3rem 1rem;
     color: #64748b;
-    font-style: italic;
+    font-style: normal;
+    font-size: 0.85rem;
+}
+
+#3d-loading::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #1a365d;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
 }
 
 /* ===== Dimension Lines on Canvas (styling handled in JS) ===== */

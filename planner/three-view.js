@@ -64,7 +64,7 @@
             var h = 320;
 
             this.scene = new THREE.Scene();
-            this.scene.background = new THREE.Color(0xf8fafc);
+            this.scene.background = new THREE.Color(0xeef1f5);
 
             this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 200);
             this.camera.position.set(12, 8, 12);
@@ -100,16 +100,16 @@
             var ground = new THREE.Mesh(
                 new THREE.PlaneGeometry(30, 30),
                 new THREE.MeshStandardMaterial({
-                    color: 0xe2e8f0,
-                    roughness: 0.9
+                    color: 0xd5dae2,
+                    roughness: 0.95
                 })
             );
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             this.scene.add(ground);
 
-            // Grid helper
-            var grid = new THREE.GridHelper(30, 30, 0xc8d0d8, 0xd8dde4);
+            // Subtle grid helper matching engineering drawing style
+            var grid = new THREE.GridHelper(30, 30, 0xb0b8c4, 0xc8cfd6);
             grid.position.y = 0.01;
             this.scene.add(grid);
         },

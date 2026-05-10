@@ -205,14 +205,14 @@
         drawDimensionLine: function (ctx, opts) {
             // opts: startX, startY, endX, endY, label, color, fontSize, isHorizontal
             var color = opts.color || '#334155';
-            var fontSize = opts.fontSize || 10;
+            var fontSize = opts.fontSize || 11;
             var tickLen = 6;
             var tickWidth = 2;
 
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
             ctx.lineWidth = 1;
-            ctx.font = 'bold ' + fontSize + 'px monospace';
+            ctx.font = 'bold ' + fontSize + 'px -apple-system, sans-serif';
 
             if (opts.isHorizontal !== false) {
                 // Horizontal dimension line
@@ -265,10 +265,9 @@
             }
         },
 
-        // Format meters to mm with thousands separator
+        // Format meters with explicit unit suffix
         formatDimension: function (meters) {
-            var mm = Math.round(meters * 1000);
-            return mm.toLocaleString('en-US');
+            return meters.toFixed(1) + ' m';
         },
 
         // ===== Draw building columns in top view =====
@@ -296,7 +295,7 @@
             // Legend
             if (colSizePx > 6) {
                 ctx.fillStyle = 'rgba(100, 116, 139, 0.7)';
-                ctx.font = '8px -apple-system, sans-serif';
+                ctx.font = 'bold 10px -apple-system, sans-serif';
                 ctx.textAlign = 'left';
                 ctx.fillText('Building Columns', pad + 5, pad + drawH - 5);
             }
@@ -382,9 +381,9 @@
                     ctx.fillRect(pad, aisleStartPx, drawW, rowYPx - aisleStartPx);
 
                     ctx.fillStyle = '#b45309';
-                    ctx.font = '9px -apple-system, sans-serif';
+                    ctx.font = 'bold 11px -apple-system, sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('Aisle ' + i + ' (' + aisleW + 'm)', pad + drawW / 2, aisleStartPx + (rowYPx - aisleStartPx) / 2 + 3);
+                    ctx.fillText('Aisle ' + i + ' (' + aisleW + 'm)', pad + drawW / 2, aisleStartPx + (rowYPx - aisleStartPx) / 2 + 4);
                 }
 
                 // Rack block
@@ -434,15 +433,15 @@
                 }
 
                 // Row label
-                ctx.fillStyle = 'rgba(255,255,255,0.8)';
-                ctx.font = '9px -apple-system, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                ctx.font = 'bold 11px -apple-system, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('Row ' + (i + 1), pad + 14, rowYPx + blockDepthPx / 2 + 3);
+                ctx.fillText('Row ' + (i + 1), pad + 14, rowYPx + blockDepthPx / 2 + 4);
 
                 // Pallet count label on right side
                 ctx.textAlign = 'right';
                 var bayPositions = p.palletsPerLevel * p.levels;
-                ctx.fillText(row.baysPerRow * 2 * bayPositions + ' pos', pad + drawW - 14, rowYPx + blockDepthPx / 2 + 3);
+                ctx.fillText(row.baysPerRow * 2 * bayPositions + ' pos', pad + drawW - 14, rowYPx + blockDepthPx / 2 + 4);
             }
 
             // Entrance zone
@@ -450,9 +449,9 @@
             ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
             ctx.fillRect(pad, pad + drawH - entranceSize * scale, drawW, entranceSize * scale);
             ctx.fillStyle = '#10b981';
-            ctx.font = 'bold 10px -apple-system, sans-serif';
+            ctx.font = 'bold 11px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('Loading Zone (' + entranceSize + 'm)', pad + drawW / 2, pad + drawH - entranceSize * scale / 2 + 3);
+            ctx.fillText('Loading Zone (' + entranceSize + 'm)', pad + drawW / 2, pad + drawH - entranceSize * scale / 2 + 4);
 
             // ===== CAD-style dimension lines =====
             // Top: warehouse total length
@@ -483,10 +482,10 @@
                 var aisleMidY = (aisleStartY + aisleEndY) / 2;
 
                 ctx.fillStyle = '#b45309';
-                ctx.font = '8px monospace';
+                ctx.font = 'bold 10px -apple-system, sans-serif';
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(aisleSpacingM.toFixed(1) + 'm', aisleLabelX, aisleMidY);
+                ctx.fillText(aisleSpacingM.toFixed(1) + ' m', aisleLabelX, aisleMidY);
 
                 // Dashed line across aisle
                 ctx.strokeStyle = 'rgba(180, 83, 9, 0.3)';
@@ -528,13 +527,13 @@
             ctx.lineTo(sbX + scaleBarPx, sbY + 4);
             ctx.stroke();
             ctx.fillStyle = '#333';
-            ctx.font = '10px -apple-system, sans-serif';
+            ctx.font = 'bold 11px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(scaleBarM + 'm', sbX + scaleBarPx / 2, sbY - 6);
+            ctx.fillText(scaleBarM + ' m', sbX + scaleBarPx / 2, sbY - 6);
 
             // Bottom label
-            ctx.fillStyle = '#718096';
-            ctx.font = '10px -apple-system, sans-serif';
+            ctx.fillStyle = '#475569';
+            ctx.font = '11px -apple-system, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(preset.name + ' — ' + this.rows.length + ' row(s), ' + this.stats.totalPositions.toLocaleString() + ' positions', pad + drawW / 2, h - 3);
         },
@@ -655,7 +654,7 @@
             });
 
             // Level height annotations on right
-            ctx.font = '8px -apple-system, sans-serif';
+            ctx.font = 'bold 10px -apple-system, sans-serif';
             ctx.textAlign = 'left';
             ctx.fillStyle = '#64748b';
             for (var lv2 = 0; lv2 < levels; lv2++) {
@@ -673,7 +672,7 @@
                     this.drawDimensionLine(ctx, {
                         startX: rightDimX, startY: lyTop,
                         endX: rightDimX, endY: lyBot,
-                        label: levelHM.toFixed(1) + 'm',
+                        label: levelHM.toFixed(1) + ' m',
                         isHorizontal: false
                     });
                 }
@@ -683,13 +682,13 @@
             this.drawDimensionLine(ctx, {
                 startX: offsetX, startY: pad + drawH + 18,
                 endX: offsetX + rackW, endY: pad + drawH + 18,
-                label: bayWidth.toFixed(1) + 'm',
+                label: bayWidth.toFixed(1) + ' m',
                 isHorizontal: true
             });
 
             // Top label
             ctx.fillStyle = '#1e40af';
-            ctx.font = 'bold 9px -apple-system, sans-serif';
+            ctx.font = 'bold 10px -apple-system, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(preset.name + ' — Elevation', w / 2, pad - 10);
         },
@@ -783,8 +782,8 @@
             ctx.setLineDash([]);
 
             // Level labels inside rack
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.font = '8px -apple-system, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.font = 'bold 10px -apple-system, sans-serif';
             ctx.textAlign = 'left';
             for (var lv2 = 0; lv2 < levels; lv2++) {
                 var levelY2 = offsetY + rackH - (lv2 + 0.5) * levelHeight * sc;
@@ -801,10 +800,10 @@
 
             // Aisle label
             ctx.fillStyle = '#b45309';
-            ctx.font = '9px -apple-system, sans-serif';
+            ctx.font = 'bold 11px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('Aisle', aisleX + aisleW_Px / 2, offsetY + rackH / 2 - 5);
-            ctx.fillText('(' + aisleW.toFixed(1) + 'm)', aisleX + aisleW_Px / 2, offsetY + rackH / 2 + 8);
+            ctx.fillText('Aisle', aisleX + aisleW_Px / 2, offsetY + rackH / 2 - 6);
+            ctx.fillText('(' + aisleW.toFixed(1) + ' m)', aisleX + aisleW_Px / 2, offsetY + rackH / 2 + 10);
 
             // Forklift icon (simplified)
             var forkX = aisleX + aisleW_Px / 2;
@@ -839,7 +838,7 @@
             this.drawDimensionLine(ctx, {
                 startX: offsetX, startY: dimTopY,
                 endX: offsetX + rackW, endY: dimTopY,
-                label: 'Rack ' + rackDepth.toFixed(1) + 'm',
+                label: 'Rack ' + rackDepth.toFixed(1) + ' m',
                 isHorizontal: true
             });
 
@@ -848,7 +847,7 @@
             this.drawDimensionLine(ctx, {
                 startX: aisleX, startY: aisleDimTopY,
                 endX: aisleX + aisleW_Px, endY: aisleDimTopY,
-                label: 'Aisle ' + aisleW.toFixed(1) + 'm',
+                label: 'Aisle ' + aisleW.toFixed(1) + ' m',
                 isHorizontal: true
             });
 
@@ -871,14 +870,14 @@
                 this.drawDimensionLine(ctx, {
                     startX: rightDimX, startY: lyTop,
                     endX: rightDimX, endY: lyBot,
-                    label: levelHM.toFixed(1) + 'm',
+                    label: levelHM.toFixed(1) + ' m',
                     isHorizontal: false
                 });
             }
 
             // Top label
             ctx.fillStyle = '#1e40af';
-            ctx.font = 'bold 9px -apple-system, sans-serif';
+            ctx.font = 'bold 10px -apple-system, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(preset.name + ' — Section', w / 2, pad - 10);
         },
@@ -988,7 +987,7 @@
             var s3 = document.getElementById('stat-rows');
             if (s3) s3.textContent = s.rackBlockCount;
             var s4 = document.getElementById('stat-cost');
-            if (s4) s4.textContent = '¥' + (s.estimatedCostCNY / 10000).toFixed(0) + 'K';
+            if (s4) s4.textContent = '¥' + s.estimatedCostCNY.toLocaleString('en-US') + ' CNY';
         },
 
         // ===== Update mini recommendation =====
