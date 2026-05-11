@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Planner — Coming Soon | RackingHub</title>
+    <meta name="description" content="Free warehouse racking planner tool. Coming soon — design your warehouse layout, get racking recommendations and cost estimates.">
+    <link rel="canonical" href="https://www.rackinghub.com/planner/">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="/style.css?v=20260509f">
+    <style>
+        .coming-soon {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 1.5rem;
+        }
+        .coming-soon-inner {
+            text-align: center;
+            max-width: 560px;
+        }
+        .coming-soon-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        .coming-soon h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+        .coming-soon p {
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+        .coming-soon-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .coming-soon-feature {
+            padding: 1.2rem;
+            background: var(--color-bg-alt);
+            border-radius: 10px;
+            border: 1px solid var(--color-border);
+        }
+        .coming-soon-feature .icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .coming-soon-feature h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 0.3rem;
+        }
+        .coming-soon-feature p {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0;
+        }
+        .coming-soon .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 2px solid var(--color-primary);
+            color: var(--color-primary);
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+        .coming-soon .btn-back:hover {
+            background: var(--color-primary);
+            color: white;
+        }
+        @media (max-width: 640px) {
+            .coming-soon-features {
+                grid-template-columns: 1fr;
+            }
+            .coming-soon h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo" aria-label="RackingHub Home">
+                <img src="/images/logos/boracs-rackinghub-logo.png" alt="RackingHub - Warehouse Racking Systems" class="logo-img" width="120" height="30">
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#products">Products</a></li>
+                <li><a href="/planner-coming-soon/" class="nav-active">Planner</a></li>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/case-studies">Case Studies</a></li>
+                <li><a href="/faq">FAQ</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/contact" class="nav-cta">Get a Free Quote</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger" onclick="toggleMenu()" role="button" aria-label="Toggle navigation menu" tabindex="0">
+                <span></span><span></span><span></span>
+            </div>
+        </nav>
+    </header>
+    <div class="mobile-menu" id="mobileMenu" onclick="closeMenuOutside(event)">
+        <div class="mobile-menu-content">
+            <a href="/" class="mobile-menu-item">HOME</a>
+            <a href="/#products" class="mobile-menu-item">PRODUCTS</a>
+            <a href="/planner-coming-soon/" class="mobile-menu-item">PLANNER</a>
+            <a href="/about" class="mobile-menu-item">ABOUT US</a>
+            <a href="/blog" class="mobile-menu-item">BLOG</a>
+            <a href="/case-studies" class="mobile-menu-item">CASE STUDIES</a>
+            <a href="/faq" class="mobile-menu-item">FAQ</a>
+            <a href="/contact" class="mobile-menu-item">CONTACT</a>
+            <a href="/contact" class="mobile-menu-cta">GET A FREE QUOTE</a>
+        </div>
+    </div>
+
+    <main>
+        <section class="coming-soon">
+            <div class="coming-soon-inner">
+                <div class="coming-soon-icon">🔧</div>
+                <h1>Warehouse Planner — Coming Soon</h1>
+                <p>We're building a free tool to help you design your warehouse racking layout, get instant recommendations, and estimate costs — all in minutes.</p>
+
+                <div class="coming-soon-features">
+                    <div class="coming-soon-feature">
+                        <div class="icon">📐</div>
+                        <h3>2D Layout Design</h3>
+                        <p>Visualize your warehouse floor plan with real-time rendering.</p>
+                    </div>
+                    <div class="coming-soon-feature">
+                        <div class="icon">🤖</div>
+                        <h3>Smart Recommendations</h3>
+                        <p>Get racking system suggestions based on your specs.</p>
+                    </div>
+                    <div class="coming-soon-feature">
+                        <div class="icon">💰</div>
+                        <h3>Cost Estimates</h3>
+                        <p>Instant budget estimates with detailed breakdowns.</p>
+                    </div>
+                </div>
+
+                <a href="/" class="btn-back">← Back to Homepage</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="footer-year">2026</span> RackingHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('mobileMenu').classList.toggle('open');
+        }
+        function closeMenuOutside(e) {
+            if (e.target === document.getElementById('mobileMenu')) {
+                document.getElementById('mobileMenu').classList.remove('open');
+            }
+        }
+        document.getElementById('footer-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
