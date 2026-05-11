@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260511b">
+    <link rel="stylesheet" href="style.css?v=20260511c">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -57,7 +57,10 @@
                 <div class="hero-container">
                     <!-- Left: Copy + CTA -->
                     <div class="hero-content">
-                        <span class="hero-badge">Free Tool — No Registration Required</span>
+                        <span class="hero-badge">
+                            <span class="dot"></span>
+                            Free <span class="dot"></span> Online <span class="dot"></span> No Registration
+                        </span>
                         <h1>Design Your Warehouse Racking System in <span class="highlight">3 Minutes</span></h1>
                         <p class="hero-sub">Get instant racking recommendations, layout diagrams, and cost estimates — tailored to your warehouse specs. Trusted by 200+ warehouses worldwide.</p>
                         <div class="hero-cta-group">
@@ -75,7 +78,16 @@
                     </div>
                     <!-- Right: Preview Canvas -->
                     <div class="hero-preview">
-                        <canvas id="hero-preview-canvas" width="600" height="400"></canvas>
+                        <div class="hero-preview-card">
+                            <div class="hero-preview-bar">
+                                <span class="hero-preview-dot red"></span>
+                                <span class="hero-preview-dot yellow"></span>
+                                <span class="hero-preview-dot green"></span>
+                                <span class="hero-preview-bar-text">rackinghub.com/planner</span>
+                            </div>
+                            <canvas id="hero-preview-canvas" width="600" height="400"></canvas>
+                        </div>
+                        <div class="hero-preview-caption">Interactive layout generated in real-time from your specs</div>
                     </div>
                 </div>
             </div>
