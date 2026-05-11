@@ -90,7 +90,11 @@
             interPalletGap: 100,
             columnSpacingX: 15,
             columnSpacingY: 12,
-            columnSize: 400
+            columnSize: 400,
+            clearanceLeft: 0.5,
+            clearanceRight: 0.5,
+            clearanceFront: 0.5,
+            clearanceBack: 0.5
         },
 
         stats: {
@@ -123,12 +127,20 @@
             var rackD = preset.rackDepth;
             var rackW = preset.rackWidth;
 
+            // Clearances from walls
+            var clearL = p.clearanceLeft || 0;
+            var clearR = p.clearanceRight || 0;
+            var clearF = p.clearanceFront || 0;
+            var clearB = p.clearanceBack || 0;
+
+            // Usable space after subtracting wall clearances
+            var usableWidth = p.warehouseWidth - clearF - clearB - 4;
+            var usableLength = p.warehouseLength - clearL - clearR - 5;
+
             var blockDepth = rackD * 2 + 0.8;
             var bayWidth = rackW;
-            var usableWidth = p.warehouseWidth - 4;
             var rowsNeeded = Math.floor((usableWidth + aisleW) / (blockDepth + aisleW));
             rowsNeeded = Math.max(1, Math.min(rowsNeeded, 12));
-            var usableLength = p.warehouseLength - 5;
             var baysPerRow = Math.floor(usableLength / bayWidth);
             baysPerRow = Math.max(1, Math.min(baysPerRow, 30));
             var positionsPerBay = p.palletsPerLevel * p.levels;
@@ -146,7 +158,7 @@
             var estimatedCost = totalPositions * costPerPos;
 
             this.rows = [];
-            var offsetY = 2;
+            var offsetY = clearB + 2;
             for (var i = 0; i < rowsNeeded; i++) {
                 this.rows.push({
                     index: i, y: offsetY, blockDepth: blockDepth,
@@ -325,6 +337,65 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(pad, pad, p.warehouseLength * sc, p.warehouseWidth * sc);
 
+            // ===== Wall clearance zones =====
+            var clearL = p.clearanceLeft || 0;
+            var clearR = p.clearanceRight || 0;
+            var clearF = p.clearanceFront || 0;
+            var clearB = p.clearanceBack || 0;
+            var clearLPx = clearL * sc;
+            var clearRPx = clearR * sc;
+            var clearFPx = clearF * sc;
+            var clearBPx = clearB * sc;
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.06)';
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 3]);
+            // Left clearance
+            if (clearL > 0) {
+                ctx.fillRect(pad, pad, clearLPx, p.warehouseWidth * sc);
+                ctx.strokeRect(pad, pad, clearLPx, p.warehouseWidth * sc);
+                ctx.fillStyle = '#dc2626'; ctx.font = '600 8px -apple-system, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                if (p.warehouseWidth * sc > 30) {
+                    ctx.save(); ctx.translate(pad + clearLPx / 2, pad + p.warehouseWidth * sc / 2);
+                    ctx.rotate(-Math.PI / 2); ctx.fillText('↔ ' + clearL.toFixed(1) + ' m', 0, 0); ctx.restore();
+                }
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.06)';
+            }
+            // Right clearance
+            if (clearR > 0) {
+                var rightX = pad + p.warehouseLength * sc - clearRPx;
+                ctx.fillRect(rightX, pad, clearRPx, p.warehouseWidth * sc);
+                ctx.strokeRect(rightX, pad, clearRPx, p.warehouseWidth * sc);
+                ctx.fillStyle = '#dc2626'; ctx.font = '600 8px -apple-system, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                if (p.warehouseWidth * sc > 30) {
+                    ctx.save(); ctx.translate(rightX + clearRPx / 2, pad + p.warehouseWidth * sc / 2);
+                    ctx.rotate(-Math.PI / 2); ctx.fillText('↔ ' + clearR.toFixed(1) + ' m', 0, 0); ctx.restore();
+                }
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.06)';
+            }
+            // Front clearance (top edge)
+            if (clearF > 0) {
+                ctx.fillRect(pad, pad, p.warehouseLength * sc, clearFPx);
+                ctx.strokeRect(pad, pad, p.warehouseLength * sc, clearFPx);
+                ctx.fillStyle = '#dc2626'; ctx.font = '600 8px -apple-system, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                if (p.warehouseLength * sc > 40) ctx.fillText('↕ ' + clearF.toFixed(1) + ' m', pad + p.warehouseLength * sc / 2, pad + clearFPx / 2);
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.06)';
+            }
+            // Back clearance (bottom edge)
+            if (clearB > 0) {
+                var backY = pad + p.warehouseWidth * sc - clearBPx;
+                ctx.fillRect(pad, backY, p.warehouseLength * sc, clearBPx);
+                ctx.strokeRect(pad, backY, p.warehouseLength * sc, clearBPx);
+                ctx.fillStyle = '#dc2626'; ctx.font = '600 8px -apple-system, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                if (p.warehouseLength * sc > 40) ctx.fillText('↕ ' + clearB.toFixed(1) + ' m', pad + p.warehouseLength * sc / 2, backY + clearBPx / 2);
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.06)';
+            }
+            ctx.setLineDash([]);
+
             // ===== Building columns (green) =====
             this.drawBuildingColumns(ctx, pad, p.warehouseLength * sc, p.warehouseWidth * sc, sc);
 
@@ -339,8 +410,8 @@
                 var row = this.rows[i];
                 var rowYPx = pad + row.y * sc;
                 var blockDepthPx = row.blockDepth * sc;
-                var rowXPx = pad + 8;
-                var rowW = p.warehouseLength * sc - 16;
+                var rowXPx = pad + clearLPx + 4;
+                var rowW = p.warehouseLength * sc - clearLPx - clearRPx - 8;
 
                 // Aisle area between rows (subtle green tint)
                 if (i > 0) {
@@ -441,26 +512,27 @@
 
             // ===== Loading zone =====
             var entranceSize = 3;
-            var loadingTopY = pad + p.warehouseWidth * sc - entranceSize * sc;
+            var loadingTopY = pad + p.warehouseWidth * sc - clearBPx - entranceSize * sc;
+            if (loadingTopY < pad + clearFPx) loadingTopY = pad + p.warehouseWidth * sc - clearBPx;
             ctx.fillStyle = C.loadingZone;
-            ctx.fillRect(pad, loadingTopY, p.warehouseLength * sc, entranceSize * sc);
+            ctx.fillRect(pad + clearLPx, loadingTopY, p.warehouseLength * sc - clearLPx - clearRPx, entranceSize * sc);
             ctx.fillStyle = '#059669';
             ctx.font = '700 10px -apple-system, sans-serif';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText('Loading Zone (' + entranceSize + 'm)', pad + p.warehouseLength * sc / 2, loadingTopY + entranceSize * sc / 2);
 
-            // ===== Forklift icon (bottom-right of warehouse area) =====
-            this.drawForkliftIcon(ctx, pad + p.warehouseLength * sc - 40, pad + p.warehouseWidth * sc - 35, sc);
+            // ===== Forklift icon (bottom-right of usable area) =====
+            this.drawForkliftIcon(ctx, pad + p.warehouseLength * sc - clearRPx - 40, pad + p.warehouseWidth * sc - clearBPx - 35, sc);
 
             // ===== Dimension lines =====
             var dimOffset = 16;
-            // Top dimension
+            // Top dimension (warehouse length)
             this.drawDimensionLine(ctx, {
                 startX: pad, startY: pad - dimOffset,
                 endX: pad + p.warehouseLength * sc, endY: pad - dimOffset,
                 label: p.warehouseLength + ' m', isHorizontal: true
             });
-            // Left dimension
+            // Left dimension (warehouse width)
             this.drawDimensionLine(ctx, {
                 startX: pad - dimOffset, startY: pad,
                 endX: pad - dimOffset, endY: pad + p.warehouseWidth * sc,
@@ -821,7 +893,11 @@
                 'param-pallets-level': 'palletsPerLevel',
                 'param-aisle-selective': 'aisleWidth',
                 'param-aisle-drivein': 'aisleWidth',
-                'param-aisle-shuttle': 'aisleWidth'
+                'param-aisle-shuttle': 'aisleWidth',
+                'param-clear-left': 'clearanceLeft',
+                'param-clear-right': 'clearanceRight',
+                'param-clear-front': 'clearanceFront',
+                'param-clear-back': 'clearanceBack'
             };
 
             var debouncedDraw = debounce(function () {
@@ -905,7 +981,17 @@
             var el2 = document.getElementById('status-positions');
             if (el2) el2.textContent = this.stats.totalPositions.toLocaleString() + ' pallet positions';
             var el3 = document.getElementById('status-dimensions');
-            if (el3) el3.textContent = p.warehouseLength + 'm × ' + p.warehouseWidth + 'm';
+            if (el3) {
+                var clearInfo = '';
+                var clearL = p.clearanceLeft || 0;
+                var clearR = p.clearanceRight || 0;
+                var clearF = p.clearanceFront || 0;
+                var clearB = p.clearanceBack || 0;
+                if (clearL > 0 || clearR > 0 || clearF > 0 || clearB > 0) {
+                    clearInfo = ' | Clearances: L' + clearL + ' R' + clearR + ' F' + clearF + ' B' + clearB + 'm';
+                }
+                el3.textContent = p.warehouseLength + 'm × ' + p.warehouseWidth + 'm' + clearInfo;
+            }
         },
 
         // ===== Update mini recommendation =====

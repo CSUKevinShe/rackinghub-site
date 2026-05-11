@@ -895,6 +895,13 @@ button { cursor: pointer; font-family: inherit; }
     padding-right: 0.3rem;
 }
 
+/* Half-width field pairs (2-column grid for clearances) */
+.param-section-body.grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.1rem 0.75rem;
+}
+
 /* Slider field (benchmark: number input + slider track below) */
 .param-field-slider {
     flex-direction: column;

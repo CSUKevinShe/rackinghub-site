@@ -277,6 +277,36 @@
                             </div>
                         </div>
 
+                        <!-- 1b. Wall Clearances -->
+                        <div class="param-section collapsible collapsed" data-group="wall-clearance">
+                            <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
+                                <span class="param-section-icon"></span>
+                                <span class="param-section-title">Wall Clearances</span>
+                            </button>
+                            <div class="param-section-body grid-2col">
+                                <div class="param-field">
+                                    <label for="param-clear-left">Left</label>
+                                    <input type="number" id="param-clear-left" value="0.5" min="0" max="5" step="0.5" class="param-input">
+                                    <span class="param-unit">m</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-clear-right">Right</label>
+                                    <input type="number" id="param-clear-right" value="0.5" min="0" max="5" step="0.5" class="param-input">
+                                    <span class="param-unit">m</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-clear-front">Front</label>
+                                    <input type="number" id="param-clear-front" value="0.5" min="0" max="5" step="0.5" class="param-input">
+                                    <span class="param-unit">m</span>
+                                </div>
+                                <div class="param-field">
+                                    <label for="param-clear-back">Back</label>
+                                    <input type="number" id="param-clear-back" value="0.5" min="0" max="5" step="0.5" class="param-input">
+                                    <span class="param-unit">m</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 2. Column Spacing -->
                         <div class="param-section collapsible" data-group="column-spacing">
                             <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
@@ -608,8 +638,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260510l"></script>
-    <script src="app.js?v=20260510j"></script>
+    <script src="layout-engine.js?v=20260510m"></script>
+    <script src="app.js?v=20260510k"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {
