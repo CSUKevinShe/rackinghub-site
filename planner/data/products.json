@@ -18,28 +18,10 @@
     "supports_lifo": true
   },
   {
-    "id": "selective-medium",
-    "name": "Medium-Duty Selective Racking",
-    "name_cn": "中型横梁式货架",
-    "description": "Cost-effective selective racking for lighter loads. Perfect for small to medium palletized goods with moderate storage density needs.",
-    "max_load_per_level": 1500,
-    "upright_height_options": [3, 4.5, 6],
-    "beam_length_options": [1.5, 2.0, 2.5],
-    "depth": 0.9,
-    "aisle_width": 3.0,
-    "price_per_position_cny": 85,
-    "storage_density_pct": 38,
-    "access_type": "selective",
-    "suitable_sku_range": "medium-high",
-    "suitable_frequency": "medium-high",
-    "supports_fifo": true,
-    "supports_lifo": true
-  },
-  {
     "id": "drive-in",
-    "name": "Drive-In Racking",
-    "name_cn": "驶入式货架",
-    "description": "High-density storage system where forklifts drive directly into the racking lanes. Maximizes floor space utilization for uniform SKUs with LIFO rotation.",
+    "name": "Drive-In / Drive-Through Racking",
+    "name_cn": "驶入式/贯通式货架",
+    "description": "High-density storage system where forklifts drive directly into the racking lanes. Optional back beam enables Drive-Through configuration with FIFO rotation. Ideal for uniform SKUs.",
     "max_load_per_level": 2000,
     "upright_height_options": [4.5, 6, 8, 10],
     "beam_length_options": [2.0, 2.4, 2.7],
@@ -50,7 +32,7 @@
     "access_type": "drive-in",
     "suitable_sku_range": "low",
     "suitable_frequency": "low",
-    "supports_fifo": false,
+    "supports_fifo": true,
     "supports_lifo": true
   },
   {
@@ -69,42 +51,6 @@
     "suitable_sku_range": "low-medium",
     "suitable_frequency": "medium",
     "supports_fifo": true,
-    "supports_lifo": true
-  },
-  {
-    "id": "vna",
-    "name": "VNA (Very Narrow Aisle) Racking",
-    "name_cn": "窄巷道货架",
-    "description": "Ultra-high-density selective racking with guide rails for specialized forklifts. Combines 100% accessibility with minimized aisle width for tall warehouses.",
-    "max_load_per_level": 2000,
-    "upright_height_options": [8, 10, 12, 15],
-    "beam_length_options": [1.8, 2.1, 2.4],
-    "depth": 1.0,
-    "aisle_width": 1.8,
-    "price_per_position_cny": 280,
-    "storage_density_pct": 55,
-    "access_type": "vna-selective",
-    "suitable_sku_range": "medium-high",
-    "suitable_frequency": "medium-high",
-    "supports_fifo": true,
-    "supports_lifo": true
-  },
-  {
-    "id": "push-back",
-    "name": "Push-Back Racking",
-    "name_cn": "后推式货架",
-    "description": "Dynamic LIFO storage system where pallets are stored on nested carts on inclined rails. Each lane holds 2-5 pallets deep with good space utilization.",
-    "max_load_per_level": 2000,
-    "upright_height_options": [4.5, 6, 8],
-    "beam_length_options": [2.0, 2.4, 2.7],
-    "depth": 1.0,
-    "aisle_width": 3.2,
-    "price_per_position_cny": 220,
-    "storage_density_pct": 55,
-    "access_type": "push-back",
-    "suitable_sku_range": "low-medium",
-    "suitable_frequency": "medium",
-    "supports_fifo": false,
     "supports_lifo": true
   }
 ]

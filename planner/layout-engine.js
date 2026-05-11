@@ -108,6 +108,11 @@
             if (key === 'rackingType' && RACKING_PRESETS[value]) {
                 this.params.aisleWidth = RACKING_PRESETS[value].aisleWidth;
             }
+            // Show/hide back beam checkbox based on racking type
+            var backBeamField = document.getElementById('drive-in-back-beam-field');
+            if (backBeamField) {
+                backBeamField.style.display = (value === 'drive-in') ? 'block' : 'none';
+            }
             this.calculate();
         },
 
@@ -135,8 +140,7 @@
             utilization = Math.min(utilization, 80);
 
             var pricePerPosition = {
-                'selective-heavy': 120, 'selective-medium': 85, 'drive-in': 150,
-                'radio-shuttle': 200, 'vna': 280, 'push-back': 220
+                'selective-heavy': 120, 'drive-in': 150, 'radio-shuttle': 200
             };
             var costPerPos = pricePerPosition[p.rackingType] || 120;
             var estimatedCost = totalPositions * costPerPos;
@@ -911,11 +915,11 @@
             var p = this.params;
             var rec = '';
             if (p.levels >= 8) {
-                rec = 'VNA Racking — tall warehouse benefits from narrow aisles';
+                rec = 'Heavy-Duty Selective — tall warehouse benefits from versatile access';
             } else if (p.warehouseWidth < 25) {
                 rec = 'Drive-In Racking — narrow warehouse suits high-density';
             } else if (p.levels <= 3) {
-                rec = 'Medium-Duty Selective — low height suits lighter racking';
+                rec = 'Heavy-Duty Selective — low height suits standard racking';
             } else if (p.warehouseLength * p.warehouseWidth > 3000) {
                 rec = 'Radio Shuttle — large warehouse benefits from semi-automation';
             } else {

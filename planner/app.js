@@ -151,7 +151,7 @@
 
     // ===== 联系信息表单提交 =====
     App.submitContact = function (e) {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         var form = document.getElementById('contact-form');
         var formData = new FormData(form);
         state.contactData = {
@@ -299,7 +299,7 @@
             if (product.access_type === 'selective' || product.access_type === 'vna-selective') score += 20;
             else score -= 10;
         } else if (freq === 'low') {
-            if (product.access_type === 'drive-in' || product.access_type === 'push-back') score += 15;
+            if (product.access_type === 'drive-in' || product.access_type === 'drive-through' || product.access_type === 'push-back') score += 15;
         }
 
         if (rotation === 'fifo' && !product.supports_fifo) score -= 30;
@@ -410,7 +410,14 @@
         if (product.supports_fifo && specs.rotation === 'fifo') pros.push('Supports FIFO rotation for your inventory needs');
         if (product.max_load_per_level >= specs.palletWeight * 1.5) pros.push('Generous load margin (' + product.max_load_per_level + 'kg vs ' + specs.palletWeight + 'kg needed)');
         if (product.access_type === 'shuttle') pros.push('Semi-automated — reduces forklift labor costs');
-        if (product.access_type === 'drive-in') pros.push('Lowest cost per pallet position');
+        if (product.access_type === 'drive-in') {
+            var backBeam = document.getElementById('param-back-beam');
+            if (backBeam && backBeam.checked) {
+                pros.push('FIFO rotation with back beam (Drive-Through)');
+            } else {
+                pros.push('Lowest cost per pallet position (LIFO)');
+            }
+        }
         var positions = estimatePalletPositions(product, specs);
         pros.push('~' + formatNumber(positions) + ' pallet positions in your warehouse');
         return pros;
@@ -471,11 +478,8 @@
 
         var RACKING_PRESETS = {
             'selective-heavy': { aisleWidth: 3.2, rackDepth: 1.0, rackWidth: 2.7 },
-            'selective-medium': { aisleWidth: 3.0, rackDepth: 0.9, rackWidth: 2.5 },
             'drive-in': { aisleWidth: 3.0, rackDepth: 1.0, rackWidth: 2.4 },
-            'radio-shuttle': { aisleWidth: 3.0, rackDepth: 1.0, rackWidth: 2.7 },
-            'vna': { aisleWidth: 1.8, rackDepth: 1.0, rackWidth: 2.4 },
-            'push-back': { aisleWidth: 3.2, rackDepth: 1.0, rackWidth: 2.4 }
+            'radio-shuttle': { aisleWidth: 3.0, rackDepth: 1.0, rackWidth: 2.7 }
         };
         var preset = RACKING_PRESETS[rackingType] || RACKING_PRESETS['selective-heavy'];
 
@@ -561,15 +565,23 @@
         var yearEl = document.getElementById('footer-year');
         if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+        // Contact form submit — use onclick to avoid event binding issues
         var contactForm = document.getElementById('contact-form');
         if (contactForm) {
-            contactForm.addEventListener('submit', function (e) { e.preventDefault(); App.submitContact(e); });
+            contactForm.onsubmit = function (e) {
+                e.preventDefault();
+                App.submitContact(e);
+                return false;
+            };
         }
 
-        // Generate plan button (new: no form submit)
+        // Generate plan button
         var btnGenerate = document.getElementById('btn-generate-plan');
         if (btnGenerate) {
-            btnGenerate.addEventListener('click', function () { App.generatePlan(); });
+            btnGenerate.onclick = function () {
+                App.generatePlan();
+                return false;
+            };
         }
 
         // Tab switching
