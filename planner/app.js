@@ -500,6 +500,50 @@
     }
 
     // ===== 请求报价 =====
+    App.resetDefaults = function () {
+        var defaults = {
+            'param-length': 60, 'param-width': 40, 'param-height': 6,
+            'param-col-x': 15, 'param-col-y': 12,
+            'param-pallet-w': 1200, 'param-pallet-d': 800, 'param-pallet-h': 1500,
+            'param-rack-type': 'selective-heavy',
+            'param-rack-width': 2.7, 'param-rack-depth': 1.0, 'param-rack-height': 6.0,
+            'param-beam-h': 120, 'param-upright-d': 80,
+            'param-levels': 4, 'param-pallets-level': 2,
+            'param-aisle-selective': 3.2, 'param-aisle-drivein': 3.0, 'param-aisle-shuttle': 3.0,
+            'param-clear-left': 0.5, 'param-clear-right': 0.5,
+            'param-clear-front': 0.5, 'param-clear-back': 0.5
+        };
+        // Sync sliders with number inputs
+        var sliderPairs = {
+            'param-aisle-selective': 'slider-aisle-selective',
+            'param-aisle-drivein': 'slider-aisle-drivein',
+            'param-aisle-shuttle': 'slider-aisle-shuttle'
+        };
+        Object.keys(defaults).forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.value = defaults[id];
+            if (sliderPairs[id]) {
+                var slider = document.getElementById(sliderPairs[id]);
+                if (slider) slider.value = defaults[id];
+            }
+        });
+        // Reset back beam checkbox
+        var backBeam = document.getElementById('param-back-beam');
+        if (backBeam) backBeam.checked = false;
+        // Reset racking type dropdown
+        var rackType = document.getElementById('param-rack-type');
+        if (rackType) rackType.value = 'selective-heavy';
+        // Re-trigger layout update
+        if (typeof LayoutEngine !== 'undefined') {
+            LayoutEngine.params.rackingType = 'selective-heavy';
+            LayoutEngine.calculate();
+            LayoutEngine.drawAll();
+            LayoutEngine.updateStats();
+            LayoutEngine.updateRecommendation();
+            LayoutEngine.updateStatus();
+        }
+    };
+
     App.requestQuote = function () {
         var quoteData = {
             contact: state.contactData,
@@ -543,23 +587,6 @@
         return Number(num).toLocaleString('en-US');
     }
 
-    // ===== Tab switching (2D / 3D) =====
-    function initTabs() {
-        var tabs = document.querySelectorAll('.canvas-tab');
-        tabs.forEach(function (tab) {
-            tab.addEventListener('click', function () {
-                var tabName = this.getAttribute('data-tab');
-                // Update tab buttons
-                tabs.forEach(function (t) { t.classList.remove('active'); });
-                this.classList.add('active');
-                // Update views
-                document.querySelectorAll('.canvas-view').forEach(function (v) { v.classList.remove('active'); });
-                var view = document.getElementById('view-' + tabName);
-                if (view) view.classList.add('active');
-            });
-        });
-    }
-
     // ===== 初始化 =====
     document.addEventListener('DOMContentLoaded', function () {
         var yearEl = document.getElementById('footer-year');
@@ -583,9 +610,6 @@
                 return false;
             };
         }
-
-        // Tab switching
-        initTabs();
 
         // Hero preview
         function drawHeroPreview() {

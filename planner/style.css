@@ -902,6 +902,28 @@ button { cursor: pointer; font-family: inherit; }
     gap: 0.1rem 0.75rem;
 }
 
+/* Saved indicator */
+.saved-indicator {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #10b981;
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 100;
+}
+.saved-indicator.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* Slider field (benchmark: number input + slider track below) */
 .param-field-slider {
     flex-direction: column;
@@ -960,22 +982,41 @@ button { cursor: pointer; font-family: inherit; }
     border-top: 1px solid var(--param-border);
     border-bottom: 1px solid var(--param-border);
 }
-.stat-inline-item {
-    text-align: center;
-    padding: 0.4rem 0.2rem;
+/* Stats card (replaces old stats-inline) */
+.stats-card {
+    padding: 0.5rem;
+    background: var(--param-bg);
+    border-top: 1px solid var(--param-border);
+    border-bottom: 1px solid var(--param-border);
 }
-.stat-inline-value {
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+}
+.stat-item {
+    text-align: center;
+    padding: 0.45rem 0.2rem;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+.stat-item:hover {
+    border-color: var(--color-accent);
+    background: #fffbeb;
+}
+.stat-value {
     display: block;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 800;
     color: var(--color-primary);
     letter-spacing: -0.02em;
 }
-.stat-inline-label {
-    font-size: 0.6rem;
+.stat-label {
+    font-size: 0.55rem;
     color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     font-weight: 600;
 }
 
@@ -1024,6 +1065,15 @@ button { cursor: pointer; font-family: inherit; }
 .btn-param-outline:hover {
     background: var(--color-primary);
     color: white;
+}
+.btn-param-secondary {
+    background: #e2e8f0;
+    color: #475569;
+    border-color: #cbd5e1;
+    flex: 0.6;
+}
+.btn-param-secondary:hover {
+    background: #cbd5e1;
 }
 .btn-param-primary {
     background: var(--color-accent);

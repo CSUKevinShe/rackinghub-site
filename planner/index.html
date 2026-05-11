@@ -308,7 +308,7 @@
                         </div>
 
                         <!-- 2. Column Spacing -->
-                        <div class="param-section collapsible" data-group="column-spacing">
+                        <div class="param-section collapsible collapsed" data-group="column-spacing">
                             <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
                                 <span class="param-section-icon"></span>
                                 <span class="param-section-title">Column Spacing</span>
@@ -353,7 +353,7 @@
                         </div>
 
                         <!-- 4. Rack Specifications -->
-                        <div class="param-section collapsible" data-group="rack-specs">
+                        <div class="param-section collapsible collapsed" data-group="rack-specs">
                             <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
                                 <span class="param-section-icon"></span>
                                 <span class="param-section-title">Rack Specifications</span>
@@ -412,7 +412,7 @@
                         </div>
 
                         <!-- 5. Aisle Width -->
-                        <div class="param-section collapsible" data-group="aisle-width">
+                        <div class="param-section collapsible collapsed" data-group="aisle-width">
                             <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
                                 <span class="param-section-icon"></span>
                                 <span class="param-section-title">Aisle Width</span>
@@ -439,23 +439,25 @@
                             </div>
                         </div>
 
-                        <!-- 6. Stats Summary (inline, not collapsible) -->
-                        <div class="stats-inline">
-                            <div class="stat-inline-item">
-                                <span class="stat-inline-value" id="stat-positions">0</span>
-                                <span class="stat-inline-label">Positions</span>
-                            </div>
-                            <div class="stat-inline-item">
-                                <span class="stat-inline-value" id="stat-utilization">0%</span>
-                                <span class="stat-inline-label">Utilization</span>
-                            </div>
-                            <div class="stat-inline-item">
-                                <span class="stat-inline-value" id="stat-rows">0</span>
-                                <span class="stat-inline-label">Rows</span>
-                            </div>
-                            <div class="stat-inline-item">
-                                <span class="stat-inline-value" id="stat-cost">¥0</span>
-                                <span class="stat-inline-label">Est. Cost</span>
+                        <!-- 6. Stats Summary (card-style) -->
+                        <div class="stats-card">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-positions">0</span>
+                                    <span class="stat-label">Positions</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-utilization">0%</span>
+                                    <span class="stat-label">Utilization</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-rows">0</span>
+                                    <span class="stat-label">Rows</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="stat-cost">¥0</span>
+                                    <span class="stat-label">Est. Cost</span>
+                                </div>
                             </div>
                         </div>
 
@@ -468,18 +470,13 @@
                         <!-- Action buttons -->
                         <div class="param-actions">
                             <button type="button" class="btn-param btn-param-outline" onclick="App.goToStep(2)">← Back</button>
+                            <button type="button" class="btn-param btn-param-secondary" onclick="App.resetDefaults()">↺ Reset</button>
                             <button type="button" class="btn-param btn-param-primary" onclick="App.generatePlan()">Generate Plan →</button>
                         </div>
                     </aside>
 
-                    <!-- ===== RIGHT: Canvas Area (benchmark: large top-down + front + side) ===== -->
+                    <!-- ===== RIGHT: Canvas Area ===== -->
                     <div class="canvas-workspace">
-                        <!-- Top nav tabs -->
-                        <div class="canvas-tabs">
-                            <button class="canvas-tab active" data-tab="2d">2D Layout</button>
-                            <button class="canvas-tab" data-tab="3d">3D Preview</button>
-                        </div>
-
                         <!-- 2D Layout View -->
                         <div class="canvas-view active" id="view-2d">
                             <!-- Main top-down plan view -->
@@ -507,19 +504,6 @@
                             </div>
                         </div>
 
-                        <!-- 3D Preview View (placeholder) -->
-                        <div class="canvas-view" id="view-3d">
-                            <div class="canvas-main">
-                                <div class="canvas-header">
-                                    <span class="canvas-title">3D Preview</span>
-                                </div>
-                                <div class="canvas-3d-placeholder" id="canvas-3d-container">
-                                    <canvas id="canvas-3d"></canvas>
-                                    <div class="canvas-3d-hint">3D preview loading...</div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Bottom status bar -->
                         <div class="canvas-status">
                             <span class="canvas-status-item" id="status-racking-type">Heavy-Duty Selective</span>
@@ -529,6 +513,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Saved indicator toast -->
+            <div class="saved-indicator" id="saved-indicator">✓ Updated</div>
         </section>
 
         <!-- ===== Page 4: Results ===== -->
@@ -638,8 +625,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260510m"></script>
-    <script src="app.js?v=20260510k"></script>
+    <script src="layout-engine.js?v=20260510n"></script>
+    <script src="app.js?v=20260510l"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {

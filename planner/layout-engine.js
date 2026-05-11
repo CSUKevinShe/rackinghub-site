@@ -906,6 +906,15 @@
                 engine.updateStats();
                 engine.updateRecommendation();
                 engine.updateStatus();
+                // Show saved indicator
+                var indicator = document.getElementById('saved-indicator');
+                if (indicator) {
+                    indicator.classList.add('visible');
+                    clearTimeout(engine._savedTimer);
+                    engine._savedTimer = setTimeout(function () {
+                        indicator.classList.remove('visible');
+                    }, 1200);
+                }
             }, 150);
 
             // Bind numeric inputs
