@@ -47,8 +47,8 @@
             if (data.contact && Object.keys(data.contact).length > 0) {
                 state.contactData = data.contact;
                 state.specsData = data.specs || {};
-                if (data.step >= 4) {
-                    state.currentStep = 3;
+                if (data.step >= 3) {
+                    state.currentStep = 2;
                 } else {
                     state.currentStep = data.step || 1;
                 }
@@ -57,12 +57,7 @@
     }
 
     function restoreFormFields() {
-        var c = state.contactData;
-        if (c.name) { var el = document.getElementById('contact-name'); if (el) el.value = c.name; }
-        if (c.email) { var el = document.getElementById('contact-email'); if (el) el.value = c.email; }
-        if (c.company) { var el = document.getElementById('contact-company'); if (el) el.value = c.company; }
-        if (c.phone) { var el = document.getElementById('contact-phone'); if (el) el.value = c.phone; }
-        if (c.country) { var el = document.getElementById('contact-country'); if (el) el.value = c.country; }
+        // No-op: contact page removed, no form fields to restore
     }
 
     function clearProgress() {
@@ -81,11 +76,11 @@
     App.goToStep = function (step) {
         state.currentStep = step;
         saveProgress();
-        var pageMap = { 1: 'page-landing', 2: 'page-contact', 3: 'page-specs', 4: 'page-results' };
+        var pageMap = { 1: 'page-landing', 2: 'page-specs', 3: 'page-results' };
         showPage(pageMap[step] || 'page-landing');
 
         // Initialize interactive layout when entering specs page
-        if (step === 3 && typeof LayoutEngine !== 'undefined') {
+        if (step === 2 && typeof LayoutEngine !== 'undefined') {
             setTimeout(function () {
                 var canvas = document.getElementById('canvas-top');
                 if (canvas && !canvas.dataset.initialized) {
@@ -149,35 +144,6 @@
         container.innerHTML = html;
     }
 
-    // ===== 联系信息表单提交 =====
-    App.submitContact = function (e) {
-        if (e && e.preventDefault) e.preventDefault();
-        var form = document.getElementById('contact-form');
-        var formData = new FormData(form);
-        state.contactData = {
-            name: formData.get('name') || '',
-            email: formData.get('email') || '',
-            company: formData.get('company') || '',
-            phone: formData.get('phone') || '',
-            country: formData.get('country') || ''
-        };
-        saveProgress();
-        state.currentStep = 3;
-        saveProgress();
-        showPage('page-specs');
-
-        // Initialize interactive layout
-        if (typeof LayoutEngine !== 'undefined') {
-            setTimeout(function () {
-                var canvas = document.getElementById('canvas-top');
-                if (canvas && !canvas.dataset.initialized) {
-                    canvas.dataset.initialized = '1';
-                    LayoutEngine.initInteractive();
-                }
-            }, 200);
-        }
-    };
-
     // ===== 仓库规格表单提交 → 生成方案 =====
     App.generatePlan = function () {
         // Collect specs from LayoutEngine params (interactive mode)
@@ -199,7 +165,7 @@
         };
 
         saveProgress();
-        state.currentStep = 4;
+        state.currentStep = 3;
         saveProgress();
         showPage('page-results');
         renderSpecsSummary();
@@ -499,7 +465,7 @@
         }
     }
 
-    // ===== 请求报价 =====
+    // ===== Reset to defaults =====
     App.resetDefaults = function () {
         var defaults = {
             'param-length': 60, 'param-width': 40, 'param-height': 6,
@@ -513,7 +479,6 @@
             'param-clear-left': 0.5, 'param-clear-right': 0.5,
             'param-clear-front': 0.5, 'param-clear-back': 0.5
         };
-        // Sync sliders with number inputs
         var sliderPairs = {
             'param-aisle-selective': 'slider-aisle-selective',
             'param-aisle-drivein': 'slider-aisle-drivein',
@@ -527,13 +492,10 @@
                 if (slider) slider.value = defaults[id];
             }
         });
-        // Reset back beam checkbox
         var backBeam = document.getElementById('param-back-beam');
         if (backBeam) backBeam.checked = false;
-        // Reset racking type dropdown
         var rackType = document.getElementById('param-rack-type');
         if (rackType) rackType.value = 'selective-heavy';
-        // Re-trigger layout update
         if (typeof LayoutEngine !== 'undefined') {
             LayoutEngine.params.rackingType = 'selective-heavy';
             LayoutEngine.calculate();
@@ -544,7 +506,32 @@
         }
     };
 
-    App.requestQuote = function () {
+    // ===== Quote form controls =====
+    App.showQuoteForm = function () {
+        var container = document.getElementById('quote-form-container');
+        if (container) {
+            container.style.display = 'block';
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    App.hideQuoteForm = function () {
+        var container = document.getElementById('quote-form-container');
+        if (container) container.style.display = 'none';
+    };
+
+    App.submitQuote = function (e) {
+        e.preventDefault();
+        var form = document.getElementById('quote-form');
+        var formData = new FormData(form);
+        state.contactData = {
+            name: formData.get('name') || '',
+            email: formData.get('email') || '',
+            company: formData.get('company') || '',
+            phone: formData.get('phone') || '',
+            country: formData.get('country') || ''
+        };
+
         var quoteData = {
             contact: state.contactData,
             specs: state.specsData,
@@ -553,6 +540,7 @@
             })
         };
 
+        // Try to send to our backend
         fetch('/planner/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -561,8 +549,7 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.success) {
-                alert('Thank you! Our engineering team will prepare a detailed quotation and contact you within 24 hours.');
-                clearProgress();
+                alert('Thank you, ' + state.contactData.name + '! Our engineering team will review your requirements and contact you within 24 hours with a detailed quotation.');
             } else { fallbackEmail(); }
         })
         .catch(function () { fallbackEmail(); });
@@ -591,25 +578,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         var yearEl = document.getElementById('footer-year');
         if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-        // Contact form submit — use onclick to avoid event binding issues
-        var contactForm = document.getElementById('contact-form');
-        if (contactForm) {
-            contactForm.onsubmit = function (e) {
-                e.preventDefault();
-                App.submitContact(e);
-                return false;
-            };
-        }
-
-        // Generate plan button
-        var btnGenerate = document.getElementById('btn-generate-plan');
-        if (btnGenerate) {
-            btnGenerate.onclick = function () {
-                App.generatePlan();
-                return false;
-            };
-        }
 
         // Hero preview
         function drawHeroPreview() {
@@ -677,7 +645,7 @@
         window.addEventListener('resize', function () {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function () {
-                if (state.recommendations.length > 0 && state.currentStep === 4) {
+                if (state.recommendations.length > 0 && state.currentStep === 3) {
                     renderLayout(state.recommendations[0]);
                 }
                 if (typeof LayoutEngine !== 'undefined' && document.getElementById('canvas-top')) {
@@ -688,9 +656,8 @@
 
         // Load progress
         loadProgress();
-        restoreFormFields();
         if (state.currentStep > 1) {
-            var pageId = state.currentStep === 2 ? 'page-contact' : state.currentStep === 3 ? 'page-specs' : 'page-landing';
+            var pageId = state.currentStep === 2 ? 'page-specs' : 'page-results';
             showPage(pageId);
         }
 
