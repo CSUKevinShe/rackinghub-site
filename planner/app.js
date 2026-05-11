@@ -417,7 +417,8 @@
             { label: 'FIFO Support', getValue: function (r) { return r.product.supports_fifo ? '✓ Yes' : ' No'; }, best: 'yes' },
             { label: 'LIFO Support', getValue: function (r) { return r.product.supports_lifo ? '✓ Yes' : '✗ No'; }, best: 'yes' },
             { label: 'Est. Price per Position', getValue: function (r) { return '¥' + r.product.price_per_position_cny; }, best: 'low' },
-            { label: 'Est. Pallet Positions', getValue: function (r) { return '~' + formatNumber(estimatePalletPositions(r.product, specs)); }, best: 'high' }
+            { label: 'Est. Pallet Positions', getValue: function (r) { return '~' + formatNumber(estimatePalletPositions(r.product, specs)); }, best: 'high' },
+            { label: 'Est. Total Cost', getValue: function (r) { var p = estimatePalletPositions(r.product, specs) * r.product.price_per_position_cny; return '¥' + formatNumber(Math.round(p)); }, best: 'low' }
         ];
 
         rows.forEach(function (row) {
@@ -523,6 +524,13 @@
     App.submitQuote = function (e) {
         e.preventDefault();
         var form = document.getElementById('quote-form');
+        var submitBtn = form.querySelector('button[type="submit"]');
+        var originalText = submitBtn.textContent;
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+
         var formData = new FormData(form);
         state.contactData = {
             name: formData.get('name') || '',
@@ -540,7 +548,15 @@
             })
         };
 
-        // Try to send to our backend
+        // Save to localStorage as backup — never lose a lead
+        try {
+            var leads = JSON.parse(localStorage.getItem('planner_leads') || '[]');
+            leads.push({ data: quoteData, savedAt: new Date().toISOString() });
+            if (leads.length > 50) leads = leads.slice(-50);
+            localStorage.setItem('planner_leads', JSON.stringify(leads));
+        } catch (e) { /* storage full, ignore */ }
+
+        // Primary: Cloudflare Function (KV + Feishu webhook)
         fetch('/planner/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -549,15 +565,28 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.success) {
-                alert('Thank you, ' + state.contactData.name + '! Our engineering team will review your requirements and contact you within 24 hours with a detailed quotation.');
-            } else { fallbackEmail(); }
+                showQuoteSuccess();
+            } else { fallbackToMailto(); }
         })
-        .catch(function () { fallbackEmail(); });
+        .catch(function () { fallbackToMailto(); });
 
-        function fallbackEmail() {
+        function fallbackToMailto() {
+            // If backend is unavailable, open user's email client as fallback
             var subject = encodeURIComponent('RackingHub Planner — Quote Request from ' + state.contactData.name);
-            var body = encodeURIComponent('Please see my warehouse specs and recommended plan at rackinghub.com/planner/\n\nContact: ' + state.contactData.name + ' <' + state.contactData.email + '>');
-            window.location.href = 'mailto:kevin@boracs.com?subject=' + subject + '&body=' + body;
+            var body = encodeURIComponent('Name: ' + state.contactData.name + '\nEmail: ' + state.contactData.email + '\nCompany: ' + state.contactData.company + '\nPhone: ' + state.contactData.phone + '\nCountry: ' + state.contactData.country + '\n\n---\nPlease see my warehouse specs and recommended plan at rackinghub.com/planner/');
+            window.open('mailto:kevin@boracs.com?subject=' + subject + '&body=' + body);
+            showQuoteSuccess();
+        }
+
+        function showQuoteSuccess() {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            var container = document.getElementById('quote-form-container');
+            container.innerHTML = '<div class="quote-success" style="text-align:center;padding:2rem 1rem;">' +
+                '<div style="font-size:3rem;margin-bottom:0.5rem;">✓</div>' +
+                '<h3 style="color:#059669;margin-bottom:0.5rem;">Quote Request Sent!</h3>' +
+                '<p style="color:#4b5563;">Thank you, <strong>' + escapeHtml(state.contactData.name) + '</strong>! Our engineering team will review your requirements and contact you at <strong>' + escapeHtml(state.contactData.email) + '</strong> within 24 hours with a detailed quotation including CAD drawings and structural calculations.</p>' +
+                '</div>';
         }
     };
 

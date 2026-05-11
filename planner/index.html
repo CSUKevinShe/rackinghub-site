@@ -9,9 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260510h">
-    <!-- EmailJS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <link rel="stylesheet" href="style.css?v=20260511a">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -434,7 +432,7 @@
             <div class="container">
                 <!-- Progress bar -->
                 <div class="progress-bar">
-                    <div class="progress-step completed" data-step="1">
+                    <div class="progress-step completed" data-step="1" onclick="App.goToStep(2)" style="cursor:pointer;" title="Click to modify specs">
                         <div class="progress-dot">✓</div>
                         <span>Warehouse Specs</span>
                     </div>
@@ -444,7 +442,7 @@
                         <span>Your Plan</span>
                     </div>
                     <div class="progress-line"></div>
-                    <div class="progress-step" data-step="3">
+                    <div class="progress-step" data-step="3" onclick="document.getElementById('quote-section').scrollIntoView({behavior:'smooth'})" style="cursor:pointer;" title="Request a detailed quotation">
                         <div class="progress-dot">3</div>
                         <span>Request Quote</span>
                     </div>
@@ -455,6 +453,9 @@
                     <h2>Your Custom Racking Plan</h2>
                     <p>Based on your warehouse specs, here are our top recommendations:</p>
                     <div class="results-specs-summary" id="results-summary"></div>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="App.goToStep(2)" style="margin-top:0.75rem;">
+                        ← Modify Specs
+                    </button>
                 </div>
 
                 <!-- Loading state -->
@@ -605,8 +606,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260510o"></script>
-    <script src="app.js?v=20260510m"></script>
+    <script src="layout-engine.js?v=20260511a"></script>
+    <script src="app.js?v=20260511a"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {
