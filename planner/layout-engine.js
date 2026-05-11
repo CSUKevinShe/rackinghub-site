@@ -924,11 +924,11 @@
                 // Show saved indicator
                 var indicator = document.getElementById('saved-indicator');
                 if (indicator) {
-                    indicator.classList.add('visible');
+                    indicator.classList.add('show');
                     clearTimeout(engine._savedTimer);
                     engine._savedTimer = setTimeout(function () {
-                        indicator.classList.remove('visible');
-                    }, 1200);
+                        indicator.classList.remove('show');
+                    }, 1500);
                 }
             }, 150);
 

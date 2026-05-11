@@ -2,18 +2,19 @@
   {
     "id": "case-sea-ecommerce",
     "region": "Southeast Asia",
-    "title": "E-commerce Fulfillment Warehouse",
-    "location": "Bangkok, Thailand",
-    "warehouse_area": "2,000 m²",
-    "warehouse_length": 50,
+    "title": "E-Commerce Fulfillment Center",
+    "location": "Singapore",
+    "warehouse_area": "2,400 m²",
+    "warehouse_length": 60,
     "warehouse_width": 40,
     "ceiling_height": 9,
-    "pallet_positions": 5000,
+    "pallet_positions": 8200,
     "racking_type": "Heavy-Duty Selective Racking",
     "racking_icon": "🏗️",
-    "description": "A fast-growing e-commerce company needed a flexible storage solution for 5,000+ SKUs with frequent daily picking operations. Heavy-duty selective racking provided 100% access to every pallet position, enabling efficient order fulfillment.",
+    "description": "A regional e-commerce leader needed flexible storage for 8,000+ SKUs with high-frequency daily picking. Heavy-duty selective racking delivered 100% pallet accessibility and 35% higher storage density through optimized aisle widths.",
     "highlights": [
-      "5,000 pallet positions across 9m height",
+      "8,200 pallet positions across 9m height",
+      "35% more storage density with optimized aisles",
       "100% SKU accessibility for fast picking",
       "Completed in 45 days including installation"
     ]
@@ -21,39 +22,41 @@
   {
     "id": "case-eu-cold-chain",
     "region": "Europe",
-    "title": "Frozen Food Cold Storage",
+    "title": "Frozen Food Distribution Center",
     "location": "Rotterdam, Netherlands",
-    "warehouse_area": "800 m²",
-    "warehouse_length": 40,
-    "warehouse_width": 20,
+    "warehouse_area": "1,350 m²",
+    "warehouse_length": 45,
+    "warehouse_width": 30,
     "ceiling_height": 11,
-    "pallet_positions": 2400,
-    "racking_type": "Radio Shuttle (FIFO)",
+    "pallet_positions": 4500,
+    "racking_type": "Drive-In Racking (FIFO)",
     "racking_icon": "❄️",
-    "description": "A food distributor needed high-density cold storage with strict FIFO rotation for perishable goods. Radio Shuttle system maximized storage density in expensive cold space while maintaining automated FIFO operation.",
+    "description": "A major food distributor required high-density cold storage at -25°C with strict FIFO rotation for perishable goods. Drive-In with back-beam configuration achieved 80% space utilization in expensive refrigerated space.",
     "highlights": [
-      "2,400 pallet positions in just 800 m²",
-      "FIFO automation for food safety compliance",
-      "40% cost savings vs. traditional racking"
+      "4,500 pallet positions at -25°C environment",
+      "80% space utilization in cold storage",
+      "FIFO compliance for food safety certification",
+      "40% energy cost savings vs. lower-density layout"
     ]
   },
   {
     "id": "case-latam-auto",
     "region": "Latin America",
-    "title": "Automotive Parts Warehouse",
+    "title": "Automotive Parts Distribution Hub",
     "location": "São Paulo, Brazil",
-    "warehouse_area": "1,500 m²",
-    "warehouse_length": 60,
-    "warehouse_width": 25,
-    "ceiling_height": 8,
-    "pallet_positions": 4800,
-    "racking_type": "Drive-In Racking",
+    "warehouse_area": "4,000 m²",
+    "warehouse_length": 80,
+    "warehouse_width": 50,
+    "ceiling_height": 10,
+    "pallet_positions": 12000,
+    "racking_type": "Radio Shuttle Racking",
     "racking_icon": "🚗",
-    "description": "An auto parts manufacturer stored large volumes of uniform components with low SKU variety. Drive-in racking achieved maximum density at minimum cost, with LIFO rotation perfectly matching their production flow.",
+    "description": "An automotive parts distributor handling 12,000+ pallet positions deployed Radio Shuttle systems across 3 warehouse zones. Automated shuttle carts eliminated forklift entry into racking lanes, improving both safety and throughput by 60%.",
     "highlights": [
-      "4,800 pallet positions at lowest cost per pallet",
-      "LIFO rotation matched production scheduling",
-      "75% floor space utilization achieved"
+      "12,000 pallet positions across 4,000 m²",
+      "60% faster loading with automated shuttle",
+      "Zero forklift-racking collisions (safety critical)",
+      "ROI achieved in 18 months vs. conventional racking"
     ]
   }
 ]

@@ -511,6 +511,24 @@
         }
     };
 
+    // ===== Canvas Zoom =====
+    App._zoomLevel = 1.0;
+    App.zoomCanvas = function (delta, fit) {
+        if (fit) {
+            App._zoomLevel = 1.0;
+        } else {
+            App._zoomLevel = Math.max(0.3, Math.min(3.0, App._zoomLevel + delta));
+        }
+        var display = document.getElementById('zoom-level');
+        if (display) display.textContent = Math.round(App._zoomLevel * 100) + '%';
+        // Apply zoom to all view canvases via CSS transform
+        var canvases = document.querySelectorAll('.view-canvas, .view-canvas-sub');
+        canvases.forEach(function (c) {
+            c.style.transform = 'scale(' + App._zoomLevel + ')';
+            c.style.transformOrigin = 'top left';
+        });
+    };
+
     // ===== Quote form controls =====
     App.showQuoteForm = function () {
         var container = document.getElementById('quote-form-container');
@@ -636,7 +654,7 @@
         var yearEl = document.getElementById('footer-year');
         if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-        // Hero preview
+        // Hero preview — rich warehouse scene
         function drawHeroPreview() {
             var canvas = document.getElementById('hero-preview-canvas');
             if (!canvas) return;
@@ -645,55 +663,138 @@
             canvas.width = w * 2; canvas.height = h * 2;
             canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
             ctx.scale(2, 2);
-            ctx.fillStyle = '#ffffff';
+
+            // Background
+            ctx.fillStyle = '#f8f9fa';
             ctx.fillRect(0, 0, w, h);
-            var pad = 40;
-            var drawW = w - pad * 2;
-            var drawH = h - pad * 2;
-            ctx.strokeStyle = '#1a365d'; ctx.lineWidth = 2;
-            ctx.strokeRect(pad, pad, drawW, drawH);
-            ctx.fillStyle = '#1a365d'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText('Typical Warehouse Layout — 60m × 40m', w / 2, pad - 10);
-            var numAisles = 6;
-            var aisleWidth = 2.5;
-            var doubleRackDepth = 2.8;
-            var scale = drawW / 40;
-            var y = pad;
-            var colors = ['#1a365d', '#2c5282'];
-            for (var i = 0; i < numAisles; i++) {
-                var rackPx = doubleRackDepth * scale;
-                ctx.fillStyle = colors[i % 2] === '#1a365d' ? 'rgba(26, 54, 93, 0.8)' : 'rgba(44, 82, 130, 0.7)';
-                ctx.fillRect(pad, y, drawW, rackPx);
-                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1;
-                var beamCount = Math.floor(drawW / 25);
-                for (var b = 0; b < beamCount; b++) {
-                    var bx = pad + 25 + b * 25;
-                    ctx.beginPath(); ctx.moveTo(bx, y); ctx.lineTo(bx, y + rackPx); ctx.stroke();
-                }
-                y += rackPx;
-                if (i < numAisles - 1) {
-                    var aislePx = aisleWidth * scale;
-                    ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
-                    ctx.fillRect(pad, y, drawW, aislePx);
-                    ctx.fillStyle = '#d97706'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
-                    ctx.fillText('Aisle ' + (i + 1), w / 2, y + aislePx / 2 + 3);
-                    y += aislePx;
-                }
+
+            // Grid
+            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 0.5;
+            for (var gx = 0; gx < w; gx += 20) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+            for (var gy = 0; gy < h; gy += 20) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+
+            // Warehouse outline
+            var pad = 45;
+            var bldgW = w - pad * 2, bldgH = h - pad * 2 - 25;
+            var bx = pad, by = pad + 15;
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(bx, by, bldgW, bldgH);
+            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.strokeRect(bx, by, bldgW, bldgH);
+
+            // Title bar
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(bx, by - 15, bldgW, 15);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
+            ctx.fillText('WAREHOUSE — 60m x 40m', bx + 6, by - 4);
+            ctx.textAlign = 'right';
+            ctx.fillText('RackingHub Planner', bx + bldgW - 6, by - 4);
+
+            var innerX = bx + 3, innerY = by + 3;
+            var innerW = bldgW - 6, innerH = bldgH - 6;
+
+            // Zone 1: Heavy-Duty Selective (top-left) — blue
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.75)';
+            ctx.fillRect(innerX + 2, innerY + 2, innerW * 0.38, innerH * 0.48);
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 0.5;
+            for (var r = 0; r < 8; r++) {
+                var ry = innerY + 2 + r * (innerH * 0.48 / 8);
+                ctx.beginPath(); ctx.moveTo(innerX + 2, ry); ctx.lineTo(innerX + 2 + innerW * 0.38, ry); ctx.stroke();
             }
-            ctx.fillStyle = '#10b981'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'left';
-            ctx.fillText('🚪 Entrance', pad + 5, pad + 14);
-            var scaleBarM = 10;
-            var scaleBarPx = scaleBarM * scale;
-            var sbX = w - pad - scaleBarPx;
-            var sbY = h - 12;
-            ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(sbX, sbY); ctx.lineTo(sbX + scaleBarPx, sbY); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(sbX, sbY - 4); ctx.lineTo(sbX, sbY + 4); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(sbX + scaleBarPx, sbY - 4); ctx.lineTo(sbX + scaleBarPx, sbY + 4); ctx.stroke();
-            ctx.fillStyle = '#333'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(scaleBarM + 'm', sbX + scaleBarPx / 2, sbY - 6);
-            ctx.fillStyle = '#1a365d'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'right';
-            ctx.fillText('RackingHub Planner', w - pad, pad - 10);
+            for (var c = 0; c < 14; c++) {
+                var cx2 = innerX + 2 + c * (innerW * 0.38 / 14);
+                ctx.beginPath(); ctx.moveTo(cx2, innerY + 2); ctx.lineTo(cx2, innerY + 2 + innerH * 0.48); ctx.stroke();
+            }
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('Heavy-Duty Selective', innerX + 2 + innerW * 0.19, innerY + 2 + innerH * 0.48 / 2 + 3);
+
+            // Zone 2: Drive-In (top-right) — green
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.75)';
+            ctx.fillRect(innerX + innerW * 0.42, innerY + 2, innerW * 0.28, innerH * 0.48);
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 0.5;
+            for (var r2 = 0; r2 < 4; r2++) {
+                var ry2 = innerY + 2 + r2 * (innerH * 0.48 / 4);
+                ctx.beginPath(); ctx.moveTo(innerX + innerW * 0.42, ry2); ctx.lineTo(innerX + innerW * 0.70, ry2); ctx.stroke();
+            }
+            for (var c2 = 0; c2 < 5; c2++) {
+                var cx3 = innerX + innerW * 0.42 + c2 * (innerW * 0.28 / 5);
+                ctx.beginPath(); ctx.moveTo(cx3, innerY + 2); ctx.lineTo(cx3, innerY + 2 + innerH * 0.48); ctx.stroke();
+            }
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('Drive-In', innerX + innerW * 0.56, innerY + 2 + innerH * 0.48 / 2 + 3);
+
+            // Zone 3: Radio Shuttle (bottom) — purple
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.75)';
+            ctx.fillRect(innerX + 2, innerY + innerH * 0.54, innerW * 0.66, innerH * 0.42);
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 0.5;
+            for (var r3 = 0; r3 < 6; r3++) {
+                var ry3 = innerY + innerH * 0.54 + r3 * (innerH * 0.42 / 6);
+                ctx.beginPath(); ctx.moveTo(innerX + 2, ry3); ctx.lineTo(innerX + 2 + innerW * 0.66, ry3); ctx.stroke();
+            }
+            for (var c3 = 0; c3 < 12; c3++) {
+                var cx4 = innerX + 2 + c3 * (innerW * 0.66 / 12);
+                ctx.beginPath(); ctx.moveTo(cx4, innerY + innerH * 0.54); ctx.lineTo(cx4, innerY + innerH * 0.54 + innerH * 0.42); ctx.stroke();
+            }
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('Radio Shuttle', innerX + 2 + innerW * 0.33, innerY + innerH * 0.54 + innerH * 0.42 / 2 + 3);
+
+            // Loading dock (bottom-right) — orange
+            ctx.fillStyle = 'rgba(251, 146, 60, 0.6)';
+            ctx.fillRect(innerX + innerW * 0.72, innerY + innerH * 0.54, innerW * 0.26, innerH * 0.42);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('Loading Dock', innerX + innerW * 0.85, innerY + innerH * 0.54 + innerH * 0.42 / 2 + 3);
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            for (var d = 0; d < 3; d++) {
+                ctx.fillRect(innerX + innerW * 0.72 + 8 + d * 22, innerY + innerH * 0.54 + innerH * 0.42 - 14, 16, 10);
+            }
+
+            // Forklift icon in aisle
+            ctx.fillStyle = '#f59e0b';
+            var fkX = innerX + innerW * 0.40, fkY = innerY + innerH * 0.20;
+            ctx.fillRect(fkX - 6, fkY - 4, 12, 8);
+            ctx.fillStyle = '#d97706';
+            ctx.fillRect(fkX + 6, fkY - 2, 4, 4);
+
+            // Legend
+            var ly = h - 16;
+            ctx.font = '8px sans-serif'; ctx.textAlign = 'left';
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.75)'; ctx.fillRect(pad, ly - 6, 8, 8);
+            ctx.fillStyle = '#334155'; ctx.fillText('Selective', pad + 10, ly);
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.75)'; ctx.fillRect(pad + 62, ly - 6, 8, 8);
+            ctx.fillStyle = '#334155'; ctx.fillText('Drive-In', pad + 72, ly);
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.75)'; ctx.fillRect(pad + 122, ly - 6, 8, 8);
+            ctx.fillStyle = '#334155'; ctx.fillText('Shuttle', pad + 132, ly);
+            ctx.fillStyle = 'rgba(251, 146, 60, 0.6)'; ctx.fillRect(pad + 178, ly - 6, 8, 8);
+            ctx.fillStyle = '#334155'; ctx.fillText('Loading', pad + 188, ly);
+
+            // Scale bar
+            var scale = bldgW / 60;
+            var scaleM = 10, scalePx = scaleM * scale;
+            var sbX = w - pad - scalePx, sbY = h - 22;
+            ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(sbX, sbY); ctx.lineTo(sbX + scalePx, sbY); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(sbX, sbY - 3); ctx.lineTo(sbX, sbY + 3); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(sbX + scalePx, sbY - 3); ctx.lineTo(sbX + scalePx, sbY + 3); ctx.stroke();
+            ctx.fillStyle = '#475569'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('10m', sbX + scalePx / 2, sbY - 5);
+
+            // Stats badge
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.9)';
+            roundRect(ctx, w - pad - 115, pad + 3, 112, 22, 4);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('12,450 pallet positions', w - pad - 59, pad + 17);
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            ctx.fill();
         }
         drawHeroPreview();
 

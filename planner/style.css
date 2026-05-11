@@ -62,8 +62,18 @@ button { cursor: pointer; font-family: inherit; }
 .container.narrow { max-width: 720px; }
 
 /* ===== Page System ===== */
-.page { display: none; padding-bottom: 4rem; }
-.page.active { display: block; }
+.page {
+    display: none;
+    padding-bottom: 4rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.page.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
 
 /* ===== Hero ===== */
 .hero {
@@ -1031,24 +1041,25 @@ button { cursor: pointer; font-family: inherit; }
     gap: 0.1rem 0.75rem;
 }
 
-/* Saved indicator */
+/* Saved indicator — top-right toast */
 .saved-indicator {
     position: fixed;
-    bottom: 1rem;
-    right: 1rem;
+    top: 20px;
+    right: 20px;
     background: #10b981;
     color: white;
-    padding: 0.35rem 0.75rem;
+    padding: 8px 16px;
     border-radius: 6px;
-    font-size: 0.72rem;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
     pointer-events: none;
-    z-index: 100;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.saved-indicator.visible {
+.saved-indicator.show {
     opacity: 1;
     transform: translateY(0);
 }
@@ -1502,4 +1513,86 @@ button { cursor: pointer; font-family: inherit; }
     .hero h1 { font-size: 1.5rem; }
     .btn-lg { padding: 0.8rem 1.5rem; font-size: 1rem; }
     .card { padding: 1.5rem; }
+}
+
+/* ===== Canvas Toolbar ===== */
+.canvas-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    width: fit-content;
+}
+.toolbar-btn {
+    width: 28px; height: 28px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    transition: background 0.15s;
+}
+.toolbar-btn:hover { background: #e2e8f0; }
+.toolbar-zoom-level {
+    font-size: 12px;
+    color: #64748b;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* ===== Param Help Tooltips ===== */
+.param-help {
+    display: inline-block;
+    width: 15px; height: 15px;
+    line-height: 15px;
+    text-align: center;
+    font-size: 10px;
+    color: #94a3b8;
+    background: #f1f5f9;
+    border-radius: 50%;
+    cursor: help;
+    margin-left: 4px;
+    position: relative;
+    vertical-align: middle;
+    font-style: normal;
+}
+.param-help:hover {
+    color: #1e293b;
+    background: #e2e8f0;
+}
+.param-help:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* ===== Print-Friendly ===== */
+@media print {
+    header, footer, .specs-progress, .param-actions, .saved-indicator,
+    .canvas-toolbar, .quote-section, .btn, .nav-links, .hamburger { display: none !important; }
+    .page { opacity: 1 !important; transform: none !important; display: block !important; }
+    .params-panel { display: none !important; }
+    .canvas-workspace { width: 100% !important; }
+    .canvas-main { page-break-inside: avoid; }
+    .view-canvas { max-width: 100% !important; height: auto !important; }
+    body { background: #fff !important; color: #000 !important; }
+    .results-header { margin-top: 0 !important; }
+    .comparison-table { page-break-inside: avoid; }
 }
