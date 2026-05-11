@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260511c">
+    <link rel="stylesheet" href="style.css?v=20260511d">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -127,6 +127,70 @@
                     <p class="section-subtitle">See how our racking systems transformed these operations</p>
                     <div class="cases-grid" id="cases-grid">
                         <!-- Cases injected by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section class="section section-faq">
+                <div class="container">
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                    <p class="section-subtitle">Everything you need to know about the RackingHub Planner</p>
+                    <div class="faq-grid">
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                                <h3>Is the planner really free?</h3>
+                                <span class="faq-icon">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes — 100% free, no registration or email required. Enter your warehouse specs and get instant racking recommendations, layout diagrams, and cost estimates. Use it as many times as you want.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                                <h3>What racking types does it support?</h3>
+                                <span class="faq-icon">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Currently we support Heavy-Duty Selective, Drive-In/Drive-Through, and Radio Shuttle racking. These cover 90% of warehouse use cases. Custom configurations can be discussed with our engineering team via the quote form.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                                <h3>How accurate are the cost estimates?</h3>
+                                <span class="faq-icon">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Cost estimates are based on current steel market rates and our standard pricing. They serve as a rough budget guide — actual prices may vary depending on steel market fluctuations, shipping costs, customization requirements, and order volume. Contact us for a detailed, binding quotation.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                                <h3>Can I customize pallet dimensions and rack specs?</h3>
+                                <span class="faq-icon">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes. You can adjust pallet size (width/depth/height), rack dimensions, number of levels, pallets per bay, aisle widths, wall clearances, and column spacing. The layout diagram updates in real-time as you change parameters.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                                <h3>Does the planner account for fire safety and building codes?</h3>
+                                <span class="faq-icon">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>No — regulations vary by country and region. The planner provides a preliminary layout for planning purposes only. Always verify with a local structural engineer and fire safety consultant before finalizing your design.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                                <h3>What happens after I request a quote?</h3>
+                                <span class="faq-icon">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Our engineering team reviews your warehouse specs and recommended plan, then contacts you within 24 hours with a detailed quotation including CAD drawings, structural calculations, pricing breakdown, and delivery timeline. No obligation — just a professional assessment.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -623,8 +687,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260511b"></script>
-    <script src="app.js?v=20260511b"></script>
+    <script src="layout-engine.js?v=20260511c"></script>
+    <script src="app.js?v=20260511c"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {

@@ -200,15 +200,15 @@
             loadingZone: 'rgba(16,185,129,0.08)',
         },
 
-        // ===== Draw CAD-style dimension line =====
         drawDimensionLine: function (ctx, opts) {
-            var color = opts.color || this.COLORS.dimLine;
-            var fontSize = opts.fontSize || 11;
-            var tickLen = 5;
+            var color = opts.color || '#1a365d';
+            var fontSize = opts.fontSize || 12;
+            var tickLen = opts.tickLen || 8;
             ctx.strokeStyle = color;
-            ctx.fillStyle = color;
-            ctx.lineWidth = 0.8;
-            if (opts.isHorizontal !== false) {
+            ctx.lineWidth = 2;
+            ctx.setLineDash ? ctx.setLineDash([]) : null;
+
+            if (opts.isHorizontal) {
                 ctx.beginPath();
                 ctx.moveTo(opts.startX, opts.startY);
                 ctx.lineTo(opts.endX, opts.endY);
@@ -221,12 +221,20 @@
                 ctx.font = '700 ' + fontSize + 'px -apple-system, sans-serif';
                 var textW = ctx.measureText(label).width;
                 var cx = (opts.startX + opts.endX) / 2;
-                var pillH = fontSize + 4;
+                var pillH = fontSize + 6;
+                var pillPadX = 6;
+                // Rounded pill
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(cx - textW/2 - 4, opts.startY - pillH - 2, textW + 8, pillH);
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetY = 1;
+                ctx.fillRect(cx - textW/2 - pillPadX, opts.startY - pillH - 3, textW + pillPadX*2, pillH);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
                 ctx.fillStyle = color;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-                ctx.fillText(label, cx, opts.startY - 3);
+                ctx.fillText(label, cx, opts.startY - 4);
             } else {
                 ctx.beginPath();
                 ctx.moveTo(opts.startX, opts.startY);
@@ -240,14 +248,21 @@
                 ctx.font = '700 ' + fontSize + 'px -apple-system, sans-serif';
                 var textW = ctx.measureText(label).width;
                 var cy = (opts.startY + opts.endY) / 2;
-                var pillH = fontSize + 4;
+                var pillH = fontSize + 6;
+                var pillPadX = 6;
                 ctx.fillStyle = '#ffffff';
-                ctx.translate(opts.startX - 8, cy);
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetY = 1;
+                ctx.translate(opts.startX - 10, cy);
                 ctx.rotate(-Math.PI / 2);
-                ctx.fillRect(-textW/2 - 4, -pillH - 2, textW + 8, pillH);
+                ctx.fillRect(-textW/2 - pillPadX, -pillH - 3, textW + pillPadX*2, pillH);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
                 ctx.fillStyle = color;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-                ctx.fillText(label, 0, -3);
+                ctx.fillText(label, 0, -4);
                 ctx.restore();
             }
         },
@@ -498,16 +513,16 @@
 
                 // Row label
                 ctx.fillStyle = C.upright;
-                ctx.font = '700 10px -apple-system, sans-serif';
+                ctx.font = '700 11px -apple-system, sans-serif';
                 ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-                ctx.fillText('ROW ' + (i + 1), rowXPx + 4, rowYPx + blockDepthPx / 2);
+                ctx.fillText('ROW ' + (i + 1), rowXPx + 5, rowYPx + blockDepthPx / 2);
 
                 // Position count
                 ctx.textAlign = 'right';
                 var bayPositions = palletsPerBay * levels;
                 ctx.fillStyle = '#6b7280';
-                ctx.font = '600 9px -apple-system, sans-serif';
-                ctx.fillText(row.baysPerRow * 2 * bayPositions + ' pos', rowXPx + rowW - 4, rowYPx + blockDepthPx / 2);
+                ctx.font = '700 10px -apple-system, sans-serif';
+                ctx.fillText(row.baysPerRow * 2 * bayPositions + ' pos', rowXPx + rowW - 5, rowYPx + blockDepthPx / 2);
             }
 
             // ===== Loading zone =====
@@ -517,7 +532,7 @@
             ctx.fillStyle = C.loadingZone;
             ctx.fillRect(pad + clearLPx, loadingTopY, p.warehouseLength * sc - clearLPx - clearRPx, entranceSize * sc);
             ctx.fillStyle = '#059669';
-            ctx.font = '700 10px -apple-system, sans-serif';
+            ctx.font = '700 11px -apple-system, sans-serif';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText('Loading Zone (' + entranceSize + 'm)', pad + p.warehouseLength * sc / 2, loadingTopY + entranceSize * sc / 2);
 
@@ -543,20 +558,20 @@
             var scaleBarM = this.getScaleBarM(p.warehouseLength);
             var scaleBarPx = scaleBarM * sc;
             var sbX = pad;
-            var sbY = h - 12;
-            ctx.strokeStyle = C.dimLine; ctx.lineWidth = 1.5;
+            var sbY = h - 14;
+            ctx.strokeStyle = C.dimLine; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(sbX, sbY); ctx.lineTo(sbX + scaleBarPx, sbY); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(sbX, sbY - 5); ctx.lineTo(sbX, sbY + 5); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(sbX + scaleBarPx, sbY - 5); ctx.lineTo(sbX + scaleBarPx, sbY + 5); ctx.stroke();
-            ctx.fillStyle = C.dimText; ctx.font = '700 9px -apple-system, sans-serif';
+            ctx.beginPath(); ctx.moveTo(sbX, sbY - 6); ctx.lineTo(sbX, sbY + 6); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(sbX + scaleBarPx, sbY - 6); ctx.lineTo(sbX + scaleBarPx, sbY + 6); ctx.stroke();
+            ctx.fillStyle = C.dimText; ctx.font = '700 10px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(scaleBarM + ' m', sbX + scaleBarPx / 2, sbY - 7);
+            ctx.fillText(scaleBarM + ' m', sbX + scaleBarPx / 2, sbY - 8);
 
             // ===== Bottom label =====
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '9px -apple-system, sans-serif';
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '10px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(preset.name + ' · ' + this.rows.length + ' row(s) · ' + this.stats.totalPositions.toLocaleString() + ' positions', pad + p.warehouseLength * sc / 2, h - 2);
+            ctx.fillText(preset.name + ' · ' + this.rows.length + ' row(s) · ' + this.stats.totalPositions.toLocaleString() + ' positions', pad + p.warehouseLength * sc / 2, h - 3);
         },
 
         // ===== Draw forklift icon (benchmark-style simple red forklift) =====
