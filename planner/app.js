@@ -310,6 +310,7 @@
                     id: 'selective-heavy', name: 'Heavy-Duty Selective Racking',
                     description: 'The most versatile pallet racking system offering 100% direct access to every pallet position.',
                     max_load_per_level: 3000, storage_density_pct: 35, aisle_width: 3.2,
+                    upright_height_options: [3, 4, 5, 6, 7, 8, 9, 10],
                     price_per_position_cny: 120, supports_fifo: true, supports_lifo: true
                 },
                 score: { total: 87.5, load: 95, access: 85, space: 80, cost: 85 }, isBest: true
@@ -319,6 +320,7 @@
                     id: 'radio-shuttle', name: 'Radio Shuttle Racking',
                     description: 'Semi-automated high-density system using remote-controlled shuttle carts.',
                     max_load_per_level: 2500, storage_density_pct: 70, aisle_width: 3.0,
+                    upright_height_options: [4, 5, 6, 7, 8, 9, 10, 12],
                     price_per_position_cny: 200, supports_fifo: true, supports_lifo: true
                 },
                 score: { total: 78.2, load: 85, access: 70, space: 85, cost: 65 }, isBest: false
@@ -328,6 +330,7 @@
                     id: 'drive-in', name: 'Drive-In Racking',
                     description: 'High-density storage system where forklifts drive directly into the racking lanes.',
                     max_load_per_level: 2000, storage_density_pct: 75, aisle_width: 3.0,
+                    upright_height_options: [4, 5, 6, 7, 8, 9, 10, 12],
                     price_per_position_cny: 150, supports_fifo: false, supports_lifo: true
                 },
                 score: { total: 72.0, load: 70, access: 60, space: 88, cost: 75 }, isBest: false
@@ -390,11 +393,12 @@
     }
 
     function estimatePalletPositions(product, specs) {
+        if (!product || !specs || !specs.length || !specs.width || !product.aisle_width) return 0;
         var area = specs.length * specs.width;
         var aisleRatio = product.aisle_width / (product.aisle_width + 2.7);
         var usableArea = area * (1 - aisleRatio * 0.5);
         var palletPositions = Math.floor(usableArea / 2.5);
-        var maxH = Math.max.apply(null, product.upright_height_options);
+        var maxH = product.upright_height_options ? Math.max.apply(null, product.upright_height_options) : 10;
         var levels = Math.min(Math.floor(specs.height / 1.5), Math.ceil(maxH / 1.5));
         levels = Math.max(2, levels);
         return Math.floor(palletPositions * levels / 3);
@@ -525,9 +529,11 @@
         e.preventDefault();
         var form = document.getElementById('quote-form');
         var submitBtn = form.querySelector('button[type="submit"]');
-        var originalText = submitBtn.textContent;
 
-        // Show loading state
+        // Prevent double submission
+        if (submitBtn.disabled) return;
+
+        var originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending...';
 
@@ -562,32 +568,54 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(quoteData)
         })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
         .then(function (data) {
             if (data.success) {
-                showQuoteSuccess();
+                showQuoteSuccess(false);
             } else { fallbackToMailto(); }
         })
         .catch(function () { fallbackToMailto(); });
 
         function fallbackToMailto() {
-            // If backend is unavailable, open user's email client as fallback
             var subject = encodeURIComponent('RackingHub Planner — Quote Request from ' + state.contactData.name);
             var body = encodeURIComponent('Name: ' + state.contactData.name + '\nEmail: ' + state.contactData.email + '\nCompany: ' + state.contactData.company + '\nPhone: ' + state.contactData.phone + '\nCountry: ' + state.contactData.country + '\n\n---\nPlease see my warehouse specs and recommended plan at rackinghub.com/planner/');
             window.open('mailto:kevin@boracs.com?subject=' + subject + '&body=' + body);
-            showQuoteSuccess();
+            showQuoteSuccess(true);
         }
 
-        function showQuoteSuccess() {
+        function showQuoteSuccess(isFallback) {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
-            var container = document.getElementById('quote-form-container');
-            container.innerHTML = '<div class="quote-success" style="text-align:center;padding:2rem 1rem;">' +
-                '<div style="font-size:3rem;margin-bottom:0.5rem;">✓</div>' +
+            // Hide form, show success message (form preserved, can be restored)
+            var formEl = document.getElementById('quote-form');
+            if (formEl) formEl.style.display = 'none';
+            var existing = document.getElementById('quote-success-msg');
+            if (existing) existing.remove();
+
+            var successDiv = document.createElement('div');
+            successDiv.id = 'quote-success-msg';
+            successDiv.style.cssText = 'text-align:center;padding:1.5rem 1rem;margin-top:1rem;';
+            var fallbackNote = isFallback ? '<p style="font-size:0.85rem;color:#92400e;margin-top:0.75rem;">⚠ Your email client should have opened — please make sure the email was sent.</p>' : '';
+            successDiv.innerHTML = '<div style="font-size:3rem;margin-bottom:0.5rem;">✓</div>' +
                 '<h3 style="color:#059669;margin-bottom:0.5rem;">Quote Request Sent!</h3>' +
-                '<p style="color:#4b5563;">Thank you, <strong>' + escapeHtml(state.contactData.name) + '</strong>! Our engineering team will review your requirements and contact you at <strong>' + escapeHtml(state.contactData.email) + '</strong> within 24 hours with a detailed quotation including CAD drawings and structural calculations.</p>' +
-                '</div>';
+                '<p style="color:#4b5563;">Thank you, <strong>' + escapeHtml(state.contactData.name) + '</strong>! Our engineering team will review your requirements and contact you at <strong>' + escapeHtml(state.contactData.email) + '</strong> within 24 hours.</p>' +
+                '<button type="button" class="btn btn-outline" onclick="App.resetQuoteForm()" style="margin-top:0.75rem;">Submit Another Request</button>' +
+                fallbackNote;
+            var container = document.getElementById('quote-form-container');
+            if (container) container.appendChild(successDiv);
         }
+    };
+
+    App.resetQuoteForm = function () {
+        var container = document.getElementById('quote-form-container');
+        var formEl = document.getElementById('quote-form');
+        var successMsg = document.getElementById('quote-success-msg');
+        if (successMsg) successMsg.remove();
+        if (formEl) formEl.style.display = '';
+        if (formEl) formEl.reset();
     };
 
     // ===== 工具函数 =====
