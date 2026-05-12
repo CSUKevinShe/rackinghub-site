@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260511d">
+    <link rel="stylesheet" href="style.css?v=20260512a">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -49,6 +49,17 @@
     </div>
 
     <main id="app">
+        <!-- ===== Desktop-Only Notice (shown on small screens) ===== -->
+        <div class="desktop-only-notice" id="desktop-notice">
+            <div class="desktop-notice-content">
+                <span class="desktop-notice-icon">🖥️</span>
+                <h2>Desktop Optimized</h2>
+                <p>RackingHub Planner is designed for desktop screens with a full-featured layout engine. Some features may not display correctly on smaller devices.</p>
+                <p class="desktop-notice-hint">For the best experience, please use a desktop or laptop computer with a screen width of <strong>1024px or wider</strong>.</p>
+                <button class="desktop-notice-dismiss" onclick="dismissDesktopNotice()">Continue Anyway</button>
+            </div>
+        </div>
+
         <!-- ===== Page 1: Landing ===== -->
         <section id="page-landing" class="page active">
             <!-- Hero -->
@@ -379,6 +390,11 @@
                                     <span class="param-unit">mm</span>
                                 </div>
                                 <div class="param-field">
+                                    <label for="param-first-beam-h">First Beam Height <span class="param-help" title="Height from floor to first beam — typically higher for forklift access">ⓘ</span></label>
+                                    <input type="number" id="param-first-beam-h" value="2.5" min="1.5" max="4.0" step="0.1" class="param-input" placeholder="2.5">
+                                    <span class="param-unit">m</span>
+                                </div>
+                                <div class="param-field">
                                     <label for="param-upright-d">Upright Depth <span class="param-help" title="Frame depth — affects stability and load rating">ⓘ</span></label>
                                     <input type="number" id="param-upright-d" value="80" min="60" max="120" step="10" class="param-input" placeholder="80">
                                     <span class="param-unit">mm</span>
@@ -694,8 +710,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260511c"></script>
-    <script src="app.js?v=20260511c"></script>
+    <script src="layout-engine.js?v=20260512a"></script>
+    <script src="app.js?v=20260512a"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {
@@ -718,6 +734,11 @@
                         btn.parentElement.classList.contains('collapsed') ? '1' : '0');
                 } catch(e) {}
             }
+        }
+        // Desktop-only notice dismiss
+        function dismissDesktopNotice() {
+            document.getElementById('desktop-notice').classList.add('dismissed');
+            try { localStorage.setItem('planner_desktop_notice_dismissed', '1'); } catch(e) {}
         }
     </script>
 </body>

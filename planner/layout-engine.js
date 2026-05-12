@@ -86,6 +86,7 @@
             palletDepth: 800,
             palletHeight: 1500,
             beamHeight: 120,
+            firstBeamHeight: 2.5,
             uprightDepth: 80,
             interPalletGap: 100,
             columnSpacingX: 15,
@@ -653,13 +654,14 @@
             var levels = p.levels;
             var palletsPerBay = p.palletsPerLevel;
             var bayWidth = preset.rackWidth;
-            var warehouseHeight = levels * 2.0;
+            var rackHeight = p.rackHeight || 6.0; // actual rack height in meters
+            var firstBeamHeight = p.firstBeamHeight || 2.5; // first beam height in meters
             var totalBayW = bayWidth * palletsPerBay;
             var scaleX = drawW / totalBayW;
-            var scaleY = drawH / warehouseHeight;
+            var scaleY = drawH / rackHeight;
             var sc = Math.min(scaleX, scaleY);
             var rackW = totalBayW * sc;
-            var rackH = warehouseHeight * sc;
+            var rackH = rackHeight * sc;
             var offsetX = pad + (drawW - rackW) / 2;
             var offsetY = pad + (drawH - rackH);
 
@@ -681,12 +683,19 @@
                 ctx.fillRect(ux, offsetY, uprightPxW, rackH);
             }
 
-            // Beams + pallets
+            // Beams + pallets — proper level height distribution
             var beamH = 0.06;
             var beamPxH = Math.max(2, beamH * sc);
-            var levelHeight = warehouseHeight / levels;
+            var firstBeamHeight = p.firstBeamHeight || 2.5;
+            var remainingHeight = rackHeight - firstBeamHeight;
+            var upperLevels = levels - 1;
+            var upperLevelSpacing = upperLevels > 0 ? remainingHeight / upperLevels : 0;
+            var levelSpacing = [firstBeamHeight];
+            for (var i = 1; i < levels; i++) levelSpacing.push(upperLevelSpacing);
+            var cumulativeY = 0;
             for (var lv = 0; lv < levels; lv++) {
-                var ly = offsetY + rackH - (lv + 1) * levelHeight * sc - beamPxH / 2;
+                cumulativeY += levelSpacing[lv];
+                var ly = offsetY + rackH - cumulativeY * sc - beamPxH / 2;
 
                 // Beam — yellow horizontal line
                 ctx.fillStyle = C.beam;
@@ -709,19 +718,21 @@
                 }
             }
 
-            // Height dimension line
+            // Height dimension line — show actual rack height
             this.drawDimensionLine(ctx, {
                 startX: offsetX - 16, startY: offsetY,
                 endX: offsetX - 16, endY: offsetY + rackH,
-                label: this.formatDimension(warehouseHeight),
+                label: this.formatDimension(rackHeight),
                 isHorizontal: false
             });
 
             // Level labels
             ctx.font = '700 8px -apple-system, sans-serif';
             ctx.textAlign = 'left'; ctx.fillStyle = '#6b7280';
+            var cumY2 = 0;
             for (var lv2 = 0; lv2 < levels; lv2++) {
-                var levelY = offsetY + rackH - (lv2 + 0.5) * levelHeight * sc;
+                cumY2 += levelSpacing[lv2];
+                var levelY = offsetY + rackH - cumY2 * sc + (levelSpacing[lv2] / 2) * sc;
                 ctx.fillText('L' + (lv2 + 1), offsetX + rackW + 5, levelY + 3);
             }
 
@@ -770,14 +781,14 @@
             var levels = p.levels;
             var rackDepth = preset.rackDepth;
             var aisleW = p.aisleWidth || preset.aisleWidth;
-            var warehouseHeight = levels * 2.0;
+            var rackHeight = p.rackHeight || 6.0; // actual rack height in meters
             var totalW = rackDepth + aisleW;
             var scaleX = drawW / totalW;
-            var scaleY = drawH / warehouseHeight;
+            var scaleY = drawH / rackHeight;
             var sc = Math.min(scaleX, scaleY);
             var rackW = rackDepth * sc;
             var aisleW_Px = aisleW * sc;
-            var rackH = warehouseHeight * sc;
+            var rackH = rackHeight * sc;
             var offsetX = pad + (drawW - rackW - aisleW_Px) / 2;
             var offsetY = pad + (drawH - rackH);
 
@@ -795,11 +806,18 @@
             ctx.strokeStyle = C.rackBorder; ctx.lineWidth = 1;
             ctx.strokeRect(offsetX, offsetY, rackW, rackH);
 
-            // Level dividers + pallets + beams
-            var levelHeight = warehouseHeight / levels;
+            // Level dividers + pallets + beams — proper level height distribution
+            var firstBeamHeight = p.firstBeamHeight || 2.5;
+            var remainingHeight = rackHeight - firstBeamHeight;
+            var upperLevels = levels - 1;
+            var upperLevelSpacing = upperLevels > 0 ? remainingHeight / upperLevels : 0;
+            var levelSpacing = [firstBeamHeight];
+            for (var i = 1; i < levels; i++) levelSpacing.push(upperLevelSpacing);
+            var cumSideY = 0;
             for (var lv = 0; lv < levels; lv++) {
-                var lvY = offsetY + rackH - (lv + 1) * levelHeight * sc;
-                var lvH = levelHeight * sc;
+                cumSideY += levelSpacing[lv];
+                var lvY = offsetY + rackH - cumSideY * sc;
+                var lvH = levelSpacing[lv] * sc;
 
                 // Beam — yellow line
                 ctx.strokeStyle = C.beam;
@@ -858,7 +876,7 @@
             var dimX = offsetX - 16;
             this.drawDimensionLine(ctx, {
                 startX: dimX, startY: offsetY, endX: dimX, endY: offsetY + rackH,
-                label: this.formatDimension(warehouseHeight), isHorizontal: false
+                label: this.formatDimension(rackHeight), isHorizontal: false
             });
 
             // Title
@@ -903,6 +921,7 @@
                 'param-rack-depth': 'rackDepth',
                 'param-rack-height': 'rackHeight',
                 'param-beam-h': 'beamHeight',
+                'param-first-beam-h': 'firstBeamHeight',
                 'param-upright-d': 'uprightDepth',
                 'param-levels': 'levels',
                 'param-pallets-level': 'palletsPerLevel',

@@ -1596,3 +1596,71 @@ button { cursor: pointer; font-family: inherit; }
     .results-header { margin-top: 0 !important; }
     .comparison-table { page-break-inside: avoid; }
 }
+
+/* ============================================================
+   Desktop-Only Notice (blocks small screens)
+   ============================================================ */
+.desktop-only-notice {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+.desktop-only-notice.dismissed {
+    display: none !important;
+}
+.desktop-notice-content {
+    max-width: 480px;
+    text-align: center;
+}
+.desktop-notice-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+.desktop-notice-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+.desktop-notice-content p {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+}
+.desktop-notice-hint {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+}
+.desktop-notice-hint strong {
+    color: var(--color-accent);
+}
+.desktop-notice-dismiss {
+    margin-top: 1.5rem;
+    padding: 0.6rem 1.8rem;
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.desktop-notice-dismiss:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.5);
+}
+
+@media (max-width: 1023px) {
+    .desktop-only-notice:not(.dismissed) {
+        display: flex;
+    }
+}
