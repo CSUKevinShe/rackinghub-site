@@ -673,14 +673,16 @@
                 ctx.beginPath(); ctx.moveTo(gx, pad + drawH); ctx.lineTo(gx - 4, pad + drawH + 4); ctx.stroke();
             }
 
-            // Upright frames (blue vertical lines, thicker)
+            // Upright frames — extend 250mm above top beam for safety (prevents pallets from falling off)
+            var uprightExtension = 0.25; // meters — standard 225-300mm
+            var uprightExtPx = uprightExtension * sc;
             var uprightWidth = 0.08;
             var uprightPxW = Math.max(3, uprightWidth * sc);
             var numUprights = palletsPerBay + 1;
             ctx.fillStyle = C.upright;
             for (var u = 0; u < numUprights; u++) {
                 var ux = offsetX + u * bayWidth * sc - uprightPxW / 2;
-                ctx.fillRect(ux, offsetY, uprightPxW, rackH);
+                ctx.fillRect(ux, offsetY - uprightExtPx, uprightPxW, rackH + uprightExtPx);
             }
 
             // Beams + pallets — proper level height distribution
@@ -840,11 +842,12 @@
                 ctx.fillText('L' + (lv + 1), offsetX + 3, lvY - palletPxH / 2 + 3);
             }
 
-            // Upright edges (blue vertical lines at rack edges)
+            // Upright edges — extend 250mm above top beam for safety
+            var uprightExtPx = 0.25 * sc;
             ctx.strokeStyle = C.upright;
             ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(offsetX, offsetY); ctx.lineTo(offsetX, offsetY + rackH); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(offsetX + rackW, offsetY); ctx.lineTo(offsetX + rackW, offsetY + rackH); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(offsetX, offsetY - uprightExtPx); ctx.lineTo(offsetX, offsetY + rackH); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(offsetX + rackW, offsetY - uprightExtPx); ctx.lineTo(offsetX + rackW, offsetY + rackH); ctx.stroke();
 
             // Aisle zone (dashed border)
             var aisleX = offsetX + rackW;
