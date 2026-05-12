@@ -4,11 +4,10 @@
 # Force trailing slash for directories (SEO consistency)
 /planner /planner/ 301
 
-# HTML extension fallback for extensionless URLs
-/* /:splat.html 200
-
-# Remove trailing slash for files (prevent double content)
-# Note: Cloudflare Pages handles this automatically for .html files
+# Extensionless URLs -> .html (Cloudflare Pages handles this natively)
+# NOTE: Do NOT use /* /:splat.html 200 — it also matches images/css/js!
+# Cloudflare Pages automatically maps /products/heavy-duty-racking
+# to /products/heavy-duty-racking.html without needing a rule.
 
 # Planner coming-soon -> planner (backward compatibility)
 /planner-coming-soon /planner/ 301
