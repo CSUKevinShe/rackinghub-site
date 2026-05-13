@@ -1015,7 +1015,7 @@
             var s3 = document.getElementById('stat-rows');
             if (s3) s3.textContent = s.rackBlockCount;
             var s4 = document.getElementById('stat-cost');
-            if (s4) s4.textContent = '¥' + s.estimatedCostCNY.toLocaleString('en-US');
+            if (s4) s4.textContent = (typeof formatCurrency === 'function' ? formatCurrency(s.estimatedCostCNY) : '¥' + s.estimatedCostCNY.toLocaleString('en-US'));
         },
 
         // ===== Update status bar =====

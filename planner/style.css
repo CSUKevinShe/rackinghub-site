@@ -1161,6 +1161,50 @@ button { cursor: pointer; font-family: inherit; }
 }
 
 /* Mini recommendation */
+.currency-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--param-bg);
+    border-bottom: 1px solid var(--param-border);
+    flex-wrap: wrap;
+}
+.currency-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+}
+.currency-select {
+    flex: 0 1 auto;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #1e293b;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.currency-select:hover {
+    border-color: var(--color-accent);
+}
+.currency-select:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.2);
+}
+.currency-rate {
+    font-size: 0.62rem;
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+/* Mini recommendation */
 .rec-mini {
     padding: 0.6rem 1rem;
     background: #fef3c7;

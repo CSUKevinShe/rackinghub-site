@@ -21,6 +21,62 @@
         loaded: false
     };
 
+    // ===== 货币换算 =====
+    // 近似汇率 (1 CNY = X 目标货币), 定期更新
+    var EXCHANGE_RATES = {
+        CNY: { rate: 1,       symbol: '¥',  name: 'CNY' },
+        USD: { rate: 0.138,   symbol: '$',  name: 'USD' },
+        EUR: { rate: 0.127,   symbol: '€',  name: 'EUR' },
+        GBP: { rate: 0.109,   symbol: '£',  name: 'GBP' },
+        AUD: { rate: 0.213,   symbol: 'A$', name: 'AUD' }
+    };
+
+    var currentCurrency = 'CNY';
+
+    function formatCurrency(cnyAmount) {
+        var cur = EXCHANGE_RATES[currentCurrency] || EXCHANGE_RATES.CNY;
+        var converted = Math.round(cnyAmount * cur.rate);
+        return cur.symbol + converted.toLocaleString('en-US');
+    }
+    // Expose globally so layout-engine.js can use it
+    window.formatCurrency = formatCurrency;
+
+    function getCurrencyInfo() {
+        return EXCHANGE_RATES[currentCurrency];
+    }
+
+    function setCurrency(code) {
+        if (EXCHANGE_RATES[code]) {
+            currentCurrency = code;
+            var cur = EXCHANGE_RATES[code];
+            // 更新汇率提示
+            var rateEl = document.getElementById('currency-rate');
+            if (rateEl) {
+                if (code === 'CNY') {
+                    rateEl.textContent = '1 CNY = 1.00 CNY';
+                } else {
+                    rateEl.textContent = '1 CNY ≈ ' + cur.rate + ' ' + cur.name;
+                }
+            }
+        }
+    }
+
+    // 绑定货币选择器事件
+    function initCurrencySelector() {
+        var sel = document.getElementById('currency-select');
+        if (!sel) return;
+        sel.addEventListener('change', function () {
+            setCurrency(sel.value);
+            // 重新渲染所有价格显示
+            if (state.recommendations && state.recommendations.length > 0) {
+                renderComparisonTable(state.recommendations);
+            }
+            if (typeof LayoutEngine !== 'undefined' && LayoutEngine.stats) {
+                LayoutEngine.updateStats();
+            }
+        });
+    }
+
     // ===== localStorage 持久化 =====
     var STORAGE_KEY = 'rackinghub_planner_progress';
     var STORAGE_VERSION = 1;
@@ -420,9 +476,9 @@
             { label: 'Aisle Width', getValue: function (r) { return r.product.aisle_width + ' m'; }, best: 'low' },
             { label: 'FIFO Support', getValue: function (r) { return r.product.supports_fifo ? '✓ Yes' : ' No'; }, best: 'yes' },
             { label: 'LIFO Support', getValue: function (r) { return r.product.supports_lifo ? '✓ Yes' : '✗ No'; }, best: 'yes' },
-            { label: 'Est. Price per Position', getValue: function (r) { return '¥' + r.product.price_per_position_cny; }, best: 'low' },
+            { label: 'Est. Price per Position', getValue: function (r) { return formatCurrency(r.product.price_per_position_cny); }, best: 'low' },
             { label: 'Est. Pallet Positions', getValue: function (r) { return '~' + formatNumber(estimatePalletPositions(r.product, specs)); }, best: 'high' },
-            { label: 'Est. Total Cost', getValue: function (r) { var p = estimatePalletPositions(r.product, specs) * r.product.price_per_position_cny; return '¥' + formatNumber(Math.round(p)); }, best: 'low' }
+            { label: 'Est. Total Cost', getValue: function (r) { var p = estimatePalletPositions(r.product, specs) * r.product.price_per_position_cny; return formatCurrency(Math.round(p)); }, best: 'low' }
         ];
 
         rows.forEach(function (row) {
@@ -818,6 +874,9 @@
             var pageId = state.currentStep === 2 ? 'page-specs' : 'page-results';
             showPage(pageId);
         }
+
+        // Init currency selector
+        initCurrencySelector();
 
         // Load data
         loadData();

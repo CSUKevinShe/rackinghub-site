@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260512a">
+    <link rel="stylesheet" href="style.css?v=20260513a">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -462,6 +462,19 @@
                             </div>
                         </div>
 
+                        <!-- Currency Selector -->
+                        <div class="currency-selector" id="currency-selector">
+                            <label for="currency-select" class="currency-label">Currency:</label>
+                            <select id="currency-select" class="currency-select">
+                                <option value="CNY">🇨🇳 CNY (¥) — Chinese Yuan</option>
+                                <option value="USD">🇺🇸 USD ($) — US Dollar</option>
+                                <option value="EUR">🇪🇺 EUR (€) — Euro</option>
+                                <option value="GBP">🇬🇧 GBP (£) — British Pound</option>
+                                <option value="AUD">🇦🇺 AUD (A$) — Australian Dollar</option>
+                            </select>
+                            <span class="currency-rate" id="currency-rate">1 CNY = 1.00 CNY</span>
+                        </div>
+
                         <!-- Recommendation mini -->
                         <div class="rec-mini">
                             <span class="rec-mini-label">Recommendation:</span>
@@ -710,8 +723,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260512b"></script>
-    <script src="app.js?v=20260512a"></script>
+    <script src="layout-engine.js?v=20260513a"></script>
+    <script src="app.js?v=20260513a"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {
