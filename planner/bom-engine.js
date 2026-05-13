@@ -91,20 +91,22 @@
                 weightPerUnit: (beamLenM * beamWeightPerM).toFixed(2) + ' kg',
                 totalWeight: beamTotalWeight.toFixed(1)
             });
-            totals.totalWeightKg += beamTotalWeight;
-
-            // 4. Braces (横斜撑)
+            // 4. Braces (横斜撑) — Z型斜撑结构
+            //    从底部到首层横梁上方，每300mm一根横撑，之间zigzag斜撑连接
             var braceProfile = p.braceProfile || '40*20(1.5)';
             var braceWeightPerM = BOMEngine._getProfileWeight(braceProfile);
-            var rackDepthM = (p.rackDepth || 1.0);
-            var braceVerticalSpacing = 0.6;
+            var rackDepthM = (p.rackDepth || 1.0); // 货架深度（米）
+            var firstBeamHeightM = (p.firstBeamHeight || 2.5); // 首层横梁高度（米）
+            var braceVerticalSpacing = 0.3; // 横撑间距 300mm
             var braceLenM = Math.sqrt(rackDepthM * rackDepthM + braceVerticalSpacing * braceVerticalSpacing);
-            var uprightHeightM = p.warehouseHeight || 6;
-            var segmentsPerFace = Math.round(uprightHeightM / braceVerticalSpacing);
-            var braceLenPerFace = segmentsPerFace * (rackDepthM + braceLenM);
+            var horizontalBracesPerFace = Math.ceil(firstBeamHeightM / braceVerticalSpacing) + 1; // 含底+横梁位
+            var diagonalBracesPerFace = horizontalBracesPerFace - 1; // zigzag连接
+            var braceTotalLenPerFace = horizontalBracesPerFace * rackDepthM + diagonalBracesPerFace * braceLenM;
+            // 柱片面数
             var frameFaces = (rows.baysPerRow + 1) * rows.totalRows * (rows.isBackToBack ? 2 : 1);
-            var totalBraceLen = frameFaces * braceLenPerFace;
+            var totalBraceLen = frameFaces * braceTotalLenPerFace;
             var totalBraceWeight = totalBraceLen * braceWeightPerM;
+            // 斜撑出厂标准长度一般2.5-3m，按2.5m/根估算
             var braceStandardLen = 2.5;
             var bracePiecesRaw = Math.ceil(totalBraceLen / braceStandardLen);
             var bracePieces = Math.ceil(bracePiecesRaw * COEFFICIENTS.brace);
@@ -119,7 +121,7 @@
                 coefficient: COEFFICIENTS.brace,
                 weightPerUnit: '~' + (braceStandardLen * braceWeightPerM).toFixed(2) + ' kg',
                 totalWeight: totalBraceWeight.toFixed(1),
-                _detail: segmentsPerFace + '段/面 × ' + frameFaces + '面 (横撑' + rackDepthM.toFixed(1) + 'm + 斜撑' + braceLenM.toFixed(2) + 'm)'
+                _detail: '横撑' + horizontalBracesPerFace + '+斜撑' + diagonalBracesPerFace + '/面 × ' + frameFaces + '面 (300mm间距, 斜撑' + braceLenM.toFixed(2) + 'm)'
             });
             totals.totalWeightKg += totalBraceWeight;
 
