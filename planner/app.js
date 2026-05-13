@@ -527,8 +527,13 @@
             LayoutEngine.drawTopView('canvas-top-results');
             LayoutEngine.drawFrontView('canvas-front-results');
             LayoutEngine.drawSideView('canvas-side-results');
+
+            // Also draw on main canvases (for thumbnails + switchView)
+            LayoutEngine.drawTopView('canvas-top');
+            LayoutEngine.drawFrontView('canvas-front');
+            LayoutEngine.drawSideView('canvas-side');
         }
-    }
+    };
 
     // ===== Reset to defaults =====
     App.resetDefaults = function () {
