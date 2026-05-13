@@ -237,7 +237,10 @@
             renderLayout(recs[0]);
             if (typeof LayoutEngine !== 'undefined') {
                 LayoutEngine.updateStats();
-                if (typeof App._drawThumbnails === 'function') App._drawThumbnails();
+                // Use rAF to ensure Canvas pixels are flushed before copying to thumbnails
+                requestAnimationFrame(function () {
+                    if (typeof App._drawThumbnails === 'function') App._drawThumbnails();
+                });
             }
             document.getElementById('results-loading').style.display = 'none';
             document.getElementById('results-content').style.display = 'block';
