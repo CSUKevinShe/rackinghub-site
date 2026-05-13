@@ -93,18 +93,21 @@
             });
             // 4. Braces (横斜撑) — Z型和D型共用斜撑数量，仅横撑数量不同
             //    斜撑由立柱总高度决定（约600mm间距zigzag），与横撑密度无关
-            //    斜撑公式: Math.round(高度÷0.6) - 1  （已验证6m=9, 8.4m=13, 9m=14）
-            //    D型：横撑2根（底部+顶部）；Z型：横撑6根（中间额外加固）
-            //    横撑数量为固定值，不随高度变化
+            //    斜撑公式: Math.round(高度÷0.6) - 1  （已验证6m=9, 8.4m=13, 9m=14, 11m=17）
+            //    D型基础2根（底150mm+顶），Z型基础6根（中间额外加固）
+            //    当顶部段长 > 600mm（标准间距）时，说明顶部空缺过大，各加1根横撑封顶
             var braceProfile = p.braceProfile || '40*20(1.5)';
             var braceWeightPerM = BOMEngine._getProfileWeight(braceProfile);
             var rackDepthM = (p.rackDepth || 1.0); // 货架深度（米）
             var uprightHeightM = p.warehouseHeight || 6; // 柱片总高度
-            var braceVerticalSpacing = uprightHeightM / (Math.round(uprightHeightM / 0.6)); // 斜撑实际间距
-            var braceLenM = Math.sqrt(rackDepthM * rackDepthM + braceVerticalSpacing * braceVerticalSpacing);
-            var diagonalBracesPerFace = Math.round(uprightHeightM / 0.6) - 1; // 斜撑数（固定，与类型无关）
+            var braceSegments = Math.round(uprightHeightM / 0.6); // 斜撑分段数
+            var topGapM = uprightHeightM / braceSegments; // 每段长度
+            var diagonalBracesPerFace = braceSegments - 1; // 斜撑数（固定，与类型无关）
             var isZType = true; // Z型斜撑，默认true（横撑更密，刚性更强）
-            var horizontalBracesPerFace = isZType ? 6 : 2; // Z型6根，D型2根（固定值）
+            var baseHorizontalBraces = isZType ? 6 : 2; // D型基础2根，Z型基础6根
+            var extraBrace = topGapM > 0.6 ? 1 : 0; // 顶部段长>600mm时加1根
+            var horizontalBracesPerFace = baseHorizontalBraces + extraBrace;
+            var braceLenM = Math.sqrt(rackDepthM * rackDepthM + (uprightHeightM / diagonalBracesPerFace) * (uprightHeightM / diagonalBracesPerFace));
             var braceTotalLenPerFace = horizontalBracesPerFace * rackDepthM + diagonalBracesPerFace * braceLenM;
             // 柱片面数
             var frameFaces = (rows.baysPerRow + 1) * rows.totalRows * (rows.isBackToBack ? 2 : 1);
