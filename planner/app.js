@@ -602,8 +602,16 @@
 
     // ===== Auto-fit canvas to fill viewport (#8) =====
     App.autoFitCanvas = function () {
-        // Find the active (visible) canvas
+        // Find the active (visible) canvas — prefer .active-canvas but fall back to first visible
         var activeCanvas = document.querySelector('.view-canvas.active-canvas');
+        if (!activeCanvas || activeCanvas.clientWidth === 0) {
+            // Fall back: find the first canvas that is actually visible
+            document.querySelectorAll('.view-canvas').forEach(function (c) {
+                if (c.clientWidth > 0 && c.clientHeight > 0) {
+                    activeCanvas = c;
+                }
+            });
+        }
         if (!activeCanvas) return;
 
         // Get container visible area
