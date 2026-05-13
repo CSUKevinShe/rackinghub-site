@@ -535,6 +535,9 @@
             LayoutEngine.drawTopView('canvas-top');
             LayoutEngine.drawFrontView('canvas-front');
             LayoutEngine.drawSideView('canvas-side');
+
+            // #8: Auto-fit canvas to fill viewport after drawing
+            requestAnimationFrame(function () { App.autoFitCanvas(); });
         }
     };
 
@@ -593,6 +596,92 @@
         var canvases = document.querySelectorAll('.view-canvas, .view-canvas-sub');
         canvases.forEach(function (c) {
             c.style.transform = 'scale(' + App._zoomLevel + ')';
+            c.style.transformOrigin = 'top left';
+        });
+    };
+
+    // ===== Auto-fit canvas to fill viewport (#8) =====
+    App.autoFitCanvas = function () {
+        // Find the active (visible) canvas
+        var activeCanvas = document.querySelector('.view-canvas.active-canvas');
+        if (!activeCanvas) return;
+
+        // Get container visible area
+        var canvasBody = document.querySelector('.canvas-body');
+        if (!canvasBody) return;
+        var containerW = canvasBody.clientWidth;
+        var containerH = canvasBody.clientHeight;
+        if (!containerW || !containerH) return;
+
+        // Get content dimensions from LayoutEngine
+        if (typeof LayoutEngine === 'undefined' || !LayoutEngine.params) return;
+        var p = LayoutEngine.params;
+        var warehouseL = p.warehouseLength || 60;
+        var warehouseW = p.warehouseWidth || 40;
+
+        // Content footprint depends on view type
+        var activeId = activeCanvas.id;
+        var contentW, contentH;
+
+        if (activeId === 'canvas-top') {
+            // Top view: warehouse L x W
+            contentW = warehouseL;
+            contentH = warehouseW;
+        } else if (activeId === 'canvas-front') {
+            // Front view: warehouse L x height
+            var wh = p.warehouseHeight || 6;
+            contentW = warehouseL;
+            contentH = wh;
+        } else if (activeId === 'canvas-side') {
+            // Side view: effective block depth x height
+            var wh = p.warehouseHeight || 6;
+            var blockDepth = (p.rackDepth || 1.0) * 2 + (p.backToBackGap || 200) / 1000;
+            var rowsNeeded = LayoutEngine.stats ? LayoutEngine.stats.rowsNeeded : 1;
+            var aisleW = p.aisleWidth || 3.2;
+            var totalDepth = rowsNeeded * blockDepth + Math.max(0, rowsNeeded - 1) * aisleW;
+            contentW = totalDepth;
+            contentH = wh;
+        } else {
+            return;
+        }
+
+        if (!contentW || !contentH) return;
+
+        // Canvas drawing uses pad=55 on each side, so usable area = canvas - 110
+        // But we want content to fill the CONTAINER, not just the canvas area
+        // The canvas itself is sized to container (up to 1200x600)
+        var canvasCSSW = activeCanvas.clientWidth || containerW;
+        var canvasCSSH = activeCanvas.clientHeight || containerH;
+
+        // How much of the canvas does the content occupy at scale=1.0 (no CSS transform)?
+        // Content is drawn with scale = (canvasSize - 110) / contentSize
+        // So at CSS scale=1.0, content occupies min((canvasW-110)/contentW, (canvasH-110)/contentH)
+        // of the canvas. If this ratio is low, we need to zoom IN.
+        var fillRatioX = (canvasCSSW - 110) / contentW;
+        var fillRatioY = (canvasCSSH - 110) / contentH;
+        var contentScale = Math.min(fillRatioX, fillRatioY);
+
+        // Target: content should fill ~90% of the container
+        // Current: contentScale pixels per meter, container has containerW/H pixels
+        // content occupies contentSize * contentScale pixels
+        var contentPixelW = contentW * contentScale;
+        var contentPixelH = contentH * contentScale;
+        var currentFillRatio = Math.min(contentPixelW / containerW, contentPixelH / containerH);
+
+        // If content already fills > 65% of container, no need to zoom
+        if (currentFillRatio > 0.65) return;
+
+        // Compute zoom to fill 90%
+        var targetZoom = Math.min(0.9 / Math.max(currentFillRatio, 0.1), 3.0);
+        targetZoom = Math.max(targetZoom, 0.3);
+
+        // Apply zoom
+        App._zoomLevel = targetZoom;
+        var display = document.getElementById('zoom-level');
+        if (display) display.textContent = Math.round(targetZoom * 100) + '%';
+        var allCanvases = document.querySelectorAll('.view-canvas, .view-canvas-sub');
+        allCanvases.forEach(function (c) {
+            c.style.transform = 'scale(' + targetZoom + ')';
             c.style.transformOrigin = 'top left';
         });
     };
@@ -674,6 +763,9 @@
             else if (viewName === 'front') LayoutEngine.drawFrontView('canvas-front');
             else if (viewName === 'side') LayoutEngine.drawSideView('canvas-side');
         }
+
+        // Re-fit after view switch
+        requestAnimationFrame(function () { App.autoFitCanvas(); });
     };
 
     // ===== Thumbnail Drawing =====
