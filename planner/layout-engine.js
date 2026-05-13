@@ -87,7 +87,7 @@
             palletHeight: 1500,
             beamHeight: 120,
             firstBeamHeight: 2.5,
-            uprightDepth: 80,
+            backToBackGap: 200, // mm, gap between back-to-back rack rows
             interPalletGap: 100,
             columnSpacingX: 15,
             columnSpacingY: 12,
@@ -417,7 +417,7 @@
 
             // ===== Rack rows =====
             var aisleW = p.aisleWidth || preset.aisleWidth;
-            var blockDepth = preset.rackDepth * 2 + 0.8;
+            var blockDepth = preset.rackDepth * 2 + ((p.backToBackGap || 200) / 1000);
             var bayWidth = preset.rackWidth;
             var levels = p.levels;
             var palletsPerBay = p.palletsPerLevel;
@@ -783,16 +783,18 @@
 
             var levels = p.levels;
             var rackDepth = preset.rackDepth;
+            var btbGapM = (p.backToBackGap || 200) / 1000; // mm to meters
+            var blockDepthM = rackDepth * 2 + btbGapM; // back-to-back block: rack + gap + rack
             var aisleW = p.aisleWidth || preset.aisleWidth;
             var rackHeight = p.rackHeight || 6.0; // actual rack height in meters
-            var totalW = rackDepth + aisleW;
+            var totalW = blockDepthM + aisleW;
             var scaleX = drawW / totalW;
             var scaleY = drawH / rackHeight;
             var sc = Math.min(scaleX, scaleY);
-            var rackW = rackDepth * sc;
+            var blockW = blockDepthM * sc;
             var aisleW_Px = aisleW * sc;
             var rackH = rackHeight * sc;
-            var offsetX = pad + (drawW - rackW - aisleW_Px) / 2;
+            var offsetX = pad + (drawW - blockW - aisleW_Px) / 2;
             var offsetY = pad + (drawH - rackH);
 
             // Ground line + hatch
@@ -927,7 +929,7 @@
                 'param-rack-height': 'rackHeight',
                 'param-beam-h': 'beamHeight',
                 'param-first-beam-h': 'firstBeamHeight',
-                'param-upright-d': 'uprightDepth',
+                'param-btb-gap': 'backToBackGap',
                 'param-levels': 'levels',
                 'param-pallets-level': 'palletsPerLevel',
                 'param-aisle-selective': 'aisleWidth',
