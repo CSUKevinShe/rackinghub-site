@@ -650,8 +650,12 @@
         // Canvas drawing uses pad=55 on each side, so usable area = canvas - 110
         // But we want content to fill the CONTAINER, not just the canvas area
         // The canvas itself is sized to container (up to 1200x600)
+        // NOTE: canvas.clientWidth/Height can be 0 if canvas has no CSS sizing,
+        // so always fall back to container dimensions.
         var canvasCSSW = activeCanvas.clientWidth || containerW;
         var canvasCSSH = activeCanvas.clientHeight || containerH;
+        if (!canvasCSSW) canvasCSSW = containerW;
+        if (!canvasCSSH) canvasCSSH = containerH;
 
         // How much of the canvas does the content occupy at scale=1.0 (no CSS transform)?
         // Content is drawn with scale = (canvasSize - 110) / contentSize
@@ -740,11 +744,14 @@
             btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
         });
 
-        // Update main canvas visibility
+        // Update main canvas visibility and active-canvas class
         var viewNames = ['top', 'front', 'side'];
         viewNames.forEach(function (v) {
             var canvas = document.getElementById('canvas-' + v);
-            if (canvas) canvas.style.display = (v === viewName) ? '' : 'none';
+            if (canvas) {
+                canvas.style.display = (v === viewName) ? '' : 'none';
+                canvas.classList.toggle('active-canvas', v === viewName);
+            }
         });
 
         // Update header title
