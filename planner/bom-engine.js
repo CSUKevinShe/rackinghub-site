@@ -25,16 +25,19 @@
                 basePlateCount: 0, totalWeightKg: 0, totalCostCNY: 0
             };
 
-            // 1. Uprights (立柱) — 每排两端各1组柱片, back-to-back算2列
-            var uprightProfile = p.uprightProfile || '100*70(2.5)'; // default
-            var uprightLength = p.warehouseHeight || 6; // meters total height
-            var uprightWeightPerM = BOMEngine._getProfileWeight(uprightProfile);
-            var uprightsPerFrame = 2; // each frame has 2 uprights (left+right)
-            // Each bay needs 2 uprights on left/right, shared between adjacent bays
-            // Total uprights = (baysPerRow + 1) * 2 sides * rows * (backToBack ? 2 : 1)
-            var uprightSets = (rows.baysPerRow + 1) * 2 * rows.totalRows;
+            // ===== 损耗系数（生产备料冗余） =====
+            var COEFFICIENTS = {
+                upright: 1.03,   // 立柱 3% 余量（切割损耗+备件）
+                beam:    1.02,   // 横梁 2% 余量（标准件为主）
+                brace:   1.05,   // 横斜撑 5% 余量（切割最多，zigzag结构）
+                basePlate: 1.02  // 脚底板 2% 余量
+            };
+
+            // 1. Uprights (立柱)
+            var uprightSetsRaw = (rows.baysPerRow + 1) * 2 * rows.totalRows;
+            var uprightSets = Math.ceil(uprightSetsRaw * COEFFICIENTS.upright);
             totals.uprightCount = uprightSets;
-            var uprightTotalLen = uprightSets * uprightLength; // meters
+            var uprightTotalLen = uprightSets * uprightLength;
             var uprightTotalWeight = uprightTotalLen * uprightWeightPerM;
 
             items.push({
@@ -43,31 +46,36 @@
                 unit: 'piece',
                 unitLength: uprightLength + 'm',
                 quantity: uprightSets,
+                quantityRaw: uprightSetsRaw,
+                coefficient: COEFFICIENTS.upright,
                 weightPerUnit: (uprightLength * uprightWeightPerM).toFixed(2) + ' kg',
                 totalWeight: uprightTotalWeight.toFixed(1)
             });
             totals.totalWeightKg += uprightTotalWeight;
 
-            // 2. Base plates (脚底板) — 每根立柱底部1个
-            totals.basePlateCount = uprightSets;
+            // 2. Base plates (脚底板)
+            var basePlatesRaw = uprightSetsRaw;
+            var basePlates = Math.ceil(basePlatesRaw * COEFFICIENTS.basePlate);
+            totals.basePlateCount = basePlates;
             items.push({
                 category: 'Base Plate (脚底板)',
                 profile: 'Standard',
                 unit: 'piece',
-                quantity: uprightSets,
+                quantity: basePlates,
+                quantityRaw: basePlatesRaw,
+                coefficient: COEFFICIENTS.basePlate,
                 weightPerUnit: '~1.5 kg',
-                totalWeight: (uprightSets * 1.5).toFixed(1)
+                totalWeight: (basePlates * 1.5).toFixed(1)
             });
-            totals.totalWeightKg += uprightSets * 1.5;
+            totals.totalWeightKg += basePlates * 1.5;
 
-            // 3. Beams (横梁) — 每层每bay需要2根横梁(前后), back-to-back共享中间
-            var beamProfile = p.beamProfile || 'B120*50'; // default
-            var beamSpan = BOMEngine._calcBeamSpan(p); // mm
+            // 3. Beams (横梁)
+            var beamProfile = p.beamProfile || 'B120*50';
+            var beamSpan = BOMEngine._calcBeamSpan(p);
             var beamWeightPerM = BOMEngine._getProfileWeight(beamProfile);
-            // Each bay per level needs 2 beams (front+back for single rack)
-            // For back-to-back: each bay needs 3 beams (front+middle+back)
             var beamsPerBay = rows.isBackToBack ? 3 : 2;
-            var totalBeams = rows.totalRows * rows.baysPerRow * p.levels * beamsPerBay;
+            var totalBeamsRaw = rows.totalRows * rows.baysPerRow * p.levels * beamsPerBay;
+            var totalBeams = Math.ceil(totalBeamsRaw * COEFFICIENTS.beam);
             totals.beamCount = totalBeams;
             var beamLenM = beamSpan / 1000;
             var beamTotalWeight = totalBeams * beamLenM * beamWeightPerM;
@@ -78,31 +86,40 @@
                 unit: 'piece',
                 unitSpan: beamSpan + 'mm',
                 quantity: totalBeams,
+                quantityRaw: totalBeamsRaw,
+                coefficient: COEFFICIENTS.beam,
                 weightPerUnit: (beamLenM * beamWeightPerM).toFixed(2) + ' kg',
                 totalWeight: beamTotalWeight.toFixed(1)
             });
             totals.totalWeightKg += beamTotalWeight;
 
-            // 4. Braces (横斜撑) — 每个柱片面需要
+            // 4. Braces (横斜撑)
             var braceProfile = p.braceProfile || '40*20(1.5)';
             var braceWeightPerM = BOMEngine._getProfileWeight(braceProfile);
-            // Each frame face has braces: (levels + 1) horizontal + levels diagonal
-            // Total brace length per face ≈ rackWidth * (levels * 2 + 1)
-            var braceLenPerFace = (p.warehouseHeight || 6) * 1.5; // approximate
-            var frameFaces = uprightSets; // each upright position has a face
+            var rackDepthM = (p.rackDepth || 1.0);
+            var braceVerticalSpacing = 0.6;
+            var braceLenM = Math.sqrt(rackDepthM * rackDepthM + braceVerticalSpacing * braceVerticalSpacing);
+            var uprightHeightM = p.warehouseHeight || 6;
+            var segmentsPerFace = Math.round(uprightHeightM / braceVerticalSpacing);
+            var braceLenPerFace = segmentsPerFace * (rackDepthM + braceLenM);
+            var frameFaces = (rows.baysPerRow + 1) * rows.totalRows * (rows.isBackToBack ? 2 : 1);
             var totalBraceLen = frameFaces * braceLenPerFace;
             var totalBraceWeight = totalBraceLen * braceWeightPerM;
-            // Estimate number of brace pieces (assume ~1m each)
-            var bracePieces = Math.ceil(totalBraceLen / 1.0);
+            var braceStandardLen = 2.5;
+            var bracePiecesRaw = Math.ceil(totalBraceLen / braceStandardLen);
+            var bracePieces = Math.ceil(bracePiecesRaw * COEFFICIENTS.brace);
             totals.braceCount = bracePieces;
 
             items.push({
                 category: 'Brace (横斜撑)',
                 profile: braceProfile,
-                unit: 'piece (~1m)',
+                unit: 'piece (~' + braceStandardLen + 'm)',
                 quantity: bracePieces,
-                weightPerUnit: '~' + braceWeightPerM.toFixed(2) + ' kg',
-                totalWeight: totalBraceWeight.toFixed(1)
+                quantityRaw: bracePiecesRaw,
+                coefficient: COEFFICIENTS.brace,
+                weightPerUnit: '~' + (braceStandardLen * braceWeightPerM).toFixed(2) + ' kg',
+                totalWeight: totalBraceWeight.toFixed(1),
+                _detail: segmentsPerFace + '段/面 × ' + frameFaces + '面 (横撑' + rackDepthM.toFixed(1) + 'm + 斜撑' + braceLenM.toFixed(2) + 'm)'
             });
             totals.totalWeightKg += totalBraceWeight;
 
