@@ -138,7 +138,7 @@
             var usableWidth = p.warehouseWidth - clearF - clearB - 4;
             var usableLength = p.warehouseLength - clearL - clearR - 5;
 
-            var blockDepth = rackD * 2 + 0.8;
+            var blockDepth = rackD * 2 + (p.backToBackGap || 200) / 1000;
             var bayWidth = rackW;
             var rowsNeeded = Math.floor((usableWidth + aisleW) / (blockDepth + aisleW));
             rowsNeeded = Math.max(1, Math.min(rowsNeeded, 12));

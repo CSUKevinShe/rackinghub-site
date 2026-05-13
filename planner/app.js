@@ -683,6 +683,20 @@
             var mainCanvas = document.getElementById('canvas-' + view);
             var thumbCanvas = document.getElementById('thumb-' + view);
             if (!mainCanvas || !thumbCanvas) return;
+
+            // If main canvas has zero dimensions (e.g., parent container is display:none),
+            // trigger a redraw to ensure valid pixel content exists
+            if (mainCanvas.width === 0 || mainCanvas.height === 0) {
+                if (typeof LayoutEngine !== 'undefined') {
+                    if (view === 'top') LayoutEngine.drawTopView('canvas-top');
+                    else if (view === 'front') LayoutEngine.drawFrontView('canvas-front');
+                    else if (view === 'side') LayoutEngine.drawSideView('canvas-side');
+                }
+            }
+
+            // Still skip if dimensions are invalid after redraw attempt
+            if (mainCanvas.width === 0 || mainCanvas.height === 0) return;
+
             var ctx = thumbCanvas.getContext('2d');
             var tw = thumbCanvas.width;
             var th = thumbCanvas.height;
