@@ -877,28 +877,28 @@ window.BEAM_CAPACITY = {
 };
 
 // Helper: get beam capacity at specific span
-window.getBeamCapacity(model, span) {
-  const beam = BEAM_CAPACITY[model];
-  if (!beam) return null;
-  return beam.spans[span] || null;
-}
+window.getBeamCapacity = function(model, span) {
+  var b = BEAM_CAPACITY[model];
+  if (!b || !b.spans) return null;
+  return b.spans[span] || null;
+};
 
 // Helper: list available beam models
-window.getBeamModels() {
+window.getBeamModels = function() {
   return Object.keys(BEAM_CAPACITY);
-}
+};
 
 // Helper: calculate deflection for a beam
 // P in kg, L in mm, E=210000 MPa, I in cm4
-window.calcDeflection(model, span, loadKg) {
-  const beam = BEAM_CAPACITY[model];
-  if (!beam || !beam.I_cm4) return Infinity;
-  const P = loadKg * 9.81; // kg -> N
-  const L = span;
-  const E = 210000; // MPa
-  const I = beam.I_cm4 * 10000; // cm4 -> mm4
+window.calcDeflection = function(model, span, loadKg) {
+  var b = BEAM_CAPACITY[model];
+  if (!b || !b.I_cm4) return Infinity;
+  var P = loadKg * 9.81; // kg -> N
+  var L = span;
+  var E = 210000; // MPa
+  var I = b.I_cm4 * 10000; // cm4 -> mm4
   // Single load at center: delta = P*L^3 / (48*E*I)
   // UDL equivalent: delta = 5*P*L^3 / (384*E*I)
-  const delta = (P * L * L * L) / (48 * E * I);
+  var delta = (P * L * L * L) / (48 * E * I);
   return delta;
-}
+};

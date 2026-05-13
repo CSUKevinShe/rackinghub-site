@@ -233,6 +233,7 @@
             var recs = generateRecommendations();
             state.recommendations = recs;
             renderRecommendations(recs);
+            renderBOMAndLoadCheck();
             renderComparisonTable(recs);
             renderLayout(recs[0]);
             if (typeof LayoutEngine !== 'undefined') {
@@ -258,6 +259,141 @@
             + '<span class="spec-badge">Pallet Weight: <strong>' + s.palletWeight + 'kg</strong></span>'
             + '<span class="spec-badge">SKUs: <strong>' + (s.skuCount || 'N/A') + '</strong></span>'
             + '<span class="spec-badge">Rotation: <strong>' + s.rotation.toUpperCase() + '</strong></span>';
+    }
+
+    // ===== 渲染BOM清单和承重校核 =====
+    function renderBOMAndLoadCheck() {
+        if (typeof LayoutEngine === 'undefined' || typeof LayoutEngine.params === 'undefined') return;
+        if (typeof window.BOMEngine === 'undefined' || typeof window.LoadChecker === 'undefined') return;
+
+        var p = LayoutEngine.params;
+        var specs = state.specsData;
+
+        // Determine selected profiles from recommendation or defaults
+        var rec = state.recommendations && state.recommendations[0];
+        var uprightProfile = (rec && rec.product && rec.product.upright_profile) || '100*70(2.5)';
+        var beamProfile = (rec && rec.product && rec.product.beam_profile) || 'B120*50';
+        var material = (rec && rec.product && rec.product.material) || 'Q235';
+
+        // BOM calculation
+        var bomParams = Object.assign({}, p, { uprightProfile: uprightProfile, beamProfile: beamProfile });
+        var bom = window.BOMEngine.calc(bomParams);
+
+        // Load check
+        var checkParams = Object.assign({}, p, {
+            uprightProfile: uprightProfile,
+            beamProfile: beamProfile,
+            material: material,
+            firstBeamHeight: p.firstBeamHeight || 2.5,
+            palletWeight: specs.palletWeight || 1000,
+            palletsPerLevel: specs.palletsPerBay || 2,
+            levels: p.levels || 4,
+            warehouseHeight: p.warehouseHeight || 6
+        });
+        var loadCheck = window.LoadChecker.check(checkParams);
+
+        // Store for later use
+        state.bom = bom;
+        state.loadCheck = loadCheck;
+
+        // Build HTML
+        var html = '<div class="bom-section" style="margin-top:1.5rem;">';
+
+        // BOM summary card
+        html += '<div style="background:#f8f9fa;border-radius:12px;padding:1.25rem;margin-bottom:1rem;">';
+        html += '<h3 style="margin:0 0 0.75rem;font-size:1.1rem;color:#1a202c;">📦 BOM Material List</h3>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;">';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Uprights (立柱)</span><br><strong style="font-size:1.25rem;">' + bom.totals.uprightCount + '</strong> <span style="color:#718096;">pcs</span></div>';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Beams (横梁)</span><br><strong style="font-size:1.25rem;">' + bom.totals.beamCount + '</strong> <span style="color:#718096;">pcs</span></div>';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Braces (斜撑)</span><br><strong style="font-size:1.25rem;">' + bom.totals.braceCount + '</strong> <span style="color:#718096;">pcs</span></div>';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Base Plates</span><br><strong style="font-size:1.25rem;">' + bom.totals.basePlateCount + '</strong> <span style="color:#718096;">pcs</span></div>';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Total Weight</span><br><strong style="font-size:1.25rem;">' + bom.totals.totalWeightKg.toFixed(0) + '</strong> <span style="color:#718096;">kg</span></div>';
+        html += '</div>';
+
+        // Detail table
+        html += '<table style="width:100%;margin-top:0.75rem;border-collapse:collapse;font-size:0.85rem;">';
+        html += '<thead><tr style="border-bottom:2px solid #e2e8f0;text-align:left;">';
+        html += '<th style="padding:0.4rem 0.5rem;">Component</th><th style="padding:0.4rem 0.5rem;">Profile</th>';
+        html += '<th style="padding:0.4rem 0.5rem;">Qty</th><th style="padding:0.4rem 0.5rem;">Weight/Unit</th><th style="padding:0.4rem 0.5rem;">Total (kg)</th>';
+        html += '</tr></thead><tbody>';
+        bom.items.forEach(function (item) {
+            html += '<tr style="border-bottom:1px solid #f0f0f0;">';
+            html += '<td style="padding:0.4rem 0.5rem;">' + item.category + '</td>';
+            html += '<td style="padding:0.4rem 0.5rem;">' + item.profile + '</td>';
+            html += '<td style="padding:0.4rem 0.5rem;">' + item.quantity + '</td>';
+            html += '<td style="padding:0.4rem 0.5rem;">' + (item.weightPerUnit || '-') + '</td>';
+            html += '<td style="padding:0.4rem 0.5rem;">' + item.totalWeight + '</td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Load check card
+        var checkOK = loadCheck.frameOK && loadCheck.beamOK;
+        var checkBg = checkOK ? '#f0fff4' : '#fff5f5';
+        var checkBorder = checkOK ? '#c6f6d5' : '#fed7d7';
+        html += '<div style="background:' + checkBg + ';border:1px solid ' + checkBorder + ';border-radius:12px;padding:1.25rem;">';
+        html += '<h3 style="margin:0 0 0.75rem;font-size:1.1rem;color:' + (checkOK ? '#276746' : '#c53030') + ';">';
+        html += checkOK ? '✅ 承重校核通过' : '⚠️ 承重校核警告';
+        html += '</h3>';
+
+        // Frame check detail
+        if (loadCheck.details.frame) {
+            var fc = loadCheck.details.frame;
+            if (fc.maxCapacity) {
+                var utilPct = Math.round(fc.utilization * 100);
+                var barColor = utilPct > 90 ? '#e53e3e' : utilPct > 70 ? '#dd6b20' : '#38a169';
+                html += '<div style="margin-bottom:0.5rem;"><strong>立柱 (Upright):</strong> ' + fc.profile + ' / ' + fc.material;
+                html += ' — 承载 ' + utilPct + '%';
+                html += '<div style="background:#e2e8f0;border-radius:4px;height:8px;margin-top:4px;"><div style="background:' + barColor + ';height:100%;border-radius:4px;width:' + utilPct + '%;"></div></div>';
+                html += '</div>';
+            }
+        }
+
+        // Beam deflection detail
+        if (loadCheck.details.beam) {
+            var bd = loadCheck.details.beam;
+            if (bd.deflection) {
+                var defPct = Math.round(bd.utilization * 100);
+                var barColor = defPct > 90 ? '#e53e3e' : defPct > 70 ? '#dd6b20' : '#38a169';
+                html += '<div style="margin-bottom:0.5rem;"><strong>横梁挠度 (Beam Deflection):</strong> ' + bd.model;
+                html += ' — ' + bd.deflection.toFixed(1) + 'mm / ' + bd.limit.toFixed(1) + 'mm (' + defPct + '%)';
+                html += '<div style="background:#e2e8f0;border-radius:4px;height:8px;margin-top:4px;"><div style="background:' + barColor + ';height:100%;border-radius:4px;width:' + Math.min(defPct, 100) + '%;"></div></div>';
+                html += '</div>';
+            }
+        }
+
+        // Beam capacity detail
+        if (loadCheck.details.beamCapacity) {
+            var bc = loadCheck.details.beamCapacity;
+            if (bc.capacity) {
+                var capPct = Math.round(bc.utilization * 100);
+                var barColor = capPct > 90 ? '#e53e3e' : capPct > 70 ? '#dd6b20' : '#38a169';
+                html += '<div style="margin-bottom:0.5rem;"><strong>横梁承重 (Beam Capacity):</strong> ' + bc.model;
+                html += ' — ' + bc.demand.toFixed(0) + 'kg / ' + bc.capacity.toFixed(0) + 'kg (' + capPct + '%)';
+                html += '<div style="background:#e2e8f0;border-radius:4px;height:8px;margin-top:4px;"><div style="background:' + barColor + ';height:100%;border-radius:4px;width:' + Math.min(capPct, 100) + '%;"></div></div>';
+                html += '</div>';
+            }
+        }
+
+        // Warnings
+        if (loadCheck.warnings && loadCheck.warnings.length > 0) {
+            html += '<div style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:rgba(255,255,255,0.5);border-radius:6px;font-size:0.85rem;">';
+            loadCheck.warnings.forEach(function (w) {
+                html += '<div>' + w + '</div>';
+            });
+            html += '</div>';
+        }
+
+        html += '</div></div>';
+
+        // Insert after recommendations
+        var recContainer = document.getElementById('recommendations');
+        if (recContainer) {
+            var bomDiv = document.createElement('div');
+            bomDiv.id = 'bom-load-check-section';
+            bomDiv.innerHTML = html;
+            recContainer.parentNode.insertBefore(bomDiv, recContainer.nextSibling);
+        }
     }
 
     // ============================================================
