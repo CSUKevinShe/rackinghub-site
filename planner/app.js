@@ -235,7 +235,10 @@
             renderRecommendations(recs);
             renderComparisonTable(recs);
             renderLayout(recs[0]);
-            if (typeof LayoutEngine !== 'undefined') LayoutEngine.updateStats();
+            if (typeof LayoutEngine !== 'undefined') {
+                LayoutEngine.updateStats();
+                if (typeof App._drawThumbnails === 'function') App._drawThumbnails();
+            }
             document.getElementById('results-loading').style.display = 'none';
             document.getElementById('results-content').style.display = 'block';
         }, 1800);
@@ -583,6 +586,175 @@
         canvases.forEach(function (c) {
             c.style.transform = 'scale(' + App._zoomLevel + ')';
             c.style.transformOrigin = 'top left';
+        });
+    };
+
+
+    // ===== Copy Cost Button =====
+    App.copyCost = function () {
+        var costEl = document.getElementById('stat-cost');
+        var btn = document.getElementById('cost-copy-btn');
+        if (!costEl || !btn) return;
+        var text = costEl.textContent.trim();
+        if (!text) return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+                showCopySuccess(btn);
+            }).catch(function () {
+                fallbackCopy(text, btn);
+            });
+        } else {
+            fallbackCopy(text, btn);
+        }
+    };
+
+    function fallbackCopy(text, btn) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); showCopySuccess(btn); }
+        catch (e) { showCopyFail(btn); }
+        document.body.removeChild(ta);
+    }
+
+    function showCopySuccess(btn) {
+        btn.classList.add('copied');
+        btn.title = 'Copied!';
+        setTimeout(function () { btn.classList.remove('copied'); btn.title = 'Copy amount'; }, 1500);
+    }
+
+    function showCopyFail(btn) {
+        btn.title = 'Copy failed';
+        setTimeout(function () { btn.title = 'Copy amount'; }, 1500);
+    }
+
+    // ===== View Switching (Top/Front/Side thumbnails) =====
+    App._currentView = 'top';
+    App.switchView = function (viewName) {
+        if (viewName === App._currentView) return;
+        App._currentView = viewName;
+
+        // Update thumbnail buttons
+        document.querySelectorAll('.view-thumb').forEach(function (btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
+        });
+
+        // Update main canvas visibility
+        var viewNames = ['top', 'front', 'side'];
+        viewNames.forEach(function (v) {
+            var canvas = document.getElementById('canvas-' + v);
+            if (canvas) canvas.style.display = (v === viewName) ? '' : 'none';
+        });
+
+        // Update header title
+        var header = document.getElementById('canvas-main-header');
+        var titles = {
+            'top': 'Top View — Warehouse Plan',
+            'front': 'Front View — Elevation',
+            'side': 'Side View — Section'
+        };
+        var titleEl = header ? header.querySelector('.canvas-title') : null;
+        if (titleEl) titleEl.textContent = titles[viewName] || '';
+
+        // Redraw the visible canvas to ensure correct sizing
+        if (typeof LayoutEngine !== 'undefined' && document.getElementById('canvas-' + viewName)) {
+            if (viewName === 'top') LayoutEngine.drawTopView('canvas-top');
+            else if (viewName === 'front') LayoutEngine.drawFrontView('canvas-front');
+            else if (viewName === 'side') LayoutEngine.drawSideView('canvas-side');
+        }
+    };
+
+    // ===== Thumbnail Drawing =====
+    App._drawThumbnails = function () {
+        if (typeof LayoutEngine === 'undefined') return;
+        var params = LayoutEngine.params;
+        if (!params.warehouseLength) return;
+
+        // Draw thumbnail canvases (small previews)
+        ['top', 'front', 'side'].forEach(function (view) {
+            var thumbCanvas = document.getElementById('thumb-' + view);
+            if (!thumbCanvas) return;
+            var ctx = thumbCanvas.getContext('2d');
+            var w = thumbCanvas.width;
+            var h = thumbCanvas.height;
+
+            // Clear
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw a simplified version of each view
+            var p = params;
+            var scale;
+
+            if (view === 'top') {
+                // Top-down: warehouse rectangle with rack blocks
+                var pad = 8;
+                var innerW = w - pad * 2;
+                var innerH = h - pad * 2;
+                var xScale = innerW / (p.warehouseLength || 60);
+                var yScale = innerH / (p.warehouseWidth || 40);
+                scale = Math.min(xScale, yScale);
+
+                // Warehouse outline
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 1;
+                var bx = pad + (innerW - (p.warehouseLength || 60) * scale) / 2;
+                var by = pad + (innerH - (p.warehouseWidth || 40) * scale) / 2;
+                var bw = (p.warehouseLength || 60) * scale;
+                var bh = (p.warehouseWidth || 40) * scale;
+                ctx.strokeRect(bx, by, bw, bh);
+
+                // Rack blocks
+                if (LayoutEngine.racks && LayoutEngine.racks.length > 0) {
+                    ctx.fillStyle = 'rgba(26, 54, 93, 0.7)';
+                    var drawCount = 0;
+                    LayoutEngine.racks.forEach(function (rack) {
+                        if (drawCount > 50) return; // Limit for performance
+                        var rx = bx + rack.x * scale;
+                        var ry = by + rack.y * scale;
+                        var rw = Math.max(2, rack.width * scale);
+                        var rh = Math.max(2, rack.depth * scale);
+                        ctx.fillRect(rx, ry, rw, rh);
+                        drawCount++;
+                    });
+                }
+            } else if (view === 'front') {
+                // Front view: shelf elevation
+                var numLevels = p.levels || 4;
+                var rackWidth = (p.rackWidth || 2.7) * 10; // in some unit
+                var pad2 = 6;
+                var totalH = h - pad2 * 2;
+                var levelH = totalH / (numLevels + 1);
+
+                ctx.fillStyle = 'rgba(26, 54, 93, 0.7)';
+                for (var i = 0; i < numLevels; i++) {
+                    var ly = h - pad2 - levelH * (i + 1);
+                    ctx.fillRect(pad2, ly, w - pad2 * 2, levelH * 0.6);
+                }
+                // Uprights
+                ctx.fillStyle = 'rgba(26, 54, 93, 0.9)';
+                ctx.fillRect(pad2, pad2, 3, h - pad2 * 2);
+                ctx.fillRect(w - pad2 - 3, pad2, 3, h - pad2 * 2);
+            } else if (view === 'side') {
+                // Side view: depth perspective
+                var depth = (p.rackDepth || 1.0) * 10;
+                var pad3 = 6;
+                var totalH2 = h - pad3 * 2;
+                var levelH2 = totalH2 / (numLevels + 1);
+
+                ctx.fillStyle = 'rgba(26, 54, 93, 0.7)';
+                for (var j = 0; j < numLevels; j++) {
+                    var ly2 = h - pad3 - levelH2 * (j + 1);
+                    ctx.fillRect(pad3, ly2, w - pad3 * 2, levelH2 * 0.6);
+                }
+                ctx.fillStyle = 'rgba(26, 54, 93, 0.9)';
+                ctx.fillRect(pad3, pad3, 3, h - pad3 * 2);
+                ctx.fillRect(w - pad3 - 3, pad3, 3, h - pad3 * 2);
+            }
         });
     };
 

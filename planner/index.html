@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260513a">
+    <link rel="stylesheet" href="style.css?v=20260513b">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -457,6 +457,9 @@
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-value" id="stat-cost">¥0</span>
+                                    <button class="cost-copy-btn" id="cost-copy-btn" onclick="App.copyCost()" title="Copy amount">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
                                     <span class="stat-label">Est. Cost</span>
                                 </div>
                             </div>
@@ -491,37 +494,39 @@
 
                     <!-- ===== RIGHT: Canvas Area ===== -->
                     <div class="canvas-workspace">
-                        <!-- Zoom Toolbar -->
-                        <div class="canvas-toolbar">
-                            <button type="button" class="toolbar-btn" onclick="App.zoomCanvas(-0.1)" title="Zoom Out">−</button>
-                            <span class="toolbar-zoom-level" id="zoom-level">100%</span>
-                            <button type="button" class="toolbar-btn" onclick="App.zoomCanvas(0.1)" title="Zoom In">+</button>
-                            <button type="button" class="toolbar-btn" onclick="App.zoomCanvas(0, true)" title="Fit to View">⊡</button>
-                        </div>
-                        <!-- 2D Layout View -->
-                        <div class="canvas-view active" id="view-2d">
-                            <!-- Main top-down plan view -->
-                            <div class="canvas-main">
-                                <div class="canvas-header">
-                                    <span class="canvas-title">Top View — Warehouse Plan</span>
-                                </div>
-                                <canvas id="canvas-top" class="view-canvas"></canvas>
+                        <!-- Top toolbar: View thumbnails + Zoom -->
+                        <div class="canvas-toolbar-row">
+                            <div class="view-thumbnails" id="view-thumbnails">
+                                <button type="button" class="view-thumb active" data-view="top" onclick="App.switchView('top')">
+                                    <canvas id="thumb-top" width="120" height="80"></canvas>
+                                    <span>Top</span>
+                                </button>
+                                <button type="button" class="view-thumb" data-view="front" onclick="App.switchView('front')">
+                                    <canvas id="thumb-front" width="120" height="80"></canvas>
+                                    <span>Front</span>
+                                </button>
+                                <button type="button" class="view-thumb" data-view="side" onclick="App.switchView('side')">
+                                    <canvas id="thumb-side" width="120" height="80"></canvas>
+                                    <span>Side</span>
+                                </button>
                             </div>
+                            <div class="canvas-toolbar">
+                                <button type="button" class="toolbar-btn" onclick="App.zoomCanvas(-0.1)" title="Zoom Out">−</button>
+                                <span class="toolbar-zoom-level" id="zoom-level">100%</span>
+                                <button type="button" class="toolbar-btn" onclick="App.zoomCanvas(0.1)" title="Zoom In">+</button>
+                                <button type="button" class="toolbar-btn" onclick="App.zoomCanvas(0, true)" title="Fit to View">⊡</button>
+                            </div>
+                        </div>
 
-                            <!-- Bottom: Front + Side views side by side -->
-                            <div class="canvas-bottom">
-                                <div class="canvas-sub">
-                                    <div class="canvas-header">
-                                        <span class="canvas-title">Front View — Elevation</span>
-                                    </div>
-                                    <canvas id="canvas-front" class="view-canvas-sub"></canvas>
-                                </div>
-                                <div class="canvas-sub">
-                                    <div class="canvas-header">
-                                        <span class="canvas-title">Side View — Section</span>
-                                    </div>
-                                    <canvas id="canvas-side" class="view-canvas-sub"></canvas>
-                                </div>
+                        <!-- Single full-width main canvas view -->
+                        <div class="canvas-main" id="canvas-main-container">
+                            <div class="canvas-header" id="canvas-main-header">
+                                <span class="canvas-title">Top View — Warehouse Plan</span>
+                            </div>
+                            <div class="canvas-body">
+                                <canvas id="canvas-top" class="view-canvas active-canvas"></canvas>
+                                <canvas id="canvas-front" class="view-canvas" style="display:none;"></canvas>
+                                <canvas id="canvas-side" class="view-canvas" style="display:none;"></canvas>
                             </div>
                         </div>
 
@@ -723,8 +728,8 @@
         </div>
     </footer>
 
-    <script src="layout-engine.js?v=20260513a"></script>
-    <script src="app.js?v=20260513a"></script>
+    <script src="layout-engine.js?v=20260513b"></script>
+    <script src="app.js?v=20260513b"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {
