@@ -704,7 +704,7 @@
                 ctx.fillRect(offsetX, ly, rackW, beamPxH);
 
                 // Pallets — tan/beige blocks sitting on beam
-                var palletH = levelHeight * 0.55;
+                var palletH = levelSpacing[lv] * 0.55;
                 var palletPxH = palletH * sc;
                 var palletGapM = 0.08; // 8cm gap between pallets
                 var palletPxGap = palletGapM * sc;
@@ -827,7 +827,7 @@
                 ctx.beginPath(); ctx.moveTo(offsetX, lvY); ctx.lineTo(offsetX + rackW, lvY); ctx.stroke();
 
                 // Pallet — tan block on beam
-                var palletH = levelHeight * 0.5;
+                var palletH = levelSpacing[lv] * 0.5;
                 var palletPxH = palletH * sc;
                 ctx.fillStyle = C.palletBg;
                 ctx.strokeStyle = C.pallet;
