@@ -211,7 +211,7 @@
             width: p ? p.warehouseWidth : 40,
             height: p ? p.warehouseHeight : 6,
             floorLoad: 5000,
-            palletWeight: 1000,
+            palletWeight: parseInt(document.getElementById('param-pallet-weight')?.value || 1000, 10),
             skuCount: 500,
             frequency: 'medium',
             rotation: 'either',
@@ -543,7 +543,7 @@
         var defaults = {
             'param-length': 60, 'param-width': 40, 'param-height': 6,
             'param-col-x': 15, 'param-col-y': 12,
-            'param-pallet-w': 1200, 'param-pallet-d': 800, 'param-pallet-h': 1500,
+            'param-pallet-w': 1200, 'param-pallet-d': 800, 'param-pallet-h': 1500, 'param-pallet-weight': 1000,
             'param-rack-type': 'selective-heavy',
             'param-rack-width': 2.7, 'param-rack-depth': 1.0, 'param-rack-height': 6.0,
             'param-beam-h': 120, 'param-first-beam-h': 2.5, 'param-btb-gap': 200,
