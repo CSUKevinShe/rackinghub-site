@@ -783,19 +783,27 @@
 
             var levels = p.levels;
             var rackDepth = preset.rackDepth;
-            var btbGapM = (p.backToBackGap || 200) / 1000; // mm to meters
-            var blockDepthM = rackDepth * 2 + btbGapM; // back-to-back block: rack + gap + rack
+            var btbGapM = (p.backToBackGap || 200) / 1000;
+            var blockDepthM = rackDepth * 2 + btbGapM;
             var aisleW = p.aisleWidth || preset.aisleWidth;
-            var rackHeight = p.rackHeight || 6.0; // actual rack height in meters
-            var totalW = blockDepthM + aisleW;
-            var scaleX = drawW / totalW;
+            var rackHeight = p.rackHeight || 6.0;
+
+            // Calculate total height needed: sum of all row blocks + aisles between them
+            var totalDepthM = 0;
+            for (var ri = 0; ri < this.rows.length; ri++) {
+                totalDepthM += this.rows[ri].blockDepth;
+                if (ri < this.rows.length - 1 && this.rows[ri].aisleAfter) {
+                    totalDepthM += aisleW;
+                }
+            }
+            if (totalDepthM === 0) totalDepthM = blockDepthM + aisleW; // fallback to single block + aisle
+
+            var scaleX = drawW / totalDepthM;
             var scaleY = drawH / rackHeight;
             var sc = Math.min(scaleX, scaleY);
-            var blockW = blockDepthM * sc;
-            var aisleW_Px = aisleW * sc;
             var rackH = rackHeight * sc;
-            var offsetX = pad + (drawW - blockW - aisleW_Px) / 2;
             var offsetY = pad + (drawH - rackH);
+            var offsetX = pad + (drawW - totalDepthM * sc) / 2;
 
             // Ground line + hatch
             ctx.strokeStyle = C.ground; ctx.lineWidth = 1.5;
@@ -805,92 +813,136 @@
                 ctx.beginPath(); ctx.moveTo(gx, pad + drawH); ctx.lineTo(gx - 4, pad + drawH + 4); ctx.stroke();
             }
 
-            // Rack block (tan background)
-            ctx.fillStyle = 'rgba(212,168,107,0.18)';
-            ctx.fillRect(offsetX, offsetY, rackW, rackH);
-            ctx.strokeStyle = C.rackBorder; ctx.lineWidth = 1;
-            ctx.strokeRect(offsetX, offsetY, rackW, rackH);
+            // Draw each row block
+            var currentX = offsetX;
+            for (var i = 0; i < this.rows.length; i++) {
+                var row = this.rows[i];
+                var rowBlockW = row.blockDepth * sc;
 
-            // Level dividers + pallets + beams — proper level height distribution
-            var firstBeamHeight = p.firstBeamHeight || 2.5;
-            var remainingHeight = rackHeight - firstBeamHeight;
-            var upperLevels = levels - 1;
-            var upperLevelSpacing = upperLevels > 0 ? remainingHeight / upperLevels : 0;
-            var levelSpacing = [firstBeamHeight];
-            for (var i = 1; i < levels; i++) levelSpacing.push(upperLevelSpacing);
-            var cumSideY = 0;
-            for (var lv = 0; lv < levels; lv++) {
-                cumSideY += levelSpacing[lv];
-                var lvY = offsetY + rackH - cumSideY * sc;
-                var lvH = levelSpacing[lv] * sc;
+                // Rack block background
+                ctx.fillStyle = 'rgba(212,168,107,0.18)';
+                ctx.fillRect(currentX, offsetY, rowBlockW, rackH);
+                ctx.strokeStyle = C.rackBorder; ctx.lineWidth = 1;
+                ctx.strokeRect(currentX, offsetY, rowBlockW, rackH);
 
-                // Beam — yellow line
-                ctx.strokeStyle = C.beam;
-                ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.moveTo(offsetX, lvY); ctx.lineTo(offsetX + rackW, lvY); ctx.stroke();
+                // Center line (double-sided divider)
+                var centerX = currentX + rackDepth * sc;
+                ctx.strokeStyle = 'rgba(59,130,246,0.35)';
+                ctx.lineWidth = 0.8;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(centerX, offsetY);
+                ctx.lineTo(centerX, offsetY + rackH);
+                ctx.stroke();
+                ctx.setLineDash([]);
 
-                // Pallet — tan block on beam
-                var palletHm = (p.palletHeight || 1500) / 1000; // convert mm to meters
-                var palletH = Math.min(palletHm, levelSpacing[lv] - 0.05); // cap to available space minus 5cm clearance
-                var palletPxH = palletH * sc;
-                ctx.fillStyle = C.palletBg;
-                ctx.strokeStyle = C.pallet;
-                ctx.lineWidth = 0.6;
-                ctx.fillRect(offsetX + 2, lvY - palletPxH, rackW - 4, palletPxH);
-                ctx.strokeRect(offsetX + 2, lvY - palletPxH, rackW - 4, palletPxH);
+                // Draw levels inside this block
+                var firstBeamHeight = p.firstBeamHeight || 2.5;
+                var remainingHeight = rackHeight - firstBeamHeight;
+                var upperLevels = levels - 1;
+                var upperLevelSpacing = upperLevels > 0 ? remainingHeight / upperLevels : 0;
+                var levelSpacing = [firstBeamHeight];
+                for (var li = 1; li < levels; li++) levelSpacing.push(upperLevelSpacing);
+                var cumSideY = 0;
+                for (var lv = 0; lv < levels; lv++) {
+                    cumSideY += levelSpacing[lv];
+                    var lvY = offsetY + rackH - cumSideY * sc;
 
-                // Level label
-                ctx.fillStyle = '#6b7280';
-                ctx.font = '700 7px -apple-system, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('L' + (lv + 1), offsetX + 3, lvY - palletPxH / 2 + 3);
+                    // Beam
+                    ctx.strokeStyle = C.beam;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.moveTo(currentX, lvY); ctx.lineTo(currentX + rowBlockW, lvY); ctx.stroke();
+
+                    // Pallet
+                    var palletHm = (p.palletHeight || 1500) / 1000;
+                    var palletH = Math.min(palletHm, levelSpacing[lv] - 0.05);
+                    var palletPxH = palletH * sc;
+                    ctx.fillStyle = C.palletBg;
+                    ctx.strokeStyle = C.pallet;
+                    ctx.lineWidth = 0.6;
+                    ctx.fillRect(currentX + 2, lvY - palletPxH, rowBlockW - 4, palletPxH);
+                    ctx.strokeRect(currentX + 2, lvY - palletPxH, rowBlockW - 4, palletPxH);
+
+                    // Level label (only on first row to avoid clutter)
+                    if (i === 0) {
+                        ctx.fillStyle = '#6b7280';
+                        ctx.font = '700 7px -apple-system, sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('L' + (lv + 1), currentX + 3, lvY - palletPxH / 2 + 3);
+                    }
+                }
+
+                // Upright edges
+                var uprightExtPx = 0.25 * sc;
+                ctx.strokeStyle = C.upright;
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(currentX, offsetY - uprightExtPx); ctx.lineTo(currentX, offsetY + rackH); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(currentX + rowBlockW, offsetY - uprightExtPx); ctx.lineTo(currentX + rowBlockW, offsetY + rackH); ctx.stroke();
+
+                // Row label
+                ctx.fillStyle = '#4a5568';
+                ctx.font = '700 8px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Row ' + (i + 1), currentX + rowBlockW / 2, offsetY + rackH + 14);
+
+                // Aisle after this row
+                if (i < this.rows.length - 1 && row.aisleAfter) {
+                    var aisleX = currentX + rowBlockW;
+                    var aisleW_Px = aisleW * sc;
+
+                    // Aisle zone (dashed border)
+                    ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 0.8;
+                    ctx.setLineDash([4, 3]);
+                    ctx.strokeRect(aisleX, offsetY, aisleW_Px, rackH);
+                    ctx.setLineDash([]);
+
+                    // Aisle label
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.font = '700 8px -apple-system, sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText('AISLE', aisleX + aisleW_Px / 2, offsetY + rackH / 2 - 6);
+                    ctx.fillText(aisleW.toFixed(1) + 'm', aisleX + aisleW_Px / 2, offsetY + rackH / 2 + 6);
+
+                    // Forklift icon in first aisle only
+                    if (i === 0) {
+                        this.drawForkliftIcon(ctx, aisleX + aisleW_Px / 2 - 10, offsetY + rackH - 28, sc);
+                    }
+
+                    currentX += rowBlockW + aisleW_Px;
+                } else {
+                    currentX += rowBlockW;
+                }
             }
 
-            // Upright edges — extend 250mm above top beam for safety
-            var uprightExtPx = 0.25 * sc;
-            ctx.strokeStyle = C.upright;
-            ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(offsetX, offsetY - uprightExtPx); ctx.lineTo(offsetX, offsetY + rackH); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(offsetX + rackW, offsetY - uprightExtPx); ctx.lineTo(offsetX + rackW, offsetY + rackH); ctx.stroke();
-
-            // Aisle zone (dashed border)
-            var aisleX = offsetX + rackW;
-            ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 0.8;
-            ctx.setLineDash([4, 3]);
-            ctx.strokeRect(aisleX, offsetY, aisleW_Px, rackH);
-            ctx.setLineDash([]);
-
-            // Aisle label
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '700 9px -apple-system, sans-serif';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('AISLE', aisleX + aisleW_Px / 2, offsetY + rackH / 2 - 6);
-            ctx.fillText(aisleW.toFixed(1) + ' m', aisleX + aisleW_Px / 2, offsetY + rackH / 2 + 7);
-
-            // Forklift icon in aisle
-            this.drawForkliftIcon(ctx, aisleX + aisleW_Px / 2 - 10, offsetY + rackH - 28, sc);
-
-            // Dimensions
+            // Dimension lines
             var dimTopY = offsetY - 16;
+            // Draw dimension for first block
+            if (this.rows.length > 0) {
+                var firstBlockW = this.rows[0].blockDepth * sc;
+                this.drawDimensionLine(ctx, {
+                    startX: offsetX, startY: dimTopY, endX: offsetX + firstBlockW, endY: dimTopY,
+                    label: 'Block ' + this.rows[0].blockDepth.toFixed(1) + ' m', isHorizontal: true
+                });
+            }
+            // Height dimension
             this.drawDimensionLine(ctx, {
-                startX: offsetX, startY: dimTopY, endX: offsetX + rackW, endY: dimTopY,
-                label: 'Rack ' + rackDepth.toFixed(1) + ' m', isHorizontal: true
-            });
-            this.drawDimensionLine(ctx, {
-                startX: aisleX, startY: dimTopY, endX: aisleX + aisleW_Px, endY: dimTopY,
-                label: 'Aisle ' + aisleW.toFixed(1) + ' m', isHorizontal: true
-            });
-            var dimX = offsetX - 16;
-            this.drawDimensionLine(ctx, {
-                startX: dimX, startY: offsetY, endX: dimX, endY: offsetY + rackH,
+                startX: offsetX - 16, startY: offsetY, endX: offsetX - 16, endY: offsetY + rackH,
                 label: this.formatDimension(rackHeight), isHorizontal: false
+            });
+
+            // Total width dimension at bottom
+            var totalW_Px = currentX - offsetX;
+            var dimBottomY = offsetY + rackH + 28;
+            this.drawDimensionLine(ctx, {
+                startX: offsetX, startY: dimBottomY, endX: offsetX + totalW_Px, endY: dimBottomY,
+                label: 'Total ' + totalDepthM.toFixed(1) + ' m', isHorizontal: true
             });
 
             // Title
             ctx.fillStyle = '#9ca3af';
             ctx.font = '700 8px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('SIDE SECTION', w / 2, pad - 8);
+            ctx.fillText('SIDE ELEVATION — ' + this.rows.length + ' row(s)', w / 2, pad - 8);
         },
 
         // ===== Draw all three views =====
