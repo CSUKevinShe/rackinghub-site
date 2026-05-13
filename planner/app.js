@@ -235,6 +235,7 @@
             renderRecommendations(recs);
             renderComparisonTable(recs);
             renderLayout(recs[0]);
+            if (typeof LayoutEngine !== 'undefined') LayoutEngine.updateStats();
             document.getElementById('results-loading').style.display = 'none';
             document.getElementById('results-content').style.display = 'block';
         }, 1800);
