@@ -91,15 +91,15 @@
                 weightPerUnit: (beamLenM * beamWeightPerM).toFixed(2) + ' kg',
                 totalWeight: beamTotalWeight.toFixed(1)
             });
-            // 4. Braces (横斜撑) — Z型斜撑结构
-            //    从底部到首层横梁上方，每300mm一根横撑，之间zigzag斜撑连接
+            // 4. Braces (横斜撑) — Z型斜撑结构，从底部到顶部连续zigzag
+            //    横撑间距约600mm（标准段），斜撑连接相邻横撑之间
             var braceProfile = p.braceProfile || '40*20(1.5)';
             var braceWeightPerM = BOMEngine._getProfileWeight(braceProfile);
             var rackDepthM = (p.rackDepth || 1.0); // 货架深度（米）
-            var firstBeamHeightM = (p.firstBeamHeight || 2.5); // 首层横梁高度（米）
-            var braceVerticalSpacing = 0.3; // 横撑间距 300mm
+            var uprightHeightM = p.warehouseHeight || 6; // 柱片总高度
+            var braceVerticalSpacing = 0.6; // 横撑标准间距 600mm
             var braceLenM = Math.sqrt(rackDepthM * rackDepthM + braceVerticalSpacing * braceVerticalSpacing);
-            var horizontalBracesPerFace = Math.ceil(firstBeamHeightM / braceVerticalSpacing) + 1; // 含底+横梁位
+            var horizontalBracesPerFace = Math.round(uprightHeightM / braceVerticalSpacing) + 1; // 含底+顶
             var diagonalBracesPerFace = horizontalBracesPerFace - 1; // zigzag连接
             var braceTotalLenPerFace = horizontalBracesPerFace * rackDepthM + diagonalBracesPerFace * braceLenM;
             // 柱片面数
