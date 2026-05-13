@@ -261,6 +261,73 @@
                 }
             }
 
+            // Brace material — thinner, lighter color
+            var braceMat = new THREE.MeshStandardMaterial({
+                color: 0x3b82f6,
+                roughness: 0.6,
+                metalness: 0.2
+            });
+
+            // ===== Braces on frame faces (横斜撑) =====
+            // Horizontal braces every 300mm + diagonal zigzag between them
+            var braceSpacing = 0.3; // 300mm
+            var braceThick = 0.025; // 25mm tube
+            var firstBeamY = levelHeight; // first beam height from LayoutEngine
+            var numHBraces = Math.ceil(firstBeamY / braceSpacing);
+
+            // Render braces for each upright bay (between adjacent uprights)
+            for (var u = 0; u < numUprights - 1; u++) {
+                var bayStartX = u * bayWidth;
+                var bayLen = bayWidth - uprightW;
+                var braceZs = [0, rackDepth]; // front face and back face
+
+                for (var fz = 0; fz < braceZs.length; fz++) {
+                    var braceZ = braceZs[fz];
+
+                    for (var h = 0; h <= numHBraces; h++) {
+                        var braceY = h * braceSpacing;
+                        if (braceY > firstBeamY + 0.05) continue;
+
+                        // Horizontal brace
+                        var hBrace = new THREE.Mesh(
+                            new THREE.BoxGeometry(bayLen, braceThick, braceThick),
+                            braceMat
+                        );
+                        hBrace.position.set(bayStartX + bayLen / 2, braceY, braceZ);
+                        hBrace.castShadow = true;
+                        this.rackGroup.add(hBrace);
+
+                        // Diagonal brace (zigzag) — skip if only one horizontal brace
+                        if (h < numHBraces) {
+                            var nextY = (h + 1) * braceSpacing;
+                            if (nextY > firstBeamY + 0.05) continue;
+
+                            var diagDx = bayLen;
+                            var diagDy = nextY - braceY;
+                            var diagLen = Math.sqrt(diagDx * diagDx + diagDy * diagDy);
+                            var diagAngle = Math.atan2(diagDy, diagDx);
+
+                            // Alternate direction: even=left-to-right-up, odd=right-to-left-up
+                            var diag = new THREE.Mesh(
+                                new THREE.BoxGeometry(diagLen, braceThick, braceThick),
+                                braceMat
+                            );
+                            if (h % 2 === 0) {
+                                // rising left→right
+                                diag.position.set(bayStartX + bayLen / 2, braceY + diagDy / 2, braceZ);
+                                diag.rotation.z = diagAngle;
+                            } else {
+                                // rising right→left
+                                diag.position.set(bayStartX + bayLen / 2, braceY + diagDy / 2, braceZ);
+                                diag.rotation.z = -diagAngle;
+                            }
+                            diag.castShadow = true;
+                            this.rackGroup.add(diag);
+                        }
+                    }
+                }
+            }
+
             // ===== Building columns =====
             var colSizeM = p.columnSize / 1000;
             var colSpacingX = p.columnSpacingX;
