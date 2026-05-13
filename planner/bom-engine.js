@@ -18,8 +18,8 @@
          */
         calc: function (params) {
             var p = params;
-            var rows = BOMEngine._calcRackGeometry(p);
             var items = [];
+            var rows = p.rows || { totalRows: 2, baysPerRow: 10, isBackToBack: true };
             var totals = {
                 uprightCount: 0, beamCount: 0, braceCount: 0,
                 basePlateCount: 0, totalWeightKg: 0, totalCostCNY: 0
@@ -32,6 +32,13 @@
                 brace:   1.05,   // 横斜撑 5% 余量（切割最多，zigzag结构）
                 basePlate: 1.02  // 脚底板 2% 余量
             };
+
+            // ===== Upright profile resolution =====
+            // app.js passes uprightProfile like '100*70(2.5)' — normalize to profiles.js key '100x70'
+            var uprightProfile = p.uprightProfile || '100*70(2.5)';
+            var uprightProfileKey = uprightProfile.replace(/\*/, 'x').replace(/\(\d+(\.\d+)?\)/, '');
+            var uprightWeightPerM = BOMEngine._getProfileWeight(uprightProfileKey) || BOMEngine._getProfileWeight(uprightProfile) || 5.30;
+            var uprightLength = p.warehouseHeight || p.rackHeight || 6;
 
             // 1. Uprights (立柱)
             var uprightSetsRaw = (rows.baysPerRow + 1) * 2 * rows.totalRows;

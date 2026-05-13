@@ -233,7 +233,16 @@
             var recs = generateRecommendations();
             state.recommendations = recs;
             renderRecommendations(recs);
-            renderBOMAndLoadCheck();
+
+            // Wrap BOM/LoadCheck in try-catch so errors never block the UI flow
+            try {
+                renderBOMAndLoadCheck();
+            } catch (e) {
+                console.error('[Planner] BOM/LoadCheck render failed:', e);
+                state.bom = null;
+                state.loadCheck = null;
+            }
+
             renderComparisonTable(recs);
             renderLayout(recs[0]);
             if (typeof LayoutEngine !== 'undefined') {
