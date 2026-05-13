@@ -230,30 +230,38 @@
         document.getElementById('results-content').style.display = 'none';
 
         setTimeout(function () {
-            var recs = generateRecommendations();
-            state.recommendations = recs;
-            renderRecommendations(recs);
-
-            // Wrap BOM/LoadCheck in try-catch so errors never block the UI flow
             try {
-                renderBOMAndLoadCheck();
+                var recs = generateRecommendations();
+                state.recommendations = recs;
+                renderRecommendations(recs);
+
+                // Wrap BOM/LoadCheck in try-catch so errors never block the UI flow
+                try {
+                    renderBOMAndLoadCheck();
+                } catch (e) {
+                    console.error('[Planner] BOM/LoadCheck render failed:', e);
+                    state.bom = null;
+                    state.loadCheck = null;
+                }
+
+                renderComparisonTable(recs);
+                renderLayout(recs[0]);
+                if (typeof LayoutEngine !== 'undefined') {
+                    LayoutEngine.updateStats();
+                    // Use rAF to ensure Canvas pixels are flushed before copying to thumbnails
+                    requestAnimationFrame(function () {
+                        if (typeof App._drawThumbnails === 'function') App._drawThumbnails();
+                    });
+                }
             } catch (e) {
-                console.error('[Planner] BOM/LoadCheck render failed:', e);
+                console.error('[Planner] setTimeout callback error:', e);
                 state.bom = null;
                 state.loadCheck = null;
+            } finally {
+                // ALWAYS transition UI — even if rendering fails completely
+                document.getElementById('results-loading').style.display = 'none';
+                document.getElementById('results-content').style.display = 'block';
             }
-
-            renderComparisonTable(recs);
-            renderLayout(recs[0]);
-            if (typeof LayoutEngine !== 'undefined') {
-                LayoutEngine.updateStats();
-                // Use rAF to ensure Canvas pixels are flushed before copying to thumbnails
-                requestAnimationFrame(function () {
-                    if (typeof App._drawThumbnails === 'function') App._drawThumbnails();
-                });
-            }
-            document.getElementById('results-loading').style.display = 'none';
-            document.getElementById('results-content').style.display = 'block';
         }, 1800);
     };
 
@@ -409,7 +417,7 @@
     //  推荐引擎 — 多维度评分系统
     // ============================================================
     function generateRecommendations() {
-        var products = state.products;
+        var products = state.products || [];
         var specs = state.specsData;
         if (!products.length) return getDefaultRecommendations();
 
@@ -662,7 +670,7 @@
         };
         var preset = RACKING_PRESETS[rackingType] || RACKING_PRESETS['selective-heavy'];
 
-        if (typeof LayoutEngine !== 'undefined') {
+        if (typeof LayoutEngine !== 'undefined' && LayoutEngine.params) {
             LayoutEngine.params.warehouseLength = specs.length;
             LayoutEngine.params.warehouseWidth = specs.width;
             LayoutEngine.params.rackingType = rackingType;
