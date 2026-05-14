@@ -809,30 +809,20 @@
                 ctx.beginPath(); ctx.moveTo(gx, pad + drawH); ctx.lineTo(gx - 4, pad + drawH + 4); ctx.stroke();
             }
 
-            // Draw each row block — back-to-back with 3 uprights visible
+            // Draw each row block — side view shows a single consolidated block
+            // From the side, back-to-back rows merge into one profile; BTB detail belongs in top view
             var currentX = offsetX;
             for (var i = 0; i < this.rows.length; i++) {
                 var row = this.rows[i];
                 var rowBlockW = row.blockDepth * sc;
-                var leftX = currentX;
-                var leftRightX = currentX + rackDepth * sc;       // end of left face
-                var gapLeftX = leftRightX;                         // BTB gap starts
-                var gapRightX = leftRightX + btbGapM * sc;        // BTB gap ends
-                var rightX = gapRightX + rackDepth * sc;          // end of right face
 
-                // Two separate rack faces (left + right of BTB gap)
-                var rackFaceW = rackDepth * sc;
-                var btbGapW = btbGapM * sc;
-
-                // Rack block backgrounds (left and right halves, gap stays empty)
-                ctx.fillStyle = 'rgba(212,168,107,0.18)';
-                ctx.fillRect(leftX, offsetY, rackFaceW, rackH);
-                ctx.fillRect(gapRightX, offsetY, rackFaceW, rackH);
+                // Rack block background (single consolidated block)
+                ctx.fillStyle = 'rgba(212,168,107,0.22)';
+                ctx.fillRect(currentX, offsetY, rowBlockW, rackH);
                 ctx.strokeStyle = C.rackBorder; ctx.lineWidth = 1;
-                ctx.strokeRect(leftX, offsetY, rackFaceW, rackH);
-                ctx.strokeRect(gapRightX, offsetY, rackFaceW, rackH);
+                ctx.strokeRect(currentX, offsetY, rowBlockW, rackH);
 
-                // Draw levels inside this block
+                // Draw levels
                 var firstBeamHeight = p.firstBeamHeight || 2.5;
                 var remainingHeight = rackHeight - firstBeamHeight;
                 var upperLevels = levels - 1;
@@ -844,61 +834,47 @@
                     cumSideY += levelSpacing[lv];
                     var lvY = offsetY + rackH - cumSideY * sc;
 
-                    // Beam across left face
+                    // Beam line
                     ctx.strokeStyle = C.beam;
                     ctx.lineWidth = 1.5;
-                    ctx.beginPath(); ctx.moveTo(leftX, lvY); ctx.lineTo(leftX + rackFaceW, lvY); ctx.stroke();
-                    // Beam across right face
-                    ctx.beginPath(); ctx.moveTo(gapRightX, lvY); ctx.lineTo(gapRightX + rackFaceW, lvY); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(currentX, lvY); ctx.lineTo(currentX + rowBlockW, lvY); ctx.stroke();
 
-                    // Pallets on left face
+                    // Small pallet rectangles on this level (2 per side for BTB, shown as stacked dots)
                     var palletHm = (p.palletHeight || 1500) / 1000;
                     var palletH = Math.min(palletHm, levelSpacing[lv] - 0.05);
                     var palletPxH = palletH * sc;
-                    ctx.fillStyle = C.palletBg;
-                    ctx.strokeStyle = C.pallet;
-                    ctx.lineWidth = 0.6;
-                    ctx.fillRect(leftX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
-                    ctx.strokeRect(leftX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
-                    // Pallets on right face
-                    ctx.fillRect(gapRightX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
-                    ctx.strokeRect(gapRightX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
+                    var palletCount = p.palletsPerLevel || 2;
+                    var slotW = (rowBlockW - 8) / palletCount;
+                    for (var pi = 0; pi < palletCount; pi++) {
+                        var px = currentX + 4 + pi * slotW;
+                        ctx.fillStyle = C.palletBg;
+                        ctx.strokeStyle = C.pallet;
+                        ctx.lineWidth = 0.5;
+                        ctx.fillRect(px + 1, lvY - palletPxH, slotW - 2, palletPxH);
+                        ctx.strokeRect(px + 1, lvY - palletPxH, slotW - 2, palletPxH);
+                    }
 
-                    // Level label (only on first row to avoid clutter)
+                    // Level label
                     if (i === 0) {
                         ctx.fillStyle = '#6b7280';
                         ctx.font = '700 7px -apple-system, sans-serif';
                         ctx.textAlign = 'left';
-                        ctx.fillText('L' + (lv + 1), leftX + 3, lvY - palletPxH / 2 + 3);
+                        ctx.fillText('L' + (lv + 1), currentX + 3, lvY - palletPxH / 2 + 3);
                     }
                 }
 
-                // Upright edges — 3 uprights: left, center-left, center-right (BTB gap sides)
+                // Upright edges — left and right only (side view profile)
                 var uprightExtPx = 0.25 * sc;
                 ctx.strokeStyle = C.upright;
                 ctx.lineWidth = 2;
-                // Left upright
-                ctx.beginPath(); ctx.moveTo(leftX, offsetY - uprightExtPx); ctx.lineTo(leftX, offsetY + rackH); ctx.stroke();
-                // Center uprights (BTB gap — one on each side)
-                ctx.beginPath(); ctx.moveTo(leftRightX, offsetY - uprightExtPx); ctx.lineTo(leftRightX, offsetY + rackH); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(gapRightX, offsetY - uprightExtPx); ctx.lineTo(gapRightX, offsetY + rackH); ctx.stroke();
-                // Right upright
-                ctx.beginPath(); ctx.moveTo(rightX, offsetY - uprightExtPx); ctx.lineTo(rightX, offsetY + rackH); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(currentX, offsetY - uprightExtPx); ctx.lineTo(currentX, offsetY + rackH); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(currentX + rowBlockW, offsetY - uprightExtPx); ctx.lineTo(currentX + rowBlockW, offsetY + rackH); ctx.stroke();
 
-                // BTB gap label
-                if (btbGapW > 20) {
-                    ctx.fillStyle = '#9ca3af';
-                    ctx.font = '700 7px -apple-system, sans-serif';
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText('BTB', gapLeftX + btbGapW / 2, offsetY + rackH / 2);
-                    ctx.fillText((btbGapM * 1000).toFixed(0) + 'mm', gapLeftX + btbGapW / 2, offsetY + rackH / 2 + 10);
-                }
-
-                // Row label
+                // Block depth label
                 ctx.fillStyle = '#4a5568';
                 ctx.font = '700 8px -apple-system, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('Row ' + (i + 1), currentX + rowBlockW / 2, offsetY + rackH + 14);
+                ctx.fillText(row.blockDepth.toFixed(1) + 'm', currentX + rowBlockW / 2, offsetY + rackH + 14);
 
                 // Aisle after this row
                 if (i < this.rows.length - 1 && row.aisleAfter) {
