@@ -229,11 +229,37 @@
             var utilization = Math.round((rackArea / totalArea) * 100);
             utilization = Math.min(utilization, 80);
 
-            var pricePerPosition = {
-                'selective-heavy': 120, 'drive-in': 150, 'radio-shuttle': 200
-            };
-            var costPerPos = pricePerPosition[p.rackingType] || 120;
-            var estimatedCost = totalPositions * costPerPos;
+            // Cost estimation via CostEngine (BOM-based, replaces hardcoded per-position guess)
+            var estimatedCost = 0;
+            if (typeof window.BOMEngine !== 'undefined' && typeof window.CostEngine !== 'undefined') {
+                try {
+                    var bomParams = Object.assign({}, p, {
+                        uprightProfile: p.uprightProfile || '100*70(2.5)',
+                        beamProfile: p.beamProfile || 'B120*50',
+                        rows: { totalRows: rowsNeeded, baysPerRow: baysPerRow, isBackToBack: true }
+                    });
+                    var bom = window.BOMEngine.calc(bomParams);
+                    var costResult = window.CostEngine.calc(bom, {
+                        material: p.material || 'Q235',
+                        surface: 'powder',
+                        margin: 0.15,
+                        freight: 0.08
+                    });
+                    estimatedCost = costResult.totalCNY;
+                } catch (e) {
+                    // Fallback: per-position estimate
+                    var pricePerPosition = {
+                        'selective-heavy': 120, 'drive-in': 150, 'radio-shuttle': 200
+                    };
+                    estimatedCost = totalPositions * (pricePerPosition[p.rackingType] || 120);
+                }
+            } else {
+                // Fallback when engines not loaded yet
+                var pricePerPosition = {
+                    'selective-heavy': 120, 'drive-in': 150, 'radio-shuttle': 200
+                };
+                estimatedCost = totalPositions * (pricePerPosition[p.rackingType] || 120);
+            }
 
             // Update derived params so other modules (BOM, renderers) can read them
             p.rackWidth = bayWidth;

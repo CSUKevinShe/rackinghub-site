@@ -296,6 +296,17 @@
         var bomParams = Object.assign({}, p, { uprightProfile: uprightProfile, beamProfile: beamProfile });
         var bom = window.BOMEngine.calc(bomParams);
 
+        // Cost calculation (NEW: cost-engine.js)
+        var costResult = null;
+        if (typeof window.CostEngine !== 'undefined') {
+            costResult = window.CostEngine.calcAndDisplay(bom, {
+                material: material,
+                surface: 'powder',
+                margin: 0.15,
+                freight: 0.08
+            });
+        }
+
         // Load check
         var checkParams = Object.assign({}, p, {
             uprightProfile: uprightProfile,
