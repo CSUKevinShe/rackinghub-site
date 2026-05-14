@@ -737,12 +737,15 @@
 
     // ===== Canvas Zoom =====
     App._zoomLevel = 1.0;
+    App._zoomPerView = { top: 1.0, front: 1.0, side: 1.0 };
     App.zoomCanvas = function (delta, fit) {
         if (fit) {
             App._zoomLevel = 1.0;
         } else {
             App._zoomLevel = Math.max(0.3, Math.min(3.0, App._zoomLevel + delta));
         }
+        // Save per-view zoom
+        if (App._currentView) App._zoomPerView[App._currentView] = App._zoomLevel;
         var display = document.getElementById('zoom-level');
         if (display) display.textContent = Math.round(App._zoomLevel * 100) + '%';
         // Apply zoom to all view canvases via CSS transform
@@ -842,6 +845,8 @@
 
         // Apply zoom
         App._zoomLevel = targetZoom;
+        // Save per-view zoom
+        if (App._currentView) App._zoomPerView[App._currentView] = targetZoom;
         var display = document.getElementById('zoom-level');
         if (display) display.textContent = Math.round(targetZoom * 100) + '%';
         var allCanvases = document.querySelectorAll('.view-canvas, .view-canvas-sub');
@@ -896,9 +901,14 @@
 
     // ===== View Switching (Top/Front/Side thumbnails) =====
     App._currentView = 'top';
+    App._zoomPerView = { top: 1.0, front: 1.0, side: 1.0 };
     App.switchView = function (viewName) {
         if (viewName === App._currentView) return;
         App._currentView = viewName;
+
+        // Restore per-view zoom level
+        if (App._zoomPerView[viewName] === undefined) App._zoomPerView[viewName] = 1.0;
+        App._zoomLevel = App._zoomPerView[viewName];
 
         // Update thumbnail buttons
         document.querySelectorAll('.view-thumb').forEach(function (btn) {

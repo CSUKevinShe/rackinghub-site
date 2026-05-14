@@ -746,11 +746,7 @@
                 label: bayWidth.toFixed(1) + ' m', isHorizontal: true
             });
 
-            // Title
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '700 8px -apple-system, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('FRONT ELEVATION', w / 2, pad - 8);
+            // Title — moved to canvas-header via switchView, removed from canvas to avoid overlap
         },
 
         // ===== Draw side section (benchmark style) =====
@@ -938,11 +934,7 @@
                 label: 'Total ' + totalDepthM.toFixed(1) + ' m', isHorizontal: true
             });
 
-            // Title
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '700 8px -apple-system, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('SIDE ELEVATION — ' + this.rows.length + ' row(s)', w / 2, pad - 8);
+            // Title — moved to canvas-header via switchView, removed from canvas to avoid overlap
         },
 
         // ===== Draw all three views =====
