@@ -1,60 +1,108 @@
 /*
  * RackingHub Planner — layout-engine.js
  * Parameterized 2D warehouse layout engine with real-time Canvas rendering
- * Benchmark-rebuilt: numeric inputs + cleaner CAD-style rendering
+ * Profile-driven: reads window.PROFILES for upright/beam specs (pallet-first bay width)
  */
 
 (function () {
     'use strict';
 
+    // ===== Profiles cache (populated after window.PROFILES loads) =====
+    var _profiles = null;
+    var _profilesReady = false;
+    var _profilesCallbacks = [];
+
+    // Wait for profiles data, then run callback
+    function whenProfilesReady(callback) {
+        if (_profilesReady) { callback(); return; }
+        _profilesCallbacks.push(callback);
+    }
+
+    // Call once when window.PROFILES is available
+    function _onProfilesLoaded() {
+        if (_profilesReady) return;
+        _profiles = window.PROFILES || {};
+        _profilesReady = true;
+        for (var i = 0; i < _profilesCallbacks.length; i++) {
+            _profilesCallbacks[i]();
+        }
+        _profilesCallbacks = [];
+    }
+
+    // Auto-detect: poll for window.PROFILES (data scripts load synchronously)
+    (function _pollProfiles() {
+        if (typeof window !== 'undefined' && window.PROFILES) {
+            _onProfilesLoaded();
+        } else if (document.readyState === 'complete') {
+            // DOM ready but profiles not yet — try once more
+            if (window.PROFILES) { _onProfilesLoaded(); }
+        } else {
+            setTimeout(_pollProfiles, 50);
+        }
+    })();
+
+    // ===== Profile lookup helpers =====
+
+    // Get weight (kg/m) for a given profile key
+    function _getProfileWeight(profileName) {
+        if (!_profiles) return null;
+        if (_profiles[profileName]) return _profiles[profileName].weight || 0;
+        // Fuzzy match by substring
+        for (var key in _profiles) {
+            if (key.indexOf(profileName) >= 0) return _profiles[key].weight || 0;
+        }
+        return null;
+    }
+
+    // Get default upright profile weight (first '立柱' category entry)
+    function _getDefaultUprightWeight() {
+        if (!_profiles) return 5.30; // fallback
+        for (var key in _profiles) {
+            if (_profiles[key].category === '立柱') return _profiles[key].weight || 5.30;
+        }
+        return 5.30;
+    }
+
+    // Get default beam profile weight (first 'K梁（横梁）' category entry)
+    function _getDefaultBeamWeight() {
+        if (!_profiles) return 5.0;
+        for (var key in _profiles) {
+            if (_profiles[key].category === 'K梁（横梁）') return _profiles[key].weight || 5.0;
+        }
+        return 5.0;
+    }
+
     // ===== Racking type presets =====
+    // rackWidth and rackDepth are now derived from profiles; only aisle/storage density remain here
     var RACKING_PRESETS = {
         'selective-heavy': {
             name: 'Heavy-Duty Selective',
             aisleWidth: 3.2,
-            rackDepth: 1.0,
-            rackWidth: 2.7,
-            color: '#1a365d',
             storageDensity: 0.35
         },
         'selective-medium': {
             name: 'Medium-Duty Selective',
             aisleWidth: 3.0,
-            rackDepth: 0.9,
-            rackWidth: 2.5,
-            color: '#2c5282',
             storageDensity: 0.38
         },
         'drive-in': {
             name: 'Drive-In Racking',
             aisleWidth: 3.0,
-            rackDepth: 1.0,
-            rackWidth: 2.4,
-            color: '#1e3a5f',
             storageDensity: 0.75
         },
         'radio-shuttle': {
             name: 'Radio Shuttle',
             aisleWidth: 3.0,
-            rackDepth: 1.0,
-            rackWidth: 2.7,
-            color: '#1a365d',
             storageDensity: 0.70
         },
         'vna': {
             name: 'VNA Racking',
             aisleWidth: 1.8,
-            rackDepth: 1.0,
-            rackWidth: 2.4,
-            color: '#163050',
             storageDensity: 0.55
         },
         'push-back': {
             name: 'Push-Back Racking',
             aisleWidth: 3.2,
-            rackDepth: 1.0,
-            rackWidth: 2.4,
-            color: '#1a365d',
             storageDensity: 0.55
         }
     };
@@ -76,26 +124,31 @@
         params: {
             warehouseLength: 60,   // meters
             warehouseWidth: 40,    // meters
-            warehouseHeight: 6,    // meters
+            warehouseHeight: 6,    // meters (also = rack height)
             rackingType: 'selective-heavy',
             aisleWidth: 3.2,       // meters
             levels: 4,
             palletsPerLevel: 2,
             entrancePosition: 'bottom-left',
-            palletWidth: 1200,
-            palletDepth: 800,
-            palletHeight: 1500,
-            beamHeight: 120,
-            firstBeamHeight: 2.5,
-            backToBackGap: 200, // mm, gap between back-to-back rack rows
-            interPalletGap: 100,
-            columnSpacingX: 15,
-            columnSpacingY: 12,
-            columnSize: 400,
-            clearanceLeft: 0.5,
+            palletWidth: 1200,     // mm
+            palletDepth: 800,      // mm
+            palletHeight: 1500,    // mm
+            beamHeight: 120,       // mm
+            firstBeamHeight: 2.5,  // meters
+            backToBackGap: 200,    // mm, gap between back-to-back rack rows
+            interPalletGap: 100,   // mm
+            columnSpacingX: 15,    // meters
+            columnSpacingY: 12,    // meters
+            columnSize: 400,       // mm
+            clearanceLeft: 0.5,    // meters
             clearanceRight: 0.5,
             clearanceFront: 0.5,
-            clearanceBack: 0.5
+            clearanceBack: 0.5,
+            uprightProfile: '100x70',   // profiles.js key
+            beamProfile: '100x50',      // profiles.js key
+            rackHeight: 6.0,        // meters (total upright height)
+            rackWidth: 2.7,         // meters (bay width, derived from pallet config)
+            rackDepth: 1.0          // meters (rack depth per side)
         },
 
         stats: {
@@ -108,10 +161,15 @@
 
         rows: [],
 
+        // ===== Public: get profiles data =====
+        getProfiles: function () { return _profiles; },
+        isProfilesReady: function () { return _profilesReady; },
+
         setParam: function (key, value) {
             this.params[key] = value;
-            if (key === 'rackingType' && RACKING_PRESETS[value]) {
-                this.params.aisleWidth = RACKING_PRESETS[value].aisleWidth;
+            var preset = RACKING_PRESETS[value] || RACKING_PRESETS[this.params.rackingType];
+            if (key === 'rackingType' && preset) {
+                this.params.aisleWidth = preset.aisleWidth;
             }
             // Show/hide back beam checkbox based on racking type
             var backBeamField = document.getElementById('drive-in-back-beam-field');
@@ -121,12 +179,30 @@
             this.calculate();
         },
 
+        // ===== Pallet-first bay width calculation =====
+        // Bay width = N × palletWidth + (N+1) × gap + 2 × uprightWidth
+        _calcBayWidth: function (p) {
+            var n = p.palletsPerLevel || 2;
+            var palletWm = (p.palletWidth || 1200) / 1000; // mm → m
+            var gapM = (p.interPalletGap || 100) / 1000;
+            var uprightWidthM = 0.08; // ~80mm upright face width
+            return n * palletWm + (n + 1) * gapM + 2 * uprightWidthM;
+        },
+
+        // ===== Rack depth from pallet depth =====
+        _calcRackDepth: function (p) {
+            var palletDm = (p.palletDepth || 800) / 1000;
+            return palletDm + 0.15; // +150mm front/back overhang allowance
+        },
+
         calculate: function () {
             var p = this.params;
             var preset = RACKING_PRESETS[p.rackingType] || RACKING_PRESETS['selective-heavy'];
             var aisleW = p.aisleWidth || preset.aisleWidth;
-            var rackD = preset.rackDepth;
-            var rackW = preset.rackWidth;
+
+            // Derive rack dimensions from pallet config (pallet-first)
+            var bayWidth = this._calcBayWidth(p);
+            var rackD = this._calcRackDepth(p);
 
             // Clearances from walls
             var clearL = p.clearanceLeft || 0;
@@ -134,12 +210,13 @@
             var clearF = p.clearanceFront || 0;
             var clearB = p.clearanceBack || 0;
 
-            // Usable space after subtracting wall clearances
+            // Usable space after subtracting wall clearances + structural offsets
             var usableWidth = p.warehouseWidth - clearF - clearB - 4;
             var usableLength = p.warehouseLength - clearL - clearR - 5;
 
-            var blockDepth = rackD * 2 + (p.backToBackGap || 200) / 1000;
-            var bayWidth = rackW;
+            var btbGapM = (p.backToBackGap || 200) / 1000;
+            var blockDepth = rackD * 2 + btbGapM;
+
             var rowsNeeded = Math.floor((usableWidth + aisleW) / (blockDepth + aisleW));
             rowsNeeded = Math.max(1, Math.min(rowsNeeded, 12));
             var baysPerRow = Math.floor(usableLength / bayWidth);
@@ -158,6 +235,10 @@
             var costPerPos = pricePerPosition[p.rackingType] || 120;
             var estimatedCost = totalPositions * costPerPos;
 
+            // Update derived params so other modules (BOM, renderers) can read them
+            p.rackWidth = bayWidth;
+            p.rackDepth = rackD;
+
             this.rows = [];
             var offsetY = clearB + 2;
             for (var i = 0; i < rowsNeeded; i++) {
@@ -173,7 +254,8 @@
                 totalPositions: totalPositions, spaceUtilization: utilization,
                 rackBlockCount: rowsNeeded, aisleCount: Math.max(0, rowsNeeded - 1),
                 estimatedCostCNY: estimatedCost, baysPerRow: baysPerRow,
-                positionsPerBay: positionsPerBay, rowsNeeded: rowsNeeded
+                positionsPerBay: positionsPerBay, rowsNeeded: rowsNeeded,
+                bayWidth: bayWidth, rackDepth: rackD, blockDepth: blockDepth
             };
         },
 
@@ -417,8 +499,8 @@
 
             // ===== Rack rows =====
             var aisleW = p.aisleWidth || preset.aisleWidth;
-            var blockDepth = preset.rackDepth * 2 + ((p.backToBackGap || 200) / 1000);
-            var bayWidth = preset.rackWidth;
+            var blockDepth = this.stats.blockDepth || (p.rackDepth * 2 + ((p.backToBackGap || 200) / 1000));
+            var bayWidth = p.rackWidth || this.stats.bayWidth || 2.7;
             var levels = p.levels;
             var palletsPerBay = p.palletsPerLevel;
 
@@ -653,9 +735,9 @@
 
             var levels = p.levels;
             var palletsPerBay = p.palletsPerLevel;
-            var bayWidth = preset.rackWidth;
-            var rackHeight = p.rackHeight || 6.0; // actual rack height in meters
-            var firstBeamHeight = p.firstBeamHeight || 2.5; // first beam height in meters
+            var bayWidth = p.rackWidth || this.stats.bayWidth || 2.7;
+            var rackHeight = p.rackHeight || p.warehouseHeight || 6.0;
+            var firstBeamHeight = p.firstBeamHeight || 2.5;
             var totalBayW = bayWidth * palletsPerBay;
             var scaleX = drawW / totalBayW;
             var scaleY = drawH / rackHeight;
@@ -673,8 +755,8 @@
                 ctx.beginPath(); ctx.moveTo(gx, pad + drawH); ctx.lineTo(gx - 4, pad + drawH + 4); ctx.stroke();
             }
 
-            // Upright frames — extend 250mm above top beam for safety (prevents pallets from falling off)
-            var uprightExtension = 0.25; // meters — standard 225-300mm
+            // Upright frames — extend 250mm above top beam for safety
+            var uprightExtension = 0.25;
             var uprightExtPx = uprightExtension * sc;
             var uprightWidth = 0.08;
             var uprightPxW = Math.max(3, uprightWidth * sc);
@@ -685,10 +767,9 @@
                 ctx.fillRect(ux, offsetY - uprightExtPx, uprightPxW, rackH + uprightExtPx);
             }
 
-            // Beams + pallets — proper level height distribution
+            // Beams + pallets
             var beamH = 0.06;
             var beamPxH = Math.max(2, beamH * sc);
-            var firstBeamHeight = p.firstBeamHeight || 2.5;
             var remainingHeight = rackHeight - firstBeamHeight;
             var upperLevels = levels - 1;
             var upperLevelSpacing = upperLevels > 0 ? remainingHeight / upperLevels : 0;
@@ -704,12 +785,12 @@
                 ctx.fillRect(offsetX, ly, rackW, beamPxH);
 
                 // Pallets — tan/beige blocks sitting on beam
-                var palletHm = (p.palletHeight || 1500) / 1000; // convert mm to meters
-                var palletH = Math.min(palletHm, levelSpacing[lv] - 0.05); // cap to available space minus 5cm clearance
+                var palletHm = (p.palletHeight || 1500) / 1000;
+                var palletH = Math.min(palletHm, levelSpacing[lv] - 0.05);
                 var palletPxH = palletH * sc;
-                var palletGapM = 0.08; // 8cm gap between pallets
+                var palletGapM = 0.08;
                 var palletPxGap = palletGapM * sc;
-                var singlePalletW = bayWidth / palletsPerBay; // width of one pallet
+                var singlePalletW = bayWidth / palletsPerBay;
                 var singlePalletPxW = singlePalletW * sc - palletPxGap * 2;
                 ctx.fillStyle = C.palletBg;
                 ctx.strokeStyle = C.pallet;
@@ -721,7 +802,7 @@
                 }
             }
 
-            // Height dimension line — show actual rack height
+            // Height dimension line
             this.drawDimensionLine(ctx, {
                 startX: offsetX - 16, startY: offsetY,
                 endX: offsetX - 16, endY: offsetY + rackH,
@@ -743,10 +824,8 @@
             this.drawDimensionLine(ctx, {
                 startX: offsetX, startY: pad + drawH + 16,
                 endX: offsetX + rackW, endY: pad + drawH + 16,
-                label: bayWidth.toFixed(1) + ' m', isHorizontal: true
+                label: bayWidth.toFixed(2) + ' m', isHorizontal: true
             });
-
-            // Title — moved to canvas-header via switchView, removed from canvas to avoid overlap
         },
 
         // ===== Draw side section (benchmark style) =====
@@ -773,18 +852,17 @@
             var pad = 45;
             var drawW = w - pad * 2;
             var drawH = h - pad * 2;
-            // Off-white background
             ctx.fillStyle = '#fafbfc';
             ctx.fillRect(0, 0, w, h);
 
             var levels = p.levels;
-            var rackDepth = preset.rackDepth;
+            var rackDepth = p.rackDepth || this.stats.rackDepth || 1.0;
             var btbGapM = (p.backToBackGap || 200) / 1000;
             var blockDepthM = rackDepth * 2 + btbGapM;
             var aisleW = p.aisleWidth || preset.aisleWidth;
-            var rackHeight = p.rackHeight || 6.0;
+            var rackHeight = p.rackHeight || p.warehouseHeight || 6.0;
 
-            // Calculate total height needed: sum of all row blocks + aisles between them
+            // Total depth: sum of all row blocks + aisles
             var totalDepthM = 0;
             for (var ri = 0; ri < this.rows.length; ri++) {
                 totalDepthM += this.rows[ri].blockDepth;
@@ -792,7 +870,7 @@
                     totalDepthM += aisleW;
                 }
             }
-            if (totalDepthM === 0) totalDepthM = blockDepthM + aisleW; // fallback to single block + aisle
+            if (totalDepthM === 0) totalDepthM = blockDepthM + aisleW;
 
             var scaleX = drawW / totalDepthM;
             var scaleY = drawH / rackHeight;
@@ -809,14 +887,13 @@
                 ctx.beginPath(); ctx.moveTo(gx, pad + drawH); ctx.lineTo(gx - 4, pad + drawH + 4); ctx.stroke();
             }
 
-            // Draw each row block — side view shows a single consolidated block
-            // From the side, back-to-back rows merge into one profile; BTB detail belongs in top view
+            // Draw each row block
             var currentX = offsetX;
             for (var i = 0; i < this.rows.length; i++) {
                 var row = this.rows[i];
                 var rowBlockW = row.blockDepth * sc;
 
-                // Rack block background (single consolidated block)
+                // Rack block background
                 ctx.fillStyle = 'rgba(212,168,107,0.22)';
                 ctx.fillRect(currentX, offsetY, rowBlockW, rackH);
                 ctx.strokeStyle = C.rackBorder; ctx.lineWidth = 1;
@@ -839,7 +916,7 @@
                     ctx.lineWidth = 1.5;
                     ctx.beginPath(); ctx.moveTo(currentX, lvY); ctx.lineTo(currentX + rowBlockW, lvY); ctx.stroke();
 
-                    // Small pallet rectangles on this level (2 per side for BTB, shown as stacked dots)
+                    // Pallet rectangles on this level
                     var palletHm = (p.palletHeight || 1500) / 1000;
                     var palletH = Math.min(palletHm, levelSpacing[lv] - 0.05);
                     var palletPxH = palletH * sc;
@@ -863,7 +940,7 @@
                     }
                 }
 
-                // Upright edges — left and right only (side view profile)
+                // Upright edges
                 var uprightExtPx = 0.25 * sc;
                 ctx.strokeStyle = C.upright;
                 ctx.lineWidth = 2;
@@ -881,13 +958,11 @@
                     var aisleX = currentX + rowBlockW;
                     var aisleW_Px = aisleW * sc;
 
-                    // Aisle zone (dashed border)
                     ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 0.8;
                     ctx.setLineDash([4, 3]);
                     ctx.strokeRect(aisleX, offsetY, aisleW_Px, rackH);
                     ctx.setLineDash([]);
 
-                    // Aisle label
                     ctx.fillStyle = '#9ca3af';
                     ctx.font = '700 8px -apple-system, sans-serif';
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -907,7 +982,6 @@
 
             // Dimension lines
             var dimTopY = offsetY - 16;
-            // Draw dimension for first block
             if (this.rows.length > 0) {
                 var firstBlockW = this.rows[0].blockDepth * sc;
                 this.drawDimensionLine(ctx, {
@@ -915,21 +989,17 @@
                     label: 'Block ' + this.rows[0].blockDepth.toFixed(1) + ' m', isHorizontal: true
                 });
             }
-            // Height dimension
             this.drawDimensionLine(ctx, {
                 startX: offsetX - 16, startY: offsetY, endX: offsetX - 16, endY: offsetY + rackH,
                 label: this.formatDimension(rackHeight), isHorizontal: false
             });
 
-            // Total width dimension at bottom
             var totalW_Px = currentX - offsetX;
             var dimBottomY = offsetY + rackH + 28;
             this.drawDimensionLine(ctx, {
                 startX: offsetX, startY: dimBottomY, endX: offsetX + totalW_Px, endY: dimBottomY,
                 label: 'Total ' + totalDepthM.toFixed(1) + ' m', isHorizontal: true
             });
-
-            // Title — moved to canvas-header via switchView, removed from canvas to avoid overlap
         },
 
         // ===== Draw all three views =====
@@ -947,10 +1017,20 @@
             return 50;
         },
 
-        // ===== Initialize interactive mode (NEW: numeric inputs) =====
+        // ===== Initialize interactive mode =====
         initInteractive: function () {
             var engine = this;
 
+            // Wait for profiles data before calculating (profiles.js loads via <script> tag)
+            whenProfilesReady(function () {
+                engine.calculate();
+                engine.drawAll();
+                engine.updateStats();
+                engine.updateRecommendation();
+                engine.updateStatus();
+            });
+
+            // Also run immediately with defaults if profiles aren't ready yet
             engine.calculate();
 
             // Map of numeric input IDs to param keys
@@ -1038,8 +1118,7 @@
                 });
             });
 
-            // Initial draw
-            engine.calculate();
+            // Initial draw (immediate, profiles callback will re-draw when ready)
             setTimeout(function () {
                 engine.drawAll();
                 engine.updateStats();
@@ -1104,5 +1183,6 @@
         }
     };
 
+    // Export
     window.LayoutEngine = LayoutEngine;
 })();
