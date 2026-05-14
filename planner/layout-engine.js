@@ -809,28 +809,28 @@
                 ctx.beginPath(); ctx.moveTo(gx, pad + drawH); ctx.lineTo(gx - 4, pad + drawH + 4); ctx.stroke();
             }
 
-            // Draw each row block
+            // Draw each row block — back-to-back with 3 uprights visible
             var currentX = offsetX;
             for (var i = 0; i < this.rows.length; i++) {
                 var row = this.rows[i];
                 var rowBlockW = row.blockDepth * sc;
+                var leftX = currentX;
+                var leftRightX = currentX + rackDepth * sc;       // end of left face
+                var gapLeftX = leftRightX;                         // BTB gap starts
+                var gapRightX = leftRightX + btbGapM * sc;        // BTB gap ends
+                var rightX = gapRightX + rackDepth * sc;          // end of right face
 
-                // Rack block background
+                // Two separate rack faces (left + right of BTB gap)
+                var rackFaceW = rackDepth * sc;
+                var btbGapW = btbGapM * sc;
+
+                // Rack block backgrounds (left and right halves, gap stays empty)
                 ctx.fillStyle = 'rgba(212,168,107,0.18)';
-                ctx.fillRect(currentX, offsetY, rowBlockW, rackH);
+                ctx.fillRect(leftX, offsetY, rackFaceW, rackH);
+                ctx.fillRect(gapRightX, offsetY, rackFaceW, rackH);
                 ctx.strokeStyle = C.rackBorder; ctx.lineWidth = 1;
-                ctx.strokeRect(currentX, offsetY, rowBlockW, rackH);
-
-                // Center line (double-sided divider)
-                var centerX = currentX + rackDepth * sc;
-                ctx.strokeStyle = 'rgba(59,130,246,0.35)';
-                ctx.lineWidth = 0.8;
-                ctx.setLineDash([3, 3]);
-                ctx.beginPath();
-                ctx.moveTo(centerX, offsetY);
-                ctx.lineTo(centerX, offsetY + rackH);
-                ctx.stroke();
-                ctx.setLineDash([]);
+                ctx.strokeRect(leftX, offsetY, rackFaceW, rackH);
+                ctx.strokeRect(gapRightX, offsetY, rackFaceW, rackH);
 
                 // Draw levels inside this block
                 var firstBeamHeight = p.firstBeamHeight || 2.5;
@@ -844,36 +844,55 @@
                     cumSideY += levelSpacing[lv];
                     var lvY = offsetY + rackH - cumSideY * sc;
 
-                    // Beam
+                    // Beam across left face
                     ctx.strokeStyle = C.beam;
                     ctx.lineWidth = 1.5;
-                    ctx.beginPath(); ctx.moveTo(currentX, lvY); ctx.lineTo(currentX + rowBlockW, lvY); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(leftX, lvY); ctx.lineTo(leftX + rackFaceW, lvY); ctx.stroke();
+                    // Beam across right face
+                    ctx.beginPath(); ctx.moveTo(gapRightX, lvY); ctx.lineTo(gapRightX + rackFaceW, lvY); ctx.stroke();
 
-                    // Pallet
+                    // Pallets on left face
                     var palletHm = (p.palletHeight || 1500) / 1000;
                     var palletH = Math.min(palletHm, levelSpacing[lv] - 0.05);
                     var palletPxH = palletH * sc;
                     ctx.fillStyle = C.palletBg;
                     ctx.strokeStyle = C.pallet;
                     ctx.lineWidth = 0.6;
-                    ctx.fillRect(currentX + 2, lvY - palletPxH, rowBlockW - 4, palletPxH);
-                    ctx.strokeRect(currentX + 2, lvY - palletPxH, rowBlockW - 4, palletPxH);
+                    ctx.fillRect(leftX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
+                    ctx.strokeRect(leftX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
+                    // Pallets on right face
+                    ctx.fillRect(gapRightX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
+                    ctx.strokeRect(gapRightX + 2, lvY - palletPxH, rackFaceW - 4, palletPxH);
 
                     // Level label (only on first row to avoid clutter)
                     if (i === 0) {
                         ctx.fillStyle = '#6b7280';
                         ctx.font = '700 7px -apple-system, sans-serif';
                         ctx.textAlign = 'left';
-                        ctx.fillText('L' + (lv + 1), currentX + 3, lvY - palletPxH / 2 + 3);
+                        ctx.fillText('L' + (lv + 1), leftX + 3, lvY - palletPxH / 2 + 3);
                     }
                 }
 
-                // Upright edges
+                // Upright edges — 3 uprights: left, center-left, center-right (BTB gap sides)
                 var uprightExtPx = 0.25 * sc;
                 ctx.strokeStyle = C.upright;
                 ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.moveTo(currentX, offsetY - uprightExtPx); ctx.lineTo(currentX, offsetY + rackH); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(currentX + rowBlockW, offsetY - uprightExtPx); ctx.lineTo(currentX + rowBlockW, offsetY + rackH); ctx.stroke();
+                // Left upright
+                ctx.beginPath(); ctx.moveTo(leftX, offsetY - uprightExtPx); ctx.lineTo(leftX, offsetY + rackH); ctx.stroke();
+                // Center uprights (BTB gap — one on each side)
+                ctx.beginPath(); ctx.moveTo(leftRightX, offsetY - uprightExtPx); ctx.lineTo(leftRightX, offsetY + rackH); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(gapRightX, offsetY - uprightExtPx); ctx.lineTo(gapRightX, offsetY + rackH); ctx.stroke();
+                // Right upright
+                ctx.beginPath(); ctx.moveTo(rightX, offsetY - uprightExtPx); ctx.lineTo(rightX, offsetY + rackH); ctx.stroke();
+
+                // BTB gap label
+                if (btbGapW > 20) {
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.font = '700 7px -apple-system, sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText('BTB', gapLeftX + btbGapW / 2, offsetY + rackH / 2);
+                    ctx.fillText((btbGapM * 1000).toFixed(0) + 'mm', gapLeftX + btbGapW / 2, offsetY + rackH / 2 + 10);
+                }
 
                 // Row label
                 ctx.fillStyle = '#4a5568';
