@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260515f">
+    <link rel="stylesheet" href="style.css?v=20260515h">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -314,11 +314,12 @@
                         </div>
 
                         <!-- 3. Rack Specifications -->
-                        <div class="param-section collapsible collapsed" data-group="rack-specs">
-                            <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
+                        <div class="param-section" data-group="rack-specs">
+                            <div class="param-section-header">
                                 <span class="param-section-icon"></span>
                                 <span class="param-section-title">Rack Specifications</span>
-                            </button>
+                                <span class="auto-calc-tag">Auto</span>
+                            </div>
                             <div class="param-section-body">
                                 <div class="param-field">
                                     <label for="param-rack-type">Racking Type <span class="param-help" title="Choose the racking system that fits your operation">ⓘ</span></label>
@@ -333,6 +334,30 @@
                                         <input type="checkbox" id="param-back-beam" style="width:16px;height:16px;accent-color:var(--color-primary);">
                                         <span>With Back Beam (Drive-Through / FIFO)</span>
                                     </label>
+                                </div>
+                                <!-- Auto-selected profiles -->
+                                <div class="param-field param-field-readonly">
+                                    <label for="param-beam-profile">Beam Profile <span class="param-help" title="Auto-selected based on span + load per level">ⓘ</span></label>
+                                    <input type="text" id="param-beam-profile" value="—" readonly class="param-input param-readonly param-profile" placeholder="Auto-selected">
+                                    <span class="param-unit"></span>
+                                    <span class="auto-calc-tag">Auto</span>
+                                </div>
+                                <div class="param-field param-field-readonly">
+                                    <label for="param-upright-profile">Upright Profile <span class="param-help" title="Auto-selected based on height + load per upright">ⓘ</span></label>
+                                    <input type="text" id="param-upright-profile" value="—" readonly class="param-input param-readonly param-profile" placeholder="Auto-selected">
+                                    <span class="param-unit"></span>
+                                    <span class="auto-calc-tag">Auto</span>
+                                </div>
+                                <!-- Load info badges -->
+                                <div class="param-field param-field-readonly">
+                                    <label>Beam Capacity <span class="param-help" title="Selected beam capacity at current span vs required load">ⓘ</span></label>
+                                    <input type="text" id="param-beam-capacity" value="—" readonly class="param-input param-readonly param-info" placeholder="—">
+                                    <span class="param-unit"></span>
+                                </div>
+                                <div class="param-field param-field-readonly">
+                                    <label>Upright Capacity <span class="param-help" title="Selected upright capacity at current height vs required load">ⓘ</span></label>
+                                    <input type="text" id="param-upright-capacity" value="—" readonly class="param-input param-readonly param-info" placeholder="—">
+                                    <span class="param-unit"></span>
                                 </div>
                                 <div class="param-field param-field-readonly">
                                     <label for="param-rack-width">Rack Width (Bay) <span class="param-help" title="Auto-calculated from pallet width × pallets per level + gaps + uprights">ⓘ</span></label>
@@ -351,11 +376,6 @@
                                     <input type="text" id="param-rack-height" value="6.0" readonly class="param-input param-readonly" placeholder="Auto-calculated">
                                     <span class="param-unit">m</span>
                                     <span class="auto-calc-tag">Auto</span>
-                                </div>
-                                <div class="param-field">
-                                    <label for="param-beam-h">Beam Height <span class="param-help" title="Vertical beam profile — affects load capacity">ⓘ</span></label>
-                                    <input type="number" id="param-beam-h" value="120" min="80" max="200" step="10" class="param-input" placeholder="120">
-                                    <span class="param-unit">mm</span>
                                 </div>
                                 <div class="param-field">
                                     <label for="param-first-beam-h">Ground Clearance <span class="param-help" title="Height from floor to first beam — typically higher for forklift access">ⓘ</span></label>
@@ -695,14 +715,15 @@
         </div>
     </footer>
 
-    <script src="data/profiles.js?v=20260515f"></script>
-    <script src="data/frame-capacity.js?v=20260515f"></script>
-    <script src="data/beam-capacity.js?v=20260515f"></script>
-    <script src="layout-engine.js?v=20260515f"></script>
-    <script src="bom-engine.js?v=20260515f"></script>
-    <script src="cost-engine.js?v=20260515f"></script>
-    <script src="load-checker.js?v=20260515f"></script>
-    <script src="app.js?v=20260515f"></script>
+    <script src="data/profiles.js?v=20260515h"></script>
+    <script src="data/frame-capacity.js?v=20260515h"></script>
+    <script src="data/beam-capacity.js?v=20260515h"></script>
+    <script src="auto-select-profiles.js?v=20260515h"></script>
+    <script src="layout-engine.js?v=20260515h"></script>
+    <script src="bom-engine.js?v=20260515h"></script>
+    <script src="cost-engine.js?v=20260515h"></script>
+    <script src="load-checker.js?v=20260515h"></script>
+    <script src="app.js?v=20260515h"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {

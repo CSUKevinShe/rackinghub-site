@@ -1890,3 +1890,23 @@ button { cursor: pointer; font-family: inherit; }
     text-transform: uppercase;
     pointer-events: none;
 }
+
+/* Profile fields: monospace, blue-tinted */
+.param-profile {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace !important;
+    font-size: 0.8rem !important;
+    color: #1e40af !important;
+    font-weight: 700 !important;
+    background: #eff6ff !important;
+    border-color: #93c5fd !important;
+}
+
+/* Info fields: green-tinted capacity display */
+.param-info {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace !important;
+    font-size: 0.8rem !important;
+    color: #065f46 !important;
+    font-weight: 600 !important;
+    background: #ecfdf5 !important;
+    border-color: #6ee7b7 !important;
+}

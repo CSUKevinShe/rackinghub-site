@@ -713,7 +713,7 @@
             'param-pallet-w': 1200, 'param-pallet-d': 800, 'param-pallet-h': 1500, 'param-pallet-weight': 1000,
             'param-rack-type': 'selective-heavy',
             'param-rack-width': 2.7, 'param-rack-depth': 1.0, 'param-rack-height': 6.0,
-            'param-beam-h': 120, 'param-first-beam-h': 2.5, 'param-btb-gap': 200,
+            'param-first-beam-h': 2.5, 'param-btb-gap': 200,
             'param-levels': 4, 'param-pallets-level': 2,
             'param-aisle-selective': 3.2, 'param-aisle-drivein': 3.0, 'param-aisle-shuttle': 3.0,
             'param-clear-left': 0.5, 'param-clear-right': 0.5,

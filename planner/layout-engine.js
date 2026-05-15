@@ -1187,6 +1187,59 @@
                 if (rackDepthEl) {
                     rackDepthEl.textContent = rackD.toFixed(2) + 'm (' + pd + 'mm + 150mm)';
                 }
+
+                // ===== Auto-select profiles (beam + upright) =====
+                if (typeof window.AutoProfiles !== 'undefined') {
+                    // Compute bayWidth for the selector (same as rackW)
+                    var bayWidthForSelect = rackW; // meters
+                    var selection = window.AutoProfiles.autoSelect({
+                        palletsPerLevel: palletsPerLevel,
+                        levels: levels,
+                        palletWeight: p.palletWeight || 1000,
+                        bayWidth: bayWidthForSelect,
+                        rackHeight: rackH,
+                        material: 'Q235'
+                    });
+
+                    if (selection && selection.beam && selection.upright) {
+                        // Update beam profile display
+                        var beamProfileEl = document.getElementById('param-beam-profile');
+                        if (beamProfileEl) {
+                            beamProfileEl.value = selection.beam.model + '×' + selection.beam.thickness;
+                            beamProfileEl.className = 'param-readonly param-profile';
+                        }
+
+                        // Update upright profile display
+                        var uprightProfileEl = document.getElementById('param-upright-profile');
+                        if (uprightProfileEl) {
+                            var utext = selection.upright.profile + ' ' + selection.upright.ctype + '-type';
+                            uprightProfileEl.value = utext;
+                            uprightProfileEl.className = 'param-readonly param-profile';
+                        }
+
+                        // Update beam capacity info
+                        var beamCapEl = document.getElementById('param-beam-capacity');
+                        if (beamCapEl) {
+                            var bfactor = parseFloat(selection.beam.safetyFactor);
+                            var bwarn = bfactor < 1.35;
+                            beamCapEl.value = Math.round(selection.beam.capacity) + ' kg (load: ' + Math.round(selection.loadInfo.loadPerLevel) + ' kg)';
+                            beamCapEl.className = 'param-readonly param-info' + (bwarn ? ' warning' : '');
+                        }
+
+                        // Update upright capacity info
+                        var uprightCapEl = document.getElementById('param-upright-capacity');
+                        if (uprightCapEl) {
+                            var ufactor = parseFloat(selection.upright.safetyFactor);
+                            var uwarn = ufactor < 1.35;
+                            uprightCapEl.value = Math.round(selection.upright.capacity) + ' kg (load: ' + Math.round(selection.loadInfo.loadPerUpright) + ' kg)';
+                            uprightCapEl.className = 'param-readonly param-info' + (uwarn ? ' warning' : '');
+                        }
+
+                        // Sync back to engine params for downstream use (BOM, cost)
+                        engine.params.beamProfile = selection.beam.model;
+                        engine.params.uprightProfile = selection.upright.profile;
+                    }
+                }
             }
 
             // Bind pallet inputs to auto-derive Rack dimensions
@@ -1205,9 +1258,9 @@
                 });
             });
 
-            // Also listen for palletsPerLevel, levels, beamHeight changes
-            var derivedInputs = ['param-pallets-level', 'param-levels', 'param-beam-h', 'param-btb-gap'];
-            var derivedKeys = ['palletsPerLevel', 'levels', 'beamHeight', 'backToBackGap'];
+            // Also listen for palletsPerLevel, levels, btb-gap changes
+            var derivedInputs = ['param-pallets-level', 'param-levels', 'param-btb-gap'];
+            var derivedKeys = ['palletsPerLevel', 'levels', 'backToBackGap'];
             derivedInputs.forEach(function (id, idx) {
                 var el = document.getElementById(id);
                 if (!el) return;
