@@ -1408,7 +1408,10 @@
             // ===== P2: Load per bay weight =====
             var el4 = document.getElementById('status-weight');
             if (el4) {
-                var loadPerBay = Math.round(p.palletWeight * p.palletsPerLevel * p.levels);
+                var pw = p.palletWeight || 1000;
+                var ppl = p.palletsPerLevel || 2;
+                var lvls = p.levels || 4;
+                var loadPerBay = Math.round(pw * ppl * lvls);
                 el4.textContent = 'Load/Bay: ' + loadPerBay.toLocaleString() + 'kg';
             }
         },
