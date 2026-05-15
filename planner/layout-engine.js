@@ -131,7 +131,7 @@
             palletsPerLevel: 2,
             entrancePosition: 'bottom-left',
             palletWidth: 1200,     // mm
-            palletDepth: 800,      // mm
+            palletDepth: 1000,     // mm
             palletHeight: 1500,    // mm
             beamHeight: 120,       // mm
             firstBeamHeight: 2.5,  // meters
@@ -191,8 +191,8 @@
 
         // ===== Rack depth from pallet depth =====
         _calcRackDepth: function (p) {
-            var palletDm = (p.palletDepth || 800) / 1000;
-            return palletDm + 0.15; // +150mm front/back overhang allowance
+            var palletDm = (p.palletDepth || 1000) - 100; // pallet depth - 100mm
+            return palletDm / 1000; // 50mm front + 50mm back safety gap
         },
 
         calculate: function () {
@@ -1159,8 +1159,8 @@
 
                 // Rack width = bayWidth (derived from pallet)
                 var rackW = palletsPerLevel * (pw / 1000) + (palletsPerLevel + 1) * interGap + 2 * uprightW;
-                // Rack depth = pallet depth + 150mm overhang
-                var rackD = (pd / 1000) + 0.15;
+                // Rack depth = pallet depth - 100mm (50mm front + 50mm back safety gap)
+                var rackD = (pd - 100) / 1000;
                 // Rack height = 300mm ground + (levels-1) × (palletH + 100mm gap + beamH) + palletH/1000
                 var palletHm = ph / 1000;
                 var rackH = 0.30 + (levels - 1) * (palletHm + 0.10 + beamH) + palletHm;
@@ -1186,7 +1186,7 @@
                 }
                 var rackDepthEl = document.getElementById('calc-rack-depth');
                 if (rackDepthEl) {
-                    rackDepthEl.textContent = rackD.toFixed(2) + 'm (' + pd + 'mm + 150mm)';
+                    rackDepthEl.textContent = rackD.toFixed(2) + 'm (' + pd + 'mm - 100mm, ±50mm gap)';
                 }
 
                 // ===== Auto-select profiles (beam + upright) =====
