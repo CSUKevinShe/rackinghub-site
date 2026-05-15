@@ -1205,7 +1205,7 @@
                         // Update beam profile display
                         var beamProfileEl = document.getElementById('param-beam-profile');
                         if (beamProfileEl) {
-                            beamProfileEl.value = selection.beam.model + '×' + selection.beam.thickness;
+                            beamProfileEl.value = selection.beam.model;
                             beamProfileEl.className = 'param-readonly param-profile';
                         }
 
