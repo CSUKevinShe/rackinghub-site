@@ -1276,6 +1276,26 @@
                 });
             });
 
+            // param-pallet-weight: affects safety factor calculation directly
+            var weightEl = document.getElementById('param-pallet-weight');
+            if (weightEl) {
+                weightEl.addEventListener('input', function () {
+                    engine.params.palletWeight = parseFloat(this.value) || 0;
+                    updateDerivedRackFields();
+                    debouncedDraw();
+                });
+            }
+
+            // param-beam-h: affects rack height derivation and profile selection
+            var beamHEl = document.getElementById('param-beam-h');
+            if (beamHEl) {
+                beamHEl.addEventListener('input', function () {
+                    engine.params.beamHeight = parseFloat(this.value) || 0;
+                    updateDerivedRackFields();
+                    debouncedDraw();
+                });
+            }
+
             // Initial call to populate derived fields
             setTimeout(updateDerivedRackFields, 50);
 
