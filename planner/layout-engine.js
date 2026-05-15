@@ -1212,8 +1212,13 @@
                         // Update upright profile display
                         var uprightProfileEl = document.getElementById('param-upright-profile');
                         if (uprightProfileEl) {
-                            var utext = selection.upright.profile + ' ' + selection.upright.ctype + '-type';
-                            uprightProfileEl.value = utext;
+                            // profile name already includes ctype (e.g. "90*68 (1.8) SF"), don't duplicate
+                            var uname = selection.upright.profile;
+                            // Only append type if profile name doesn't already end with the ctype
+                            if (uname.indexOf(selection.upright.ctype) === -1) {
+                                uname = uname + ' ' + selection.upright.ctype + '-type';
+                            }
+                            uprightProfileEl.value = uname;
                             uprightProfileEl.className = 'param-readonly param-profile';
                         }
 

@@ -1910,3 +1910,18 @@ button { cursor: pointer; font-family: inherit; }
     background: #ecfdf5 !important;
     border-color: #6ee7b7 !important;
 }
+
+/* Warning: capacity insufficient — red alert */
+.param-info.warning {
+    color: #b91c1c !important;
+    background: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    border-style: dashed !important;
+    font-weight: 700 !important;
+}
+
+/* Profile field wrapper for auto tag positioning */
+.param-field-wrapper {
+    position: relative;
+    margin-bottom: 10px;
+}
