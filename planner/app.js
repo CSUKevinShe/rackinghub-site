@@ -331,9 +331,9 @@
         html += '<div style="background:#f8f9fa;border-radius:12px;padding:1.25rem;margin-bottom:1rem;">';
         html += '<h3 style="margin:0 0 0.75rem;font-size:1.1rem;color:#1a202c;">📦 BOM Material List</h3>';
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.75rem;">';
-        html += '<div><span style="color:#718096;font-size:0.85rem;">Uprights (立柱)</span><br><strong style="font-size:1.25rem;">' + bom.totals.uprightCount + '</strong> <span style="color:#718096;">pcs</span></div>';
-        html += '<div><span style="color:#718096;font-size:0.85rem;">Beams (横梁)</span><br><strong style="font-size:1.25rem;">' + bom.totals.beamCount + '</strong> <span style="color:#718096;">pcs</span></div>';
-        html += '<div><span style="color:#718096;font-size:0.85rem;">Braces (斜撑)</span><br><strong style="font-size:1.25rem;">' + bom.totals.braceCount + '</strong> <span style="color:#718096;">pcs</span></div>';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Uprights</span><br><strong style="font-size:1.25rem;">' + bom.totals.uprightCount + '</strong> <span style="color:#718096;">pcs</span></div>';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Beams</span><br><strong style="font-size:1.25rem;">' + bom.totals.beamCount + '</strong> <span style="color:#718096;">pcs</span></div>';
+        html += '<div><span style="color:#718096;font-size:0.85rem;">Braces</span><br><strong style="font-size:1.25rem;">' + bom.totals.braceCount + '</strong> <span style="color:#718096;">pcs</span></div>';
         html += '<div><span style="color:#718096;font-size:0.85rem;">Base Plates</span><br><strong style="font-size:1.25rem;">' + bom.totals.basePlateCount + '</strong> <span style="color:#718096;">pcs</span></div>';
         html += '<div><span style="color:#718096;font-size:0.85rem;">Total Weight</span><br><strong style="font-size:1.25rem;">' + bom.totals.totalWeightKg.toFixed(0) + '</strong> <span style="color:#718096;">kg</span></div>';
         html += '</div>';
@@ -361,7 +361,7 @@
         var checkBorder = checkOK ? '#c6f6d5' : '#fed7d7';
         html += '<div style="background:' + checkBg + ';border:1px solid ' + checkBorder + ';border-radius:12px;padding:1.25rem;">';
         html += '<h3 style="margin:0 0 0.75rem;font-size:1.1rem;color:' + (checkOK ? '#276746' : '#c53030') + ';">';
-        html += checkOK ? '✅ 承重校核通过' : '⚠️ 承重校核警告';
+        html += checkOK ? '✅ Load check passed' : '⚠️ Load check warning';
         html += '</h3>';
 
         // Frame check detail
@@ -370,8 +370,8 @@
             if (fc.maxCapacity) {
                 var utilPct = Math.round(fc.utilization * 100);
                 var barColor = utilPct > 90 ? '#e53e3e' : utilPct > 70 ? '#dd6b20' : '#38a169';
-                html += '<div style="margin-bottom:0.5rem;"><strong>立柱 (Upright):</strong> ' + fc.profile + ' / ' + fc.material;
-                html += ' — 承载 ' + utilPct + '%';
+                html += '<div style="margin-bottom:0.5rem;"><strong>Upright:</strong> ' + fc.profile + ' / ' + fc.material;
+                html += ' — Utilization: ' + utilPct + '%';
                 html += '<div style="background:#e2e8f0;border-radius:4px;height:8px;margin-top:4px;"><div style="background:' + barColor + ';height:100%;border-radius:4px;width:' + utilPct + '%;"></div></div>';
                 html += '</div>';
             }
@@ -383,7 +383,7 @@
             if (bd.deflection) {
                 var defPct = Math.round(bd.utilization * 100);
                 var barColor = defPct > 90 ? '#e53e3e' : defPct > 70 ? '#dd6b20' : '#38a169';
-                html += '<div style="margin-bottom:0.5rem;"><strong>横梁挠度 (Beam Deflection):</strong> ' + bd.model;
+                html += '<div style="margin-bottom:0.5rem;"><strong>Beam Deflection:</strong> ' + bd.model;
                 html += ' — ' + bd.deflection.toFixed(1) + 'mm / ' + bd.limit.toFixed(1) + 'mm (' + defPct + '%)';
                 html += '<div style="background:#e2e8f0;border-radius:4px;height:8px;margin-top:4px;"><div style="background:' + barColor + ';height:100%;border-radius:4px;width:' + Math.min(defPct, 100) + '%;"></div></div>';
                 html += '</div>';
@@ -396,7 +396,7 @@
             if (bc.capacity) {
                 var capPct = Math.round(bc.utilization * 100);
                 var barColor = capPct > 90 ? '#e53e3e' : capPct > 70 ? '#dd6b20' : '#38a169';
-                html += '<div style="margin-bottom:0.5rem;"><strong>横梁承重 (Beam Capacity):</strong> ' + bc.model;
+                html += '<div style="margin-bottom:0.5rem;"><strong>Beam Capacity:</strong> ' + bc.model;
                 html += ' — ' + bc.demand.toFixed(0) + 'kg / ' + bc.capacity.toFixed(0) + 'kg (' + capPct + '%)';
                 html += '<div style="background:#e2e8f0;border-radius:4px;height:8px;margin-top:4px;"><div style="background:' + barColor + ';height:100%;border-radius:4px;width:' + Math.min(capPct, 100) + '%;"></div></div>';
                 html += '</div>';

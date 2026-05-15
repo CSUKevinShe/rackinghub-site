@@ -6,79 +6,79 @@ window.PROFILES = {
     thickness: 4.0,
     expanded: 102.0,
     weight: 3.2028,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.CB75-4H': {
     thickness: 4.0,
     expanded: 102.0,
     weight: 3.2028,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.DA76-3H': {
     thickness: 3.5,
     expanded: 100.0,
     weight: 2.7475,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.DA76-4H': {
     thickness: 3.5,
     expanded: 100.0,
     weight: 2.7475,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.DE50-3H': {
     thickness: 4.0,
     expanded: 95.0,
     weight: 2.983,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.DE50-4H': {
     thickness: 4.0,
     expanded: 95.0,
     weight: 2.983,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.DE50-5H': {
     thickness: 4.0,
     expanded: 95.0,
     weight: 2.983,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.DE75-3H': {
     thickness: 3.5,
     expanded: 100.0,
     weight: 2.7475,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.DE75-4H': {
     thickness: 3.5,
     expanded: 100.0,
     weight: 2.7475,
-    category: '重型柱卡'
+    category: 'Heavy Duty Boltless'
   },
   '.L55A-Brk': {
     thickness: 2.5,
     expanded: 76.0,
     weight: 1.4915,
-    category: '中型柱卡'
+    category: 'Medium Duty Boltless'
   },
   '.L55B-Brk': {
     thickness: 2.5,
     expanded: 76.0,
     weight: 1.4915,
-    category: '中型柱卡'
+    category: 'Medium Duty Boltless'
   },
   '.L55B.Ex-Brk': {
     thickness: 2.5,
     expanded: 86.0,
     weight: 1.6878,
-    category: '中型柱卡'
+    category: 'Medium Duty Boltless'
   },
   '.L55C-Brk': {
     thickness: 2.5,
     expanded: 73.0,
     weight: 1.4326,
-    category: '中型柱卡'
+    category: 'Medium Duty Boltless'
   },
   '100x50': {
     thickness: 1.5,
@@ -86,7 +86,7 @@ window.PROFILES = {
     weight: 2.4139,
     Ix: 95.36,
     Iy: 23.35,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '100x70': {
     thickness: 2.5,
@@ -94,7 +94,7 @@ window.PROFILES = {
     weight: 5.2988,
     Ix: 41.85,
     Iy: 90.13,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   '100x95': {
     thickness: 3.5,
@@ -102,7 +102,7 @@ window.PROFILES = {
     weight: 8.7645,
     Ix: 124.39,
     Iy: 162.62,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   '110x50': {
     thickness: 1.5,
@@ -110,7 +110,7 @@ window.PROFILES = {
     weight: 2.5316,
     Ix: 119.21,
     Iy: 25.17,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '120x135': {
     thickness: 3.5,
@@ -118,7 +118,7 @@ window.PROFILES = {
     weight: 11.567,
     Ix: 325.03,
     Iy: 346.77,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   '120x50': {
     thickness: 1.5,
@@ -126,7 +126,7 @@ window.PROFILES = {
     weight: 2.6494,
     Ix: 146.25,
     Iy: 26.76,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '120x70': {
     thickness: 2.5,
@@ -134,7 +134,7 @@ window.PROFILES = {
     weight: 5.6913,
     Ix: 44.84,
     Iy: 143.31,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   '120x95': {
     thickness: 3.5,
@@ -142,7 +142,7 @@ window.PROFILES = {
     weight: 9.314,
     Ix: 133.22,
     Iy: 254.33,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   '130x50': {
     thickness: 1.5,
@@ -150,13 +150,13 @@ window.PROFILES = {
     weight: 2.7671,
     Ix: 176.63,
     Iy: 28.47,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '140x135': {
     thickness: 3.5,
     expanded: 441.0,
     weight: 12.1165,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   '140x50': {
     thickness: 1.5,
@@ -164,7 +164,7 @@ window.PROFILES = {
     weight: 2.8849,
     Ix: 210.49,
     Iy: 30.18,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '150x50': {
     thickness: 1.5,
@@ -172,7 +172,7 @@ window.PROFILES = {
     weight: 3.0026,
     Ix: 247.98,
     Iy: 32.05,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '155x50': {
     thickness: 1.8,
@@ -180,7 +180,7 @@ window.PROFILES = {
     weight: 3.6738,
     Ix: 320.85,
     Iy: 38.9,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '160x50': {
     thickness: 1.8,
@@ -188,7 +188,7 @@ window.PROFILES = {
     weight: 3.7444,
     Ix: 346.16,
     Iy: 39.92,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '180x50': {
     thickness: 1.8,
@@ -196,7 +196,7 @@ window.PROFILES = {
     weight: 4.0271,
     Ix: 459.42,
     Iy: 43.99,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '80x50': {
     thickness: 1.5,
@@ -204,7 +204,7 @@ window.PROFILES = {
     weight: 2.1548,
     Ix: 56.67,
     Iy: 19.93,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '90x50': {
     thickness: 1.5,
@@ -212,7 +212,7 @@ window.PROFILES = {
     weight: 2.2726,
     Ix: 74.56,
     Iy: 21.64,
-    category: 'K梁（横梁）'
+    category: 'Step Beam'
   },
   '90x68': {
     thickness: 2.0,
@@ -220,7 +220,7 @@ window.PROFILES = {
     weight: 3.6424,
     Ix: 22.26,
     Iy: 50.62,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   '90x70': {
     thickness: 2.3,
@@ -228,103 +228,103 @@ window.PROFILES = {
     weight: 4.4957,
     Ix: 32.86,
     Iy: 60.23,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   'Base.C200.30.20': {
     thickness: 2.0,
     expanded: 270.0,
     weight: 4.239,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'Base.C200.30.25': {
     thickness: 2.5,
     expanded: 270.0,
     weight: 5.2988,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'Base.C200.30.30': {
     thickness: 3.0,
     expanded: 270.0,
     weight: 6.3585,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'Base.C215.45.30': {
     thickness: 3.0,
     expanded: 315.0,
     weight: 7.4182,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'Base.C300.45.30': {
     thickness: 3.0,
     expanded: 400.0,
     weight: 9.42,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'Base.C305.48.30': {
     thickness: 3.0,
     expanded: 407.0,
     weight: 9.5849,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'Base.C350.45.40': {
     thickness: 4.0,
     expanded: 450.0,
     weight: 14.13,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'Base.C350.48.40': {
     thickness: 4.0,
     expanded: 452.0,
     weight: 14.1928,
-    category: '悬臂底座'
+    category: 'Cantilever Base'
   },
   'C200.60.20': {
     thickness: 2.0,
     expanded: 270.0,
     weight: 4.239,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'C200.60.25': {
     thickness: 2.5,
     expanded: 270.0,
     weight: 5.2988,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'C200.60.30': {
     thickness: 3.0,
     expanded: 270.0,
     weight: 6.3585,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'C215.90.30': {
     thickness: 3.0,
     expanded: 315.0,
     weight: 7.4182,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'C300.90.30': {
     thickness: 3.0,
     expanded: 400.0,
     weight: 9.42,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'C305.96.30': {
     thickness: 3.0,
     expanded: 407.0,
     weight: 9.5849,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'C350.90.40': {
     thickness: 4.0,
     expanded: 450.0,
     weight: 14.13,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'C350.96.40': {
     thickness: 4.0,
     expanded: 452.0,
     weight: 14.1928,
-    category: '悬臂立柱'
+    category: '悬臂Upright Frame'
   },
   'DE100 C40*29.5': {
     thickness: 1.4,
@@ -452,7 +452,7 @@ window.PROFILES = {
     weight: 2.1054,
     Ix: 6.25,
     Iy: 12.12,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   'L55A  55x50': {
     thickness: 1.8,
@@ -460,7 +460,7 @@ window.PROFILES = {
     weight: 2.2891,
     Ix: 8.7,
     Iy: 13.49,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   'L55A/B C30*18': {
     thickness: 1.2,
@@ -474,7 +474,7 @@ window.PROFILES = {
     weight: 2.1054,
     Ix: 6.25,
     Iy: 12.12,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   'L55B  55x50': {
     thickness: 1.8,
@@ -482,7 +482,7 @@ window.PROFILES = {
     weight: 2.2891,
     Ix: 8.7,
     Iy: 13.49,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   'L55C  55x47': {
     thickness: 1.8,
@@ -490,7 +490,7 @@ window.PROFILES = {
     weight: 2.2891,
     Ix: 6.45,
     Iy: 11.52,
-    category: '立柱'
+    category: 'Upright Frame'
   },
   'L55C C30*25': {
     thickness: 1.3,

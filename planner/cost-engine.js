@@ -153,10 +153,10 @@
 
         _classifyComponent: function (category) {
             var cat = category.toLowerCase();
-            if (cat.indexOf('upright') >= 0 || cat.indexOf('立柱') >= 0) return 'upright';
-            if (cat.indexOf('beam') >= 0 || cat.indexOf('横梁') >= 0 || cat.indexOf('k-') >= 0) return 'beam';
-            if (cat.indexOf('brace') >= 0 || cat.indexOf('斜撑') >= 0 || cat.indexOf('横撑') >= 0) return 'brace';
-            if (cat.indexOf('base') >= 0 || cat.indexOf('plate') >= 0 || cat.indexOf('底板') >= 0 || cat.indexOf('脚底') >= 0) return 'basePlate';
+            if (cat.indexOf('upright') >= 0 || cat.indexOf('frame') >= 0) return 'upright';
+            if (cat.indexOf('beam') >= 0 || cat.indexOf('step') >= 0) return 'beam';
+            if (cat.indexOf('brace') >= 0 || cat.indexOf('arm') >= 0) return 'brace';
+            if (cat.indexOf('base') >= 0 || cat.indexOf('plate') >= 0) return 'basePlate';
             return 'accessory';
         },
 

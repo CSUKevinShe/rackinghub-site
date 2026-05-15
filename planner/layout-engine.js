@@ -58,7 +58,7 @@
     function _getDefaultUprightWeight() {
         if (!_profiles) return 5.30; // fallback
         for (var key in _profiles) {
-            if (_profiles[key].category === '立柱') return _profiles[key].weight || 5.30;
+            if (_profiles[key].category === 'Upright Frame') return _profiles[key].weight || 5.30;
         }
         return 5.30;
     }
@@ -67,7 +67,7 @@
     function _getDefaultBeamWeight() {
         if (!_profiles) return 5.0;
         for (var key in _profiles) {
-            if (_profiles[key].category === 'K梁（横梁）') return _profiles[key].weight || 5.0;
+            if (_profiles[key].category === 'Step Beam') return _profiles[key].weight || 5.0;
         }
         return 5.0;
     }
