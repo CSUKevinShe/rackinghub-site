@@ -1178,18 +1178,14 @@
                 engine.params.rackDepth = rackD;
                 engine.params.rackHeight = rackH;
 
-                // Update calc-preview formula text if elements exist
-                var pwFormula = document.getElementById('rack-w-formula');
-                if (pwFormula) {
-                    pwFormula.textContent = rackW.toFixed(2) + 'm (=' + palletsPerLevel + '×' + pw + 'mm + ' + (palletsPerLevel + 1) + '×100mm + 2×80mm)';
+                // Update calc-preview formula text (matching HTML element IDs)
+                var bayWidthEl = document.getElementById('calc-bay-width');
+                if (bayWidthEl) {
+                    bayWidthEl.textContent = rackW.toFixed(2) + 'm (' + palletsPerLevel + '×' + pw + 'mm + gaps + uprights)';
                 }
-                var pdFormula = document.getElementById('rack-d-formula');
-                if (pdFormula) {
-                    pdFormula.textContent = rackD.toFixed(2) + 'm (=' + pd + 'mm + 150mm)';
-                }
-                var phFormula = document.getElementById('rack-h-formula');
-                if (phFormula) {
-                    phFormula.textContent = rackH.toFixed(2) + 'm (300mm + ' + (levels - 1) + '×(' + ph + 'mm+100+' + Math.round(beamH * 1000) + 'mm)+' + ph + 'mm)';
+                var rackDepthEl = document.getElementById('calc-rack-depth');
+                if (rackDepthEl) {
+                    rackDepthEl.textContent = rackD.toFixed(2) + 'm (' + pd + 'mm + 150mm)';
                 }
             }
 

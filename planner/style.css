@@ -1846,10 +1846,11 @@ button { cursor: pointer; font-family: inherit; }
     position: relative;
 }
 .param-readonly {
-    background: #f7fafc !important;
-    color: var(--color-text-secondary) !important;
-    border: 1px dashed var(--color-border) !important;
+    background: #e8ecf1 !important;
+    color: #495057 !important;
+    border: 2px dashed #a0aec0 !important;
     cursor: not-allowed;
+    font-weight: 700;
 }
 .param-readonly:focus {
     outline: none;
