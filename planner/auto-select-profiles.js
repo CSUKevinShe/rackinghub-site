@@ -94,55 +94,61 @@
   // 返回: { profile, ctype, capacity, safetyFactor, height }
   function selectUpright(height_mm, loadPerUpright, material) {
     if (!window.FRAME_CAPACITY) return null;
-    material = material || 'Q235';
-    var fc = window.FRAME_CAPACITY[material];
-    if (!fc) fc = window.FRAME_CAPACITY['Q235'];
 
     var targetLoad = Math.ceil(loadPerUpright * SAFETY_FACTOR);
+    var fc = window.FRAME_CAPACITY; // flat: { profile: { height: capacity, ... }, ... }
 
-    // 找最接近的标准高度
-    var heights = Object.keys(fc).map(Number).sort(function (a, b) { return a - b; });
-    var closestHeight = heights.reduce(function (prev, curr) {
-      return Math.abs(curr - height_mm) < Math.abs(prev - height_mm) ? curr : prev;
-    });
-
-    // 如果实际高度超过所有标准高度，用最大高度（最保守）
-    if (height_mm > heights[heights.length - 1]) {
-      closestHeight = heights[heights.length - 1];
-    }
-
-    var profiles = Object.keys(fc[closestHeight]);
-
-    // 按承重从小到大排序
-    profiles.sort(function (a, b) {
-      return fc[closestHeight][a].capacity - fc[closestHeight][b].capacity;
-    });
-
+    // 收集所有可用的 [profile, height, capacity] 三元组
+    var candidates = [];
+    var profiles = Object.keys(fc);
     for (var i = 0; i < profiles.length; i++) {
       var profile = profiles[i];
-      var entry = fc[closestHeight][profile];
-      if (entry.capacity >= targetLoad) {
+      var heights = fc[profile];
+      var heightsKeys = Object.keys(heights).map(Number).sort(function (a, b) { return a - b; });
+
+      // 找最接近 input height 的标准高度
+      var closestH = heightsKeys.reduce(function (prev, curr) {
+        return Math.abs(curr - height_mm) < Math.abs(prev - height_mm) ? curr : prev;
+      });
+
+      // 保守策略：如果实际高度超过所有标准高度，用最大高度（承重最低）
+      if (height_mm > heightsKeys[heightsKeys.length - 1]) {
+        closestH = heightsKeys[heightsKeys.length - 1];
+      }
+
+      var capacity = heights[closestH];
+      candidates.push({
+        profile: profile,
+        height: closestH,
+        capacity: capacity
+      });
+    }
+
+    // 按承重从小到大排序
+    candidates.sort(function (a, b) { return a.capacity - b.capacity; });
+
+    for (var i = 0; i < candidates.length; i++) {
+      if (candidates[i].capacity >= targetLoad) {
         return {
-          profile: profile,
-          ctype: entry.ctype,
-          capacity: entry.capacity,
+          profile: candidates[i].profile,
+          ctype: '',
+          capacity: candidates[i].capacity,
           requiredLoad: targetLoad,
-          safetyFactor: (entry.capacity / loadPerUpright).toFixed(2),
-          height: closestHeight
+          safetyFactor: (candidates[i].capacity / loadPerUpright).toFixed(2),
+          height: candidates[i].height
         };
       }
     }
 
     // 如果都不够，返回最大承重型材
-    var last = profiles[profiles.length - 1];
-    var lastEntry = fc[closestHeight][last];
+    var last = candidates[candidates.length - 1];
     return {
-      profile: last,
-      ctype: lastEntry.ctype,
-      capacity: lastEntry.capacity,
+      profile: last.profile,
+      ctype: '',
+      capacity: last.capacity,
       requiredLoad: targetLoad,
-      safetyFactor: (lastEntry.capacity / loadPerUpright).toFixed(2),
-      height: closestHeight,
+      safetyFactor: (last.capacity / loadPerUpright).toFixed(2),
+      height: last.height,
       warning: 'Max upright insufficient — load exceeds capacity'
     };
   }
