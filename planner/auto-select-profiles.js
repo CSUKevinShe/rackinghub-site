@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  var SAFETY_FACTOR = 1.35; // 安全系数 1.35
+  var SAFETY_FACTOR = 1.05; // Small margin for beam+pallet self-weight (Excel data already includes safety factor)
 
   // ===== 横梁自动选择 =====
   // 参数: span_mm(跨度,mm), loadPerLevel(每层承重,kg)
