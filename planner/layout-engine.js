@@ -1178,10 +1178,11 @@
                 engine.params.rackDepth = rackD;
                 engine.params.rackHeight = rackH;
 
-                // Update calc-preview formula text (matching HTML element IDs)
+                // Update calc-preview: beam effective length
+                var beamSpanMm = palletsPerLevel * pw + (palletsPerLevel + 1) * (p.interPalletGap || 100);
                 var bayWidthEl = document.getElementById('calc-bay-width');
                 if (bayWidthEl) {
-                    bayWidthEl.textContent = rackW.toFixed(2) + 'm (' + palletsPerLevel + '×' + pw + 'mm + gaps + uprights)';
+                    bayWidthEl.textContent = (beamSpanMm / 1000).toFixed(2) + 'm (' + palletsPerLevel + '×' + pw + ' + ' + (palletsPerLevel + 1) + '×100mm)';
                 }
                 var rackDepthEl = document.getElementById('calc-rack-depth');
                 if (rackDepthEl) {
@@ -1190,13 +1191,13 @@
 
                 // ===== Auto-select profiles (beam + upright) =====
                 if (typeof window.AutoProfiles !== 'undefined') {
-                    // Compute bayWidth for the selector (same as rackW)
-                    var bayWidthForSelect = rackW; // meters
+                    // Use beam effective span (not full bay width with uprights)
+                    var beamSpanM = beamSpanMm / 1000;
                     var selection = window.AutoProfiles.autoSelect({
                         palletsPerLevel: palletsPerLevel,
                         levels: levels,
                         palletWeight: p.palletWeight || 1000,
-                        bayWidth: bayWidthForSelect,
+                        bayWidth: beamSpanM,
                         rackHeight: rackH,
                         material: 'Q235'
                     });
