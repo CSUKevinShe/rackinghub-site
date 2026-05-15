@@ -1790,3 +1790,86 @@ button { cursor: pointer; font-family: inherit; }
         display: flex;
     }
 }
+
+/* ===== Pallet-Driven UX Styles ===== */
+
+/* "Drives rack size" badge on Pallet section header */
+.pallet-driven-badge {
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--color-primary);
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* "Advanced" tag on advanced section headers */
+.advanced-tag {
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+
+/* Auto-calculated formula preview under pallet dims */
+.calc-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    margin-top: 4px;
+    background: #f0f7ff;
+    border: 1px solid #bee3f8;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+.calc-label {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+.calc-value {
+    color: var(--color-primary);
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+}
+
+/* Read-only auto-calculated fields */
+.param-field-readonly {
+    position: relative;
+}
+.param-readonly {
+    background: #f7fafc !important;
+    color: var(--color-text-secondary) !important;
+    border: 1px dashed var(--color-border) !important;
+    cursor: not-allowed;
+}
+.param-readonly:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: var(--color-border);
+}
+
+/* "Auto" tag on read-only fields */
+.auto-calc-tag {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-success);
+    background: #f0fff4;
+    border: 1px solid #c6f6d5;
+    border-radius: 3px;
+    text-transform: uppercase;
+    pointer-events: none;
+}

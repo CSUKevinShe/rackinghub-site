@@ -1144,6 +1144,87 @@
                 });
             });
 
+            // ===== Pallet-driven auto-calc: Pallet → Rack (readonly) =====
+            function updateDerivedRackFields() {
+                var p = engine.params;
+                var pw = p.palletWidth || 1200;
+                var pd = p.palletDepth || 800;
+                var ph = p.palletHeight || 1500;
+                var levels = p.levels || 4;
+                var beamH = (p.beamHeight || 120) / 1000;
+                var btbGap = (p.backToBackGap || 200) / 1000;
+                var palletsPerLevel = p.palletsPerLevel || 2;
+                var interGap = (p.interPalletGap || 100) / 1000;
+                var uprightW = 0.08; // 80mm
+
+                // Rack width = bayWidth (derived from pallet)
+                var rackW = palletsPerLevel * (pw / 1000) + (palletsPerLevel + 1) * interGap + 2 * uprightW;
+                // Rack depth = pallet depth + 150mm overhang
+                var rackD = (pd / 1000) + 0.15;
+                // Rack height = 300mm ground + (levels-1) × (palletH + 100mm gap + beamH) + palletH/1000
+                var palletHm = ph / 1000;
+                var rackH = 0.30 + (levels - 1) * (palletHm + 0.10 + beamH) + palletHm;
+
+                // Update readonly Rack input fields
+                var rwEl = document.getElementById('param-rack-width');
+                var rdEl = document.getElementById('param-rack-depth');
+                var rhEl = document.getElementById('param-rack-height');
+                if (rwEl) rwEl.value = rackW.toFixed(3);
+                if (rdEl) rdEl.value = rackD.toFixed(3);
+                if (rhEl) rhEl.value = rackH.toFixed(3);
+
+                // Update engine params (sync)
+                engine.params.rackWidth = rackW;
+                engine.params.rackDepth = rackD;
+                engine.params.rackHeight = rackH;
+
+                // Update calc-preview formula text if elements exist
+                var pwFormula = document.getElementById('rack-w-formula');
+                if (pwFormula) {
+                    pwFormula.textContent = rackW.toFixed(2) + 'm (=' + palletsPerLevel + '×' + pw + 'mm + ' + (palletsPerLevel + 1) + '×100mm + 2×80mm)';
+                }
+                var pdFormula = document.getElementById('rack-d-formula');
+                if (pdFormula) {
+                    pdFormula.textContent = rackD.toFixed(2) + 'm (=' + pd + 'mm + 150mm)';
+                }
+                var phFormula = document.getElementById('rack-h-formula');
+                if (phFormula) {
+                    phFormula.textContent = rackH.toFixed(2) + 'm (300mm + ' + (levels - 1) + '×(' + ph + 'mm+100+' + Math.round(beamH * 1000) + 'mm)+' + ph + 'mm)';
+                }
+            }
+
+            // Bind pallet inputs to auto-derive Rack dimensions
+            var palletInputs = ['param-pallet-w', 'param-pallet-d', 'param-pallet-h'];
+            palletInputs.forEach(function (id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', function () {
+                    var key, val;
+                    if (id === 'param-pallet-w') { key = 'palletWidth'; val = parseFloat(this.value) || 0; }
+                    else if (id === 'param-pallet-d') { key = 'palletDepth'; val = parseFloat(this.value) || 0; }
+                    else if (id === 'param-pallet-h') { key = 'palletHeight'; val = parseFloat(this.value) || 0; }
+                    engine.params[key] = val;
+                    updateDerivedRackFields();
+                    debouncedDraw();
+                });
+            });
+
+            // Also listen for palletsPerLevel, levels, beamHeight changes
+            var derivedInputs = ['param-pallets-level', 'param-levels', 'param-beam-h', 'param-btb-gap'];
+            var derivedKeys = ['palletsPerLevel', 'levels', 'beamHeight', 'backToBackGap'];
+            derivedInputs.forEach(function (id, idx) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', function () {
+                    engine.params[derivedKeys[idx]] = parseFloat(this.value) || 0;
+                    updateDerivedRackFields();
+                    debouncedDraw();
+                });
+            });
+
+            // Initial call to populate derived fields
+            setTimeout(updateDerivedRackFields, 50);
+
             // Initial draw (immediate, profiles callback will re-draw when ready)
             setTimeout(function () {
                 engine.drawAll();
