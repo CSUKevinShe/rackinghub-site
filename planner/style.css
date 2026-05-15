@@ -897,9 +897,10 @@ button { cursor: pointer; font-family: inherit; }
 .planner-workspace {
     display: grid;
     grid-template-columns: var(--param-panel-width) 1fr;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 180px);
     min-height: 600px;
     overflow: hidden;
+    margin-bottom: 1rem;
 }
 
 /* ===== LEFT: Parameter Panel (benchmark-style) ===== */

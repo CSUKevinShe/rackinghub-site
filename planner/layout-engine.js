@@ -1405,6 +1405,12 @@
                 }
                 el3.textContent = p.warehouseLength + 'm × ' + p.warehouseWidth + 'm' + clearInfo;
             }
+            // ===== P2: Load per bay weight =====
+            var el4 = document.getElementById('status-weight');
+            if (el4) {
+                var loadPerBay = Math.round(p.palletWeight * p.palletsPerLevel * p.levels);
+                el4.textContent = 'Load/Bay: ' + loadPerBay.toLocaleString() + 'kg';
+            }
         },
 
         // ===== Update mini recommendation =====
