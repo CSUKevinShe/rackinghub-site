@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/style.css?v=20260509f">
-    <link rel="stylesheet" href="style.css?v=20260515e">
+    <link rel="stylesheet" href="style.css?v=20260515f">
 </head>
 <body>
     <!-- ===== Header (matches main site) ===== -->
@@ -246,7 +246,8 @@
 
                 <!-- Main planner layout: left params + right canvas -->
                 <div class="planner-workspace">
-                    <!-- ===== LEFT: Parameter Panel (benchmark: collapsible sections with numeric inputs) ===== -->
+                    <!-- ===== LEFT: Parameter Panel ===== -->
+                    <div class="params-panel">
                         <!-- 1. Warehouse Dimensions -->
                         <div class="param-section collapsible" data-group="warehouse-dims">
                             <button type="button" class="param-section-header" onclick="toggleCollapsible(this)">
@@ -456,6 +457,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div><!-- /params-panel -->
 
 <!-- ===== RIGHT: Canvas Area ===== -->
                     <div class="canvas-workspace">
@@ -693,14 +695,14 @@
         </div>
     </footer>
 
-    <script src="data/profiles.js?v=20260515e"></script>
-    <script src="data/frame-capacity.js?v=20260515e"></script>
-    <script src="data/beam-capacity.js?v=20260515e"></script>
-    <script src="layout-engine.js?v=20260515e"></script>
-    <script src="bom-engine.js?v=20260515e"></script>
-    <script src="cost-engine.js?v=20260515e"></script>
-    <script src="load-checker.js?v=20260515e"></script>
-    <script src="app.js?v=20260515e"></script>
+    <script src="data/profiles.js?v=20260515f"></script>
+    <script src="data/frame-capacity.js?v=20260515f"></script>
+    <script src="data/beam-capacity.js?v=20260515f"></script>
+    <script src="layout-engine.js?v=20260515f"></script>
+    <script src="bom-engine.js?v=20260515f"></script>
+    <script src="cost-engine.js?v=20260515f"></script>
+    <script src="load-checker.js?v=20260515f"></script>
+    <script src="app.js?v=20260515f"></script>
     <script>
         // Mobile menu (matches main site)
         function toggleMenu() {

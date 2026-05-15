@@ -1481,7 +1481,8 @@ button { cursor: pointer; font-family: inherit; }
 /* Bottom status bar */
 .canvas-status {
     display: flex;
-    gap: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
     padding: 0.4rem 1rem;
     background: #fff;
     border-top: 1px solid var(--param-border);
@@ -1639,6 +1640,21 @@ button { cursor: pointer; font-family: inherit; }
     .hero h1 { font-size: 1.5rem; }
     .btn-lg { padding: 0.8rem 1.5rem; font-size: 1rem; }
     .card { padding: 1.5rem; }
+}
+
+/* ===== Canvas Toolbar Row (thumbnails + zoom) ===== */
+.canvas-toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem 0.3rem;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    gap: 0.75rem;
+}
+.canvas-toolbar-row .canvas-toolbar {
+    margin-bottom: 0;
 }
 
 /* ===== Canvas Toolbar ===== */
