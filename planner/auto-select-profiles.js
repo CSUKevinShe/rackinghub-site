@@ -103,8 +103,8 @@
     var profiles = Object.keys(fc);
     for (var i = 0; i < profiles.length; i++) {
       var profile = profiles[i];
-      // Skip medium-duty upright (80x58) — Heavy Duty starts from 90x70
-      if (profile.indexOf('80x58') === 0) continue;
+      // Skip medium-duty uprights (80x58, 90x68) — Heavy Duty starts from 90x70
+      if (profile.indexOf('80x58') === 0 || profile.indexOf('90x68') === 0) continue;
       var heights = fc[profile];
       var heightsKeys = Object.keys(heights).map(Number).sort(function (a, b) { return a - b; });
 
