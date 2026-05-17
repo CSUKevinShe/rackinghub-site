@@ -91,7 +91,8 @@ export function calculateLayout(input: PlannerInput): LayoutData {
     layoutResult,
     frameDepth,
     rack.aisleWidth,
-    warehouse.columnSpacing
+    warehouse.columnSpacing,
+    effectiveWidth
   );
 
   const warehouseArea = (warehouse.length * warehouse.width) / 1e6;
@@ -307,13 +308,14 @@ function generateLayoutElements(
   return elements;
 }
 
-/** Generate column positions when columnSpacing > 0 */
+/** Generate column positions when columnSpacing > 0 — full 2D grid */
 function generateColumnPositions(
   effectiveLength: number,
   layout: { rackRows: number; aisles: number; rackBlocks: number; baysPerRow: number },
   frameDepth: number,
   aisleWidth: number,
-  columnSpacing: number
+  columnSpacing: number,
+  effectiveWidth: number
 ): { columnPositions: { x: number; y: number }[]; rackRowPositions: { index: number; y: number; height: number }[] } {
   if (columnSpacing <= 0) {
     return { columnPositions: [], rackRowPositions: [] };
@@ -341,12 +343,12 @@ function generateColumnPositions(
     rackRowPositions.push({ index: rackRowPositions.length, y: currentY, height: frameDepth });
   }
 
-  // Generate column positions at columnSpacing intervals along the length,
-  // aligned with each rack row
+  // Generate column positions at columnSpacing intervals in BOTH directions
+  // X: along the length, Y: along the width (full warehouse area)
   const columnPositions: { x: number; y: number }[] = [];
-  for (const row of rackRowPositions) {
-    for (let x = columnSpacing; x < effectiveLength; x += columnSpacing) {
-      columnPositions.push({ x, y: row.y });
+  for (let x = columnSpacing; x < effectiveLength; x += columnSpacing) {
+    for (let y = columnSpacing; y < effectiveWidth; y += columnSpacing) {
+      columnPositions.push({ x, y });
     }
   }
 

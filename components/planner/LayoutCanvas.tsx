@@ -321,6 +321,55 @@ function Legend({ rackType, hasColumn, fontScale }: { rackType: string; hasColum
 }
 
 // ============================================================
+// Dimension line helper — AutoCAD style with tick marks
+// ============================================================
+function DimensionLine({
+  x1, y1, x2, y2, label, offset = 0, vertical = false, fontSize = 8,
+}: { x1: number; y1: number; x2: number; y2: number; label: string; offset?: number; vertical?: boolean; fontSize?: number }) {
+  const off = vertical ? -offset : offset;
+  const ex1 = vertical ? x1 + off : x1;
+  const ey1 = vertical ? y1 : y1 + off;
+  const ex2 = vertical ? x2 + off : x2;
+  const ey2 = vertical ? y2 : y2 + off;
+  const tick = 3;
+
+  return (
+    <g>
+      <line x1={ex1} y1={ey1} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.5" />
+      {/* Extension lines */}
+      {vertical ? (
+        <>
+          <line x1={x1} y1={y1} x2={ex1} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.3" />
+          <line x1={x2} y1={y2} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.3" />
+          {/* Tick marks */}
+          <line x1={ex1 - tick} y1={ey1} x2={ex1 + tick} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.6" />
+          <line x1={ex2 - tick} y1={ey2} x2={ex2 + tick} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.6" />
+        </>
+      ) : (
+        <>
+          <line x1={x1} y1={y1} x2={ex1} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.3" />
+          <line x1={x2} y1={y2} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.3" />
+          <line x1={ex1} y1={ey1 - tick} x2={ex1} y2={ey1 + tick} stroke={COLORS.dimension} strokeWidth="0.6" />
+          <line x1={ex2} y1={ey2 - tick} x2={ex2} y2={ey2 + tick} stroke={COLORS.dimension} strokeWidth="0.6" />
+        </>
+      )}
+      {/* Label */}
+      <text
+        x={vertical ? ex1 + 5 : (ex1 + ex2) / 2}
+        y={vertical ? (ey1 + ey2) / 2 + 3 : ey1 - 4}
+        textAnchor="middle"
+        fontSize={fontSize}
+        fill={COLORS.textSecondary}
+        fontFamily="monospace"
+        fontWeight="500"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+// ============================================================
 // Top-down plan view
 // ============================================================
 function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale }: any) {
@@ -328,8 +377,11 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
     (svgWidth - padding * 2) / (layout.warehouseLength / 1000),
     400 / (layout.warehouseWidth / 1000)
   );
-  const svgHeight = Math.max(300, (layout.warehouseWidth / 1000) * scale + padding * 2);
+  const svgHeight = Math.max(300, (layout.warehouseWidth / 1000) * scale + padding * 2 + 50);
   const hasColumns = layout.columnPositions && layout.columnPositions.length > 0;
+  const lenPx = layout.warehouseLength / 1000 * scale;
+  const widPx = layout.warehouseWidth / 1000 * scale;
+  const dimOff = 18;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -346,25 +398,71 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
           <pattern id="grid" width={1000 * scale} height={1000 * scale} patternUnits="userSpaceOnUse">
             <path d={`M ${1000 * scale} 0 L 0 0 0 ${1000 * scale}`} fill="none" stroke={COLORS.gridLine} strokeWidth="0.5" />
           </pattern>
-          {/* Ground hatch pattern */}
-          <pattern id="ground-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="8" stroke={COLORS.groundHatch} strokeWidth="1" />
-          </pattern>
         </defs>
         <g transform={`translate(${padding}, ${padding})`}>
           {/* Warehouse outline */}
           <rect
             x={0} y={0}
-            width={layout.warehouseLength / 1000 * scale}
-            height={layout.warehouseWidth / 1000 * scale}
+            width={lenPx} height={widPx}
             fill={COLORS.grid} stroke={COLORS.borderLight} strokeWidth="1.5" strokeDasharray="6 3" rx="2"
           />
           {/* Grid overlay */}
-          <rect x={0} y={0} width={layout.warehouseLength / 1000 * scale} height={layout.warehouseWidth / 1000 * scale} fill="url(#grid)" />
+          <rect x={0} y={0} width={lenPx} height={widPx} fill="url(#grid)" />
 
-          {/* Dimension labels */}
-          <text x={layout.warehouseLength / 1000 * scale / 2} y={-8} textAnchor="middle" fontSize={9 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{formatMm(layout.warehouseLength)}</text>
-          <text x={-8} y={layout.warehouseWidth / 1000 * scale / 2} textAnchor="middle" fontSize={9 * fontScale} fill={COLORS.textMuted} fontFamily="monospace" transform={`rotate(-90, -8, ${layout.warehouseWidth / 1000 * scale / 2})`}>{formatMm(layout.warehouseWidth)}</text>
+          {/* Warehouse dimension lines */}
+          <DimensionLine x1={0} y1={0} x2={lenPx} y2={0} label={formatMm(layout.warehouseLength)} offset={dimOff} fontSize={9 * fontScale} />
+          <DimensionLine x1={0} y1={0} x2={0} y2={widPx} label={formatMm(layout.warehouseWidth)} offset={dimOff} vertical fontSize={9 * fontScale} />
+
+          {/* Column spacing dimension (X direction) */}
+          {hasColumns && layout.columnPositions.length > 0 && (() => {
+            const xSet = new Set<number>();
+            const ySet = new Set<number>();
+            layout.columnPositions.forEach((c: { x: number; y: number }) => { xSet.add(c.x); ySet.add(c.y); });
+            const xPositions = Array.from(xSet).sort((a, b) => a - b);
+            const yPositions = Array.from(ySet).sort((a, b) => a - b);
+            const els: JSX.Element[] = [];
+            // Dimension between adjacent column X positions on top row
+            for (let i = 0; i < xPositions.length - 1; i++) {
+              const x1 = xPositions[i];
+              const x2 = xPositions[i + 1];
+              const y = yPositions.length > 0 ? yPositions[0] : 0;
+              const cx = ((x1 + x2) / 2 / 1000) * scale;
+              const sx1 = (x1 / 1000) * scale;
+              const sx2 = (x2 / 1000) * scale;
+              const sy = (y / 1000) * scale - 8;
+              const spacing = x2 - x1;
+              els.push(
+                <DimensionLine
+                  key={`csx-${i}`}
+                  x1={sx1} y1={sy} x2={sx2} y2={sy}
+                  label={formatMm(spacing)}
+                  offset={8}
+                  fontSize={7 * fontScale}
+                />
+              );
+            }
+            // Dimension between adjacent column Y positions on left column
+            for (let i = 0; i < yPositions.length - 1; i++) {
+              const y1 = yPositions[i];
+              const y2 = yPositions[i + 1];
+              const x = xPositions.length > 0 ? xPositions[0] : 0;
+              const sx = (x / 1000) * scale - 8;
+              const sy1 = (y1 / 1000) * scale;
+              const sy2 = (y2 / 1000) * scale;
+              const spacing = y2 - y1;
+              els.push(
+                <DimensionLine
+                  key={`csy-${i}`}
+                  x1={sx} y1={sy1} x2={sx} y2={sy2}
+                  label={formatMm(spacing)}
+                  offset={8}
+                  vertical
+                  fontSize={7 * fontScale}
+                />
+              );
+            }
+            return els;
+          })()}
 
           {layout.elements.map((el: any, i: number) => {
             const x = (el.x / 1000) * scale;
@@ -376,7 +474,7 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
               return (
                 <g key={i}>
                   <rect x={x} y={y} width={w} height={h} fill={COLORS.aisle} />
-                  <text x={x + w / 2} y={y + h / 2 + 3} textAnchor="middle" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{el.label}</text>
+                  <text x={x + 6} y={y + h / 2 + 3} fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{el.label}</text>
                 </g>
               );
             }
@@ -384,14 +482,23 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
               const color = el.color || COLORS.rackStroke;
               const frameDepthPx = (frameDepth / 1000) * scale;
               const bayWidthPx = (bayWidth / 1000) * scale;
+              const numBays = Math.floor(w / bayWidthPx);
               return (
                 <g key={i}>
                   <rect x={x} y={y} width={w} height={frameDepthPx} fill={COLORS.rackFill} stroke={color} strokeWidth="1" strokeOpacity="0.3" />
                   {/* Bay dividers */}
-                  {Array.from({ length: Math.floor(w / bayWidthPx) + 1 }).map((_, j) => (
+                  {Array.from({ length: numBays + 1 }).map((_, j) => (
                     <line key={`bay-${j}`} x1={x + j * bayWidthPx} y1={y} x2={x + j * bayWidthPx} y2={y + frameDepthPx} stroke={color} strokeWidth="1.5" strokeOpacity="0.5" />
                   ))}
                   <text x={x + 3} y={y + frameDepthPx / 2 + 3} fontSize={7 * fontScale} fill={color} fillOpacity="0.7" fontFamily="monospace">{el.label}</text>
+                  {/* Bay width dimension on first bay */}
+                  <DimensionLine
+                    key={`bw-${i}`}
+                    x1={x} y1={y + frameDepthPx + 16} x2={x + bayWidthPx} y2={y + frameDepthPx + 16}
+                    label={formatMm(bayWidth)}
+                    offset={-8}
+                    fontSize={7 * fontScale}
+                  />
                 </g>
               );
             }
@@ -405,6 +512,7 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
             const s = 4 * fontScale;
             return (
               <g key={`col-${i}`}>
+                <circle cx={cx} cy={cy} r={3 * fontScale} fill="none" stroke={COLORS.column} strokeWidth="1" strokeOpacity="0.4" />
                 <line x1={cx - s} y1={cy - s} x2={cx + s} y2={cy + s} stroke={COLORS.column} strokeWidth="1.5" strokeOpacity="0.5" />
                 <line x1={cx + s} y1={cy - s} x2={cx - s} y2={cy + s} stroke={COLORS.column} strokeWidth="1.5" strokeOpacity="0.5" />
               </g>
@@ -413,7 +521,7 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
 
           {/* North arrow */}
           {(() => {
-            const nx = layout.warehouseLength / 1000 * scale - 20;
+            const nx = lenPx - 20;
             const ny = 20;
             return (
               <g transform={`translate(${nx}, ${ny})`}>
@@ -426,9 +534,9 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
 
           {/* Scale bar */}
           {(() => {
-            const scaleBarM = 10; // 10 meters
+            const scaleBarM = 10;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = layout.warehouseWidth / 1000 * scale + 16;
+            const barY = widPx + 40;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
@@ -458,7 +566,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
     450 / (frameHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 40);
+  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 50);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const uprightPx = Math.max(6, Math.min(16, totalPx / maxDisplayBays * 0.04));
@@ -471,6 +579,25 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
   for (let i = 0; i < beamLevels; i++) {
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
+
+  // Per-level clear height (distance between beam bottom and beam above / ceiling)
+  const levelClearances: { y: number; label: string }[] = [];
+  for (let i = 0; i < levels.length - 1; i++) {
+    const thisBottom = levels[i].bottomMm;
+    const nextBottom = levels[i + 1].bottomMm;
+    const clear = nextBottom - thisBottom;
+    const yPx = (frameHeight - thisBottom - clear / 2) / 1000 * scale;
+    levelClearances.push({ y: yPx, label: formatMm(clear) });
+  }
+  // Top level to top of frame
+  if (levels.length > 0) {
+    const topBottom = levels[levels.length - 1].bottomMm;
+    const clear = frameHeight - topBottom;
+    const yPx = (frameHeight - topBottom - clear / 2) / 1000 * scale;
+    levelClearances.push({ y: yPx, label: formatMm(clear) });
+  }
+
+  const dimOff = 14;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -498,6 +625,14 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
           {/* Floor line with hatch */}
           <line x1={-10} y1={frameHPx} x2={totalPx + 10} y2={frameHPx} stroke={COLORS.ground} strokeWidth="2" />
           <rect x={-10} y={frameHPx} width={totalPx + 20} height="12" fill="url(#ground-hatch-front)" />
+
+          {/* Bay width dimension */}
+          <DimensionLine
+            x1={0} y1={frameHPx + 28} x2={bayWidth / 1000 * scale} y2={frameHPx + 28}
+            label={formatMm(bayWidth)}
+            offset={0}
+            fontSize={7 * fontScale}
+          />
 
           {/* Each bay */}
           {Array.from({ length: maxDisplayBays }).map((_, bayIdx) => {
@@ -550,13 +685,22 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             );
           })}
 
-          {/* Height dimension on right */}
-          <g>
-            <line x1={totalPx + 16} y1={0} x2={totalPx + 16} y2={frameHPx} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <line x1={totalPx + 12} y1={0} x2={totalPx + 20} y2={0} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <line x1={totalPx + 12} y1={frameHPx} x2={totalPx + 20} y2={frameHPx} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <text x={totalPx + 22} y={frameHPx / 2 + 3} textAnchor="start" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{formatMm(frameHeight)}</text>
-          </g>
+          {/* Total height dimension on right */}
+          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
+
+          {/* Per-level clear height annotations */}
+          {levelClearances.length > 1 && (() => {
+            const hx = -dimOff - 6;
+            return (
+              <g>
+                {levelClearances.map((lc, i) => (
+                  <text key={`lc-${i}`} x={hx} y={lc.y + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                    {lc.label}
+                  </text>
+                ))}
+              </g>
+            );
+          })()}
 
           {/* Level labels on left */}
           {levels.map((lvl, i) => {
@@ -575,7 +719,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
           {(() => {
             const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = frameHPx + 24;
+            const barY = frameHPx + 42;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
@@ -602,7 +746,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
     450 / (frameHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 40);
+  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 60);
   const depthPx = frameDepth / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const uprightPx = Math.max(8, Math.min(14, depthPx * 0.06));
@@ -619,6 +763,8 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
   const { bracingType, bracingCount } = uprightSelection || { bracingType: 'D', bracingCount: { diagonal: 8, horizontal: 2 } };
   const nDiag = bracingCount?.diagonal || 8;
   const nHoriz = bracingCount?.horizontal || 2;
+
+  const dimOff = 14;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -719,27 +865,17 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
             );
           })}
 
-          {/* Depth dimension */}
-          <g>
-            <line x1={0} y1={frameHPx + 16} x2={depthPx} y2={frameHPx + 16} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <line x1={0} y1={frameHPx + 12} x2={0} y2={frameHPx + 20} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <line x1={depthPx} y1={frameHPx + 12} x2={depthPx} y2={frameHPx + 20} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <text x={depthPx / 2} y={frameHPx + 28} textAnchor="middle" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{formatMm(frameDepth)}</text>
-          </g>
+          {/* Depth dimension at bottom */}
+          <DimensionLine x1={0} y1={frameHPx} x2={depthPx} y2={frameHPx} label={formatMm(frameDepth)} offset={dimOff} fontSize={8 * fontScale} />
 
-          {/* Height dimension on right */}
-          <g>
-            <line x1={depthPx + uprightPx + 8} y1={0} x2={depthPx + uprightPx + 8} y2={frameHPx} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <line x1={depthPx + uprightPx + 4} y1={0} x2={depthPx + uprightPx + 12} y2={0} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <line x1={depthPx + uprightPx + 4} y1={frameHPx} x2={depthPx + uprightPx + 12} y2={frameHPx} stroke={COLORS.dimension} strokeWidth="0.8" />
-            <text x={depthPx + uprightPx + 14} y={frameHPx / 2 + 3} textAnchor="start" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{formatMm(frameHeight)}</text>
-          </g>
+          {/* Total height dimension on right */}
+          <DimensionLine x1={depthPx} y1={0} x2={depthPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
 
           {/* Scale bar */}
           {(() => {
             const scaleBarM = 1;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = frameHPx + 40;
+            const barY = frameHPx + 34;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
