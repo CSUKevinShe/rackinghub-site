@@ -45,8 +45,9 @@ export function generateBOMFromLayout(
   // Number of beam bays
   const totalBays = layout.baysPerRow * layout.rackRows;
 
-  // Frame positions (upright columns)
-  const framePositions = totalBays + 1;
+  // Upright frame positions: each bay boundary needs 2 uprights (front + back of row)
+  // For N bays per row: (N+1) positions per row × 2 sides × rackRows
+  const uprightPositions = (layout.baysPerRow + 1) * 2 * layout.rackRows;
 
   // Beam levels (directly from rack config)
   const beamLevels = rack.beamLevels;
@@ -81,11 +82,11 @@ export function generateBOMFromLayout(
     bom.push({
       description: `Upright Frame ${uprightSelection.profileCode} (${uprightSelection.material}, H=${uprightSelection.frameHeightMm}mm, ${uprightSelection.bracingType}-bracing)`,
       unit: 'pcs',
-      quantity: framePositions,
+      quantity: uprightPositions,
       unitWeight: Math.round(frameWeight * 100) / 100,
-      totalWeight: Math.round(frameWeight * framePositions * 100) / 100,
+      totalWeight: Math.round(frameWeight * uprightPositions * 100) / 100,
       unitCost: Math.round(frameCost * 100) / 100,
-      totalCost: Math.round(frameCost * framePositions * 100) / 100,
+      totalCost: Math.round(frameCost * uprightPositions * 100) / 100,
       category: 'frame',
     });
   }
@@ -146,11 +147,11 @@ export function generateBOMFromLayout(
   bom.push({
     description: 'Frame Base Plate',
     unit: 'pcs',
-    quantity: framePositions,
+    quantity: uprightPositions,
     unitWeight: basePlateWeight,
-    totalWeight: Math.round(basePlateWeight * framePositions * 100) / 100,
+    totalWeight: Math.round(basePlateWeight * uprightPositions * 100) / 100,
     unitCost: Math.round(basePlateCost * 100) / 100,
-    totalCost: Math.round(basePlateCost * framePositions * 100) / 100,
+    totalCost: Math.round(basePlateCost * uprightPositions * 100) / 100,
     category: 'frame',
   });
 
@@ -194,8 +195,8 @@ export function generateBOMFromLayout(
     const horizWeightPerFrame = nHorizontal * horizontalLengthM * bracingWeightPerMeter;
     const bracingWeightPerFrame = diagWeightPerFrame + horizWeightPerFrame;
 
-    const totalBracingWeight = bracingWeightPerFrame * framePositions;
-    const totalBracingPieces = (nDiagonal + nHorizontal) * framePositions;
+    const totalBracingWeight = bracingWeightPerFrame * uprightPositions;
+    const totalBracingPieces = (nDiagonal + nHorizontal) * uprightPositions;
     const bracingCost = totalBracingWeight * materialPricePerKg;
     const avgWeightPerPiece = totalBracingWeight / totalBracingPieces;
 
@@ -216,11 +217,11 @@ export function generateBOMFromLayout(
   bom.push({
     description: 'Column Protectors & Frame Protectors',
     unit: 'set',
-    quantity: framePositions,
+    quantity: uprightPositions,
     unitWeight: 8,
-    totalWeight: Math.round(8 * framePositions * 100) / 100,
+    totalWeight: Math.round(8 * uprightPositions * 100) / 100,
     unitCost: Math.round(safetyCostPerPos * 5 * 100) / 100,
-    totalCost: Math.round(safetyCostPerPos * 5 * framePositions * 100) / 100,
+    totalCost: Math.round(safetyCostPerPos * 5 * uprightPositions * 100) / 100,
     category: 'safety',
   });
 
