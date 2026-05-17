@@ -90,10 +90,10 @@ export const PROFILES: Record<string, Profile> = {
   "100x50": {
     thickness: 1.5,
     expanded: 205,
-    weight: 2.4139,
+    weight: 4.8278,
     Ix: 95.36,
     Iy: 23.35,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "100x70": {
     thickness: 2.5,
@@ -114,10 +114,10 @@ export const PROFILES: Record<string, Profile> = {
   "110x50": {
     thickness: 1.5,
     expanded: 215,
-    weight: 2.5316,
+    weight: 5.0633,
     Ix: 119.21,
     Iy: 25.17,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "120x135": {
     thickness: 3.5,
@@ -130,10 +130,10 @@ export const PROFILES: Record<string, Profile> = {
   "120x50": {
     thickness: 1.5,
     expanded: 225,
-    weight: 2.6494,
+    weight: 5.2988,
     Ix: 146.25,
     Iy: 26.76,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "120x70": {
     thickness: 2.5,
@@ -154,10 +154,10 @@ export const PROFILES: Record<string, Profile> = {
   "130x50": {
     thickness: 1.5,
     expanded: 235,
-    weight: 2.7671,
+    weight: 5.5343,
     Ix: 176.63,
     Iy: 28.47,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "140x135": {
     thickness: 3.5,
@@ -168,10 +168,10 @@ export const PROFILES: Record<string, Profile> = {
   "140x50": {
     thickness: 1.5,
     expanded: 245,
-    weight: 2.8849,
+    weight: 5.7698,
     Ix: 210.49,
     Iy: 30.18,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "150x50": {
     thickness: 1.5,
@@ -179,47 +179,47 @@ export const PROFILES: Record<string, Profile> = {
     weight: 6.01,
     Ix: 247.98,
     Iy: 32.05,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "155x50": {
     thickness: 1.8,
     expanded: 260,
-    weight: 3.6738,
+    weight: 7.3476,
     Ix: 320.85,
     Iy: 38.9,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "160x50": {
     thickness: 1.8,
     expanded: 265,
-    weight: 3.7444,
+    weight: 7.4889,
     Ix: 346.16,
     Iy: 39.92,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "180x50": {
     thickness: 1.8,
     expanded: 285,
-    weight: 4.0271,
+    weight: 8.0542,
     Ix: 459.42,
     Iy: 43.99,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "80x50": {
     thickness: 1.5,
     expanded: 183,
-    weight: 2.1548,
+    weight: 4.3096,
     Ix: 56.67,
     Iy: 19.93,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "90x50": {
     thickness: 1.5,
     expanded: 193,
-    weight: 2.2726,
+    weight: 4.5452,
     Ix: 74.56,
     Iy: 21.64,
-    category: "Step Beam"
+    category: "Box Beam"
   },
   "90x68": {
     thickness: 2,
@@ -636,8 +636,8 @@ export const UPRIGHT_WEIGHTS: Record<string, { thickness: number; weight: number
   "100*70(2.3)": { thickness: 2.3, weight: 4.87 },
   "100*70(2.5)": { thickness: 2.5, weight: 5.30 },
   // 120*70 series
-  "120*70(2.3)": { thickness: 2.3, weight: 5.69 },
-  "120*70(2.5)": { thickness: 2.5, weight: 6.15 },
+  "120*70(2.3)": { thickness: 2.3, weight: 5.24 },
+  "120*70(2.5)": { thickness: 2.5, weight: 5.69 },
   // 120x95 series
   "120x95（2.3）": { thickness: 2.3, weight: 8.42 },
   "120x95（2.5）": { thickness: 2.5, weight: 9.08 },
