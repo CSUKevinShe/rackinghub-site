@@ -54,43 +54,6 @@ export function LayoutCanvas() {
     return () => ro.disconnect();
   }, []);
 
-  if (!layout || layout.elements.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[300px] bg-slate-50 rounded-xl border border-slate-200">
-        <div className="text-center">
-          <div className="text-4xl mb-3 opacity-20">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M3 9h18M9 3v18" />
-            </svg>
-          </div>
-          <p className="text-sm text-slate-400">
-            Adjust parameters to generate layout
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const frameDepth = pallet.depth - 100;
-  const bayWidth =
-    rack.palletsPerLevel * pallet.width +
-    (rack.palletsPerLevel - 1) * 100 +
-    2 * 100;
-  const beamSectionHeight = beamSelection?.heightMm ?? 120;
-  const firstBeamBottom = rack.firstBeamHeight;
-  const lastLevelBeamBottom = firstBeamBottom + (rack.beamLevels - 1) * (pallet.height + 100);
-  const frameHeight = lastLevelBeamBottom + beamSectionHeight + 100;
-  const totalLevels = rack.beamLevels + (rack.hasGroundLevel ? 1 : 0);
-
-  // Responsive padding based on container width
-  const padding = containerWidth < 640 ? 20 : 40;
-  const svgWidth = containerWidth;
-
-  // Font size scaling for mobile
-  const isMobile = containerWidth < 640;
-  const fontScale = isMobile ? 1.3 : 1;
-
   const handleExportPNG = useCallback(async () => {
     if (!svgRef.current) return;
     const svgEl = svgRef.current;
@@ -139,6 +102,44 @@ export function LayoutCanvas() {
     };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
   }, [view]);
+
+  // Early return after all hooks
+  if (!layout || layout.elements.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[300px] bg-slate-50 rounded-xl border border-slate-200">
+        <div className="text-center">
+          <div className="text-4xl mb-3 opacity-20">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 3v18" />
+            </svg>
+          </div>
+          <p className="text-sm text-slate-400">
+            Adjust parameters to generate layout
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const frameDepth = pallet.depth - 100;
+  const bayWidth =
+    rack.palletsPerLevel * pallet.width +
+    (rack.palletsPerLevel - 1) * 100 +
+    2 * 100;
+  const beamSectionHeight = beamSelection?.heightMm ?? 120;
+  const firstBeamBottom = rack.firstBeamHeight;
+  const lastLevelBeamBottom = firstBeamBottom + (rack.beamLevels - 1) * (pallet.height + 100);
+  const frameHeight = lastLevelBeamBottom + beamSectionHeight + 100;
+  const totalLevels = rack.beamLevels + (rack.hasGroundLevel ? 1 : 0);
+
+  // Responsive padding based on container width
+  const padding = containerWidth < 640 ? 20 : 40;
+  const svgWidth = containerWidth;
+
+  // Font size scaling for mobile
+  const isMobile = containerWidth < 640;
+  const fontScale = isMobile ? 1.3 : 1;
 
   const viewProps = { view, setView, rackType, svgRef, handleExportPNG, fontScale };
 
