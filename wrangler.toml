@@ -1,25 +1,12 @@
 name = "rackinghub-site"
 pages_build_output_dir = "."
 
-# Cloudflare Pages 配置
-# 文档：https://developers.cloudflare.com/pages/platform/functions/configuration/
-
 [vars]
   ENVIRONMENT = "production"
   SITE_URL = "https://rackinghub.com"
 
-# 环境变量（生产环境）
 [env.production.vars]
   ENVIRONMENT = "production"
   SITE_URL = "https://rackinghub.com"
-  CONTACT_EMAIL = "Kevin@boracs.com"
-  FORMSPREE_ID = "xeerarqy"
+  CONTACT_EMAIL = "info@rackinghub.com"
   GA_ID = "G-HY3B0T73TJ"
-
-# KV 绑定（Planner 线索存储）
-[[kv_namespaces]]
-binding = "PLANNER_LEADS"
-id = "planner_leads"
-
-# 注意：环境变量 FEISHU_WEBHOOK_URL 通过 Cloudflare Dashboard 配置
-# Pages Functions 通过 env.FEISHU_WEBHOOK_URL 访问
