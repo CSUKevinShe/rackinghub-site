@@ -1,0 +1,5 @@
+name = "rackinghub"
+compatibility_date = "2025-06-17"
+
+[vars]
+CONTACT_EMAIL = "info@rackinghub.com"

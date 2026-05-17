@@ -1,0 +1,14 @@
+# RackingHub v2 - Redirects
+# Old product pages ¡ú new structure
+/products/* / 301
+# Old blog ¡ú /learn
+/blog/* /learn 301
+/blog /learn 301
+# Old case-studies ¡ú /learn
+/case-studies/* /learn 301
+/case-studies /learn 301
+# Old contact variations
+/contact-us /contact 301
+/get-in-touch /contact 301
+# Old about
+/about-us /about 301
