@@ -34,6 +34,41 @@ function debounce(fn: () => void, ms: number) {
   debounceTimer = setTimeout(fn, ms);
 }
 
+const EXCHANGE_RATE_CACHE_KEY = 'rackinghub:exchangeRate';
+const EXCHANGE_RATE_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+async function fetchExchangeRate(): Promise<number | null> {
+  try {
+    const cached = localStorage.getItem(EXCHANGE_RATE_CACHE_KEY);
+    if (cached) {
+      const { rate, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < EXCHANGE_RATE_CACHE_TTL) {
+        return rate;
+      }
+    }
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    const data = await res.json();
+    if (data?.rates?.CNY) {
+      localStorage.setItem(EXCHANGE_RATE_CACHE_KEY, JSON.stringify({
+        rate: data.rates.CNY,
+        timestamp: Date.now(),
+      }));
+      return data.rates.CNY;
+    }
+  } catch {
+    // ignore — fall back to config rate
+  }
+  return null;
+}
+
+export async function initExchangeRate() {
+  const liveRate = await fetchExchangeRate();
+  if (liveRate && liveRate > 0) {
+    return liveRate;
+  }
+  return EXCHANGE_RATES.USD;
+}
+
 interface PlannerState {
   // Input
   warehouse: WarehouseParams;
@@ -84,7 +119,20 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   shipping: null,
   totalExFactoryCNY: 0,
   totalDisplayCurrency: 0,
-  exchangeRate: EXCHANGE_RATES.USD,
+  exchangeRate: (() => {
+    try {
+      const cached = typeof localStorage !== 'undefined'
+        ? localStorage.getItem(EXCHANGE_RATE_CACHE_KEY)
+        : null;
+      if (cached) {
+        const { rate, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < EXCHANGE_RATE_CACHE_TTL) {
+          return rate;
+        }
+      }
+    } catch { /* ignore */ }
+    return EXCHANGE_RATES.USD;
+  })(),
 
   setWarehouse: (partial) => {
     set((state) => ({
@@ -249,7 +297,20 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       shipping: null,
       totalExFactoryCNY: 0,
       totalDisplayCurrency: 0,
-      exchangeRate: EXCHANGE_RATES.USD,
+      exchangeRate: (() => {
+        try {
+          const cached = typeof localStorage !== 'undefined'
+            ? localStorage.getItem(EXCHANGE_RATE_CACHE_KEY)
+            : null;
+          if (cached) {
+            const { rate, timestamp } = JSON.parse(cached);
+            if (Date.now() - timestamp < EXCHANGE_RATE_CACHE_TTL) {
+              return rate;
+            }
+          }
+        } catch { /* ignore */ }
+        return EXCHANGE_RATES.USD;
+      })(),
     });
     setTimeout(() => get().calculate(), 0);
   },

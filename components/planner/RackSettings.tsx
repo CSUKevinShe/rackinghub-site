@@ -208,27 +208,6 @@ export function RackSettings() {
           >
             Reset
           </button>
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                const res = await fetch(`https://open.er-api.com/v6/latest/USD`);
-                const data = await res.json();
-                if (data && data.rates) {
-                  const usdCny = data.rates.CNY;
-                  if (usdCny > 0) {
-                    setExchangeRate(usdCny);
-                  }
-                }
-              } catch {
-                // fallback to config rate
-                setExchangeRate(EXCHANGE_RATES[displayCurrency]);
-              }
-            }}
-            className="text-[10px] text-green-600 hover:text-green-800 font-medium shrink-0"
-          >
-            Live
-          </button>
         </div>
       </div>
     </div>

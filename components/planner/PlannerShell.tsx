@@ -7,12 +7,20 @@ import { LayoutCanvas } from './LayoutCanvas';
 import { ResultSummary } from './ResultSummary';
 import { BOMTable } from './BOMTable';
 import { CTASection } from './CTASection';
-import { usePlannerStore } from '@/lib/store/usePlannerStore';
+import { usePlannerStore, initExchangeRate } from '@/lib/store/usePlannerStore';
 import { cn } from '@/lib/utils';
 
 export function PlannerShell() {
   const calculate = usePlannerStore((s) => s.calculate);
   const warnings = usePlannerStore((s) => s.warnings);
+  const setExchangeRate = usePlannerStore((s) => s.setExchangeRate);
+
+  // Fetch fresh exchange rate on mount (uses cached rate if within 7 days)
+  useEffect(() => {
+    initExchangeRate().then((rate) => {
+      setExchangeRate(rate);
+    });
+  }, [setExchangeRate]);
 
   // Initial calculation on mount
   useEffect(() => {
