@@ -179,10 +179,8 @@ export function generateBOMFromLayout(
     const bracingProfile = PROFILES[bracingProfileKey];
     const bracingWeightPerMeter = bracingProfile?.weight ?? 1.0; // kg/m
 
-    // Upright frame depth from profiles table (used for bracing length calc)
-    const uprightProfileKey = profileCode.split(' ')[0]; // e.g. "90*70"
-    const uprightProfileEntry = PROFILES[uprightProfileKey.replace('*', 'x')];
-    const frameDepth = pallet.depth - SPACING.frameDepthOffset; // mm, rack depth (pallet overhangs 50mm each side)
+    // Rack depth = pallet depth - frame offset (pallet overhangs 50mm each side)
+    const frameDepth = pallet.depth - SPACING.frameDepthOffset; // mm
 
     // Diagonal bracing length: √(frameDepth² + 600²) mm
     const diagonalLengthMm = Math.sqrt(frameDepth * frameDepth + 600 * 600);
@@ -226,24 +224,25 @@ export function generateBOMFromLayout(
     category: 'safety',
   });
 
-  // 7. Row Spacers — 矩管 50×30×1.5 + 1kg connector plate
-  // Back-to-back connections: rackRows - 1 (each pair of adjacent rows)
-  // Quantity per connection: from 300mm start, every 2000mm up the frame height
+  // 7. Row Spacers — 50×30×1.5 tube + 1kg connector plate
+  // Spacers connect adjacent back-to-back rows at each upright position
+  // Quantity: from 300mm start, every 2000mm up the frame height
   const backToBackConnections = Math.max(0, layout.rackRows - 1);
   if (backToBackConnections > 0) {
     const spacerHeight = rackHeight; // total frame height
-    const spacersPerConnection = Math.floor((spacerHeight - 300) / 2000) + 1;
-    const totalSpacers = spacersPerConnection * backToBackConnections * layout.baysPerRow;
+    const spacersPerPosition = Math.floor((spacerHeight - 300) / 2000) + 1;
+    // Each row has (baysPerRow + 1) upright positions
+    const uprightPositions = layout.baysPerRow + 1;
+    const totalSpacers = spacersPerPosition * backToBackConnections * uprightPositions;
 
-    // 矩管 50×30×1.5, width = aisleWidth (default 200mm)
-    const spacerWidth = COST_REFERENCE.rowSpacerWidthMm;
-    const tubeWeightPerPiece = 1.0; // 矩管 50×30×1.5 × ~200mm
-    const connectorPlateWeight = 1.0; // 连接板
+    const spacerWidth = COST_REFERENCE.rowSpacerWidthMm; // 200mm
+    const tubeWeightPerPiece = 1.0;
+    const connectorPlateWeight = 1.0;
     const totalWeightPerPiece = tubeWeightPerPiece + connectorPlateWeight;
     const costPerPiece = totalWeightPerPiece * materialPricePerKg;
 
     bom.push({
-      description: `Row Spacer (矩管 50×30×1.5 × ${spacerWidth}mm + 连接板)`,
+      description: `Row Spacer (50×30×1.5 tube × ${spacerWidth}mm + connector plate)`,
       unit: 'pcs',
       quantity: totalSpacers,
       unitWeight: totalWeightPerPiece,
