@@ -213,15 +213,15 @@ export function generateBOMFromLayout(
   });
 
   // 7. Row Spacers — 50×30×1.5 tube + 1kg connector plate
-  // Spacers connect adjacent back-to-back rows at each upright position
-  // Quantity: from 300mm start, every 2000mm up the frame height
+  // Spacers connect adjacent back-to-back rows at each upright position.
+  // One row spacer connects 2 uprights (one from each row).
   const backToBackConnections = Math.max(0, layout.rackRows - 1);
   if (backToBackConnections > 0) {
     const spacerHeight = rackHeight; // total frame height
     const spacersPerPosition = Math.floor((spacerHeight - 300) / 2000) + 1;
-    // Each row has (baysPerRow + 1) upright positions
-    const uprightPositions = layout.baysPerRow + 1;
-    const totalSpacers = spacersPerPosition * backToBackConnections * uprightPositions;
+    // Each row boundary has (baysPerRow + 1) upright positions
+    const positionsPerRow = layout.baysPerRow + 1;
+    const totalSpacers = Math.ceil(spacersPerPosition * backToBackConnections * positionsPerRow / 2);
 
     const spacerWidth = COST_REFERENCE.rowSpacerWidthMm; // 200mm
     const tubeWeightPerPiece = 1.0;
