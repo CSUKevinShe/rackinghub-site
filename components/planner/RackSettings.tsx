@@ -2,8 +2,7 @@
 
 import { usePlannerStore } from '@/lib/store/usePlannerStore';
 import { CONSTRAINTS, EXCHANGE_RATES } from '@/lib/calculator/config';
-import { RACK_TYPES, BUDGET_TIERS } from '@/lib/calculator/config';
-import type { BudgetTier, CurrencyCode } from '@/lib/calculator/types';
+import type { CurrencyCode } from '@/lib/calculator/types';
 import { NumberInput } from './NumberInput';
 import { cn } from '@/lib/utils';
 
@@ -17,21 +16,65 @@ const CURRENCY_LABELS: Record<CurrencyCode, string> = {
 };
 
 export function RackSettings() {
-  const { rackType, rack, setRack, budget, setBudget, displayCurrency, setDisplayCurrency } = usePlannerStore();
-  const config = RACK_TYPES[rackType];
+  const {
+    rack,
+    pallet,
+    setRack,
+    setPallet,
+    displayCurrency,
+    setDisplayCurrency,
+    wireMeshDeck,
+    setWireMeshDeck,
+  } = usePlannerStore();
   const constraints = CONSTRAINTS.rack;
+
+  const hasGroundLevel = rack.hasGroundLevel;
+  const effectiveFirstBeam = hasGroundLevel ? pallet.height : rack.firstBeamHeight;
 
   return (
     <div className="space-y-4">
-      <NumberInput
-        label="First Beam Height"
-        value={rack.firstBeamHeight}
-        onChange={(v) => setRack({ firstBeamHeight: v })}
-        min={constraints.firstBeamHeight.min}
-        max={constraints.firstBeamHeight.max}
-        step={100}
-        unit="mm"
-      />
+      {/* Ground Level Toggle */}
+      <div>
+        <label className="text-sm font-medium text-slate-700 block mb-2">
+          Ground Level Pallets
+        </label>
+        <button
+          type="button"
+          onClick={() => setRack({ hasGroundLevel: !hasGroundLevel })}
+          className={cn(
+            'w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-all',
+            hasGroundLevel
+              ? 'border-primary-950 bg-primary-50'
+              : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+          )}
+        >
+          <div>
+            <div className="text-sm font-semibold text-slate-800">
+              {hasGroundLevel ? 'Ground Level Enabled' : 'Ground Level Disabled'}
+            </div>
+            <div className="text-xs text-slate-400 mt-0.5">
+              {hasGroundLevel
+                ? 'Pallets stored directly on floor — first beam above pallet height'
+                : 'All pallets on beams — first beam at 300mm'}
+            </div>
+          </div>
+          <div className={cn(
+            'w-10 h-6 rounded-full transition-colors relative',
+            hasGroundLevel ? 'bg-primary-950' : 'bg-slate-300'
+          )}>
+            <div className={cn(
+              'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
+              hasGroundLevel ? 'translate-x-4' : 'translate-x-0.5'
+            )} />
+          </div>
+        </button>
+        {hasGroundLevel && (
+          <div className="mt-2 text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+            First beam height: <strong>{pallet.height}mm</strong> (pallet height) — ground level pallets don't need beams
+          </div>
+        )}
+      </div>
+
       <NumberInput
         label="Number of Levels"
         value={rack.levels}
@@ -40,7 +83,9 @@ export function RackSettings() {
         max={constraints.levels.max}
         step={1}
         unit="levels"
+        hint={hasGroundLevel ? `Total storage levels: ${rack.levels} (${rack.levels - 1} beam + 1 ground)` : undefined}
       />
+
       <NumberInput
         label="Pallets per Bay"
         value={rack.palletsPerBay}
@@ -50,6 +95,19 @@ export function RackSettings() {
         step={1}
         unit="pallets"
       />
+
+      {!hasGroundLevel && (
+        <NumberInput
+          label="First Beam Height"
+          value={rack.firstBeamHeight}
+          onChange={(v) => setRack({ firstBeamHeight: v })}
+          min={constraints.firstBeamHeight.min}
+          max={constraints.firstBeamHeight.max}
+          step={100}
+          unit="mm"
+        />
+      )}
+
       <NumberInput
         label="Aisle Width"
         value={rack.aisleWidth}
@@ -59,34 +117,41 @@ export function RackSettings() {
         step={100}
       />
 
-      {/* Budget Tier Selector */}
+      {/* Wire Mesh Decking (optional) */}
       <div>
         <label className="text-sm font-medium text-slate-700 block mb-2">
-          Budget Level
+          Wire Mesh Decking
         </label>
-        <div className="grid grid-cols-3 gap-2">
-          {(Object.keys(BUDGET_TIERS) as BudgetTier[]).map((tier) => {
-            const tierConfig = BUDGET_TIERS[tier];
-            return (
-              <button
-                key={tier}
-                type="button"
-                onClick={() => setBudget(tier)}
-                className={cn(
-                  'px-3 py-2 rounded-lg text-center transition-all',
-                  budget === tier
-                    ? 'bg-primary-950 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                )}
-              >
-                <div className="text-xs font-semibold">{tierConfig.label}</div>
-              </button>
-            );
-          })}
-        </div>
-        <p className="text-[11px] text-slate-400 mt-1.5">
-          {BUDGET_TIERS[budget].description}
-        </p>
+        <button
+          type="button"
+          onClick={() => setWireMeshDeck(!wireMeshDeck)}
+          className={cn(
+            'w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-all',
+            wireMeshDeck
+              ? 'border-primary-950 bg-primary-50'
+              : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+          )}
+        >
+          <div>
+            <div className="text-sm font-semibold text-slate-800">
+              {wireMeshDeck ? 'Enabled' : 'Disabled'}
+            </div>
+            <div className="text-xs text-slate-400 mt-0.5">
+              {wireMeshDeck
+                ? '10 kg/m² — ¥84/m² ex-factory'
+                : 'Add wire mesh decking to each pallet position'}
+            </div>
+          </div>
+          <div className={cn(
+            'w-10 h-6 rounded-full transition-colors relative',
+            wireMeshDeck ? 'bg-primary-950' : 'bg-slate-300'
+          )}>
+            <div className={cn(
+              'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
+              wireMeshDeck ? 'translate-x-4' : 'translate-x-0.5'
+            )} />
+          </div>
+        </button>
       </div>
 
       {/* Display Currency */}

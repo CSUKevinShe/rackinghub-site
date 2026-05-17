@@ -80,6 +80,7 @@ export function ResultSummary() {
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
             {summary.rackSystem} — Ex-factory prices ({displayCurrency})
+            {summary.hasGroundLevel && ' · Ground level included'}
           </p>
         </div>
         <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">

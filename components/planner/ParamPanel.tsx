@@ -166,7 +166,7 @@ function RackTypeSelector() {
 }
 
 function SelectionResults() {
-  const { beamSelection, uprightSelection, warnings } = usePlannerStore();
+  const { beamSelection, uprightSelection, warnings, rack } = usePlannerStore();
 
   if (!beamSelection && !uprightSelection) {
     return null;
@@ -182,6 +182,13 @@ function SelectionResults() {
       <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
         Selection Results
       </div>
+
+      {rack.hasGroundLevel && (
+        <div className="text-xs text-slate-600">
+          <span className="font-medium">Storage:</span>{' '}
+          Ground level + {rack.levels - 1} beam levels ({rack.levels} total)
+        </div>
+      )}
 
       {beamSelection && (
         <div className="text-xs text-slate-600">

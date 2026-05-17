@@ -6,11 +6,16 @@ import type {
   BeamSelection,
   UprightSelection,
 } from './types';
-import { COST_REFERENCE, RACK_TYPES, BUDGET_TIERS, EXCHANGE_RATES, UPRIGHT_THICKNESS_THRESHOLD_KG, SPACING } from './config';
+import { COST_REFERENCE, RACK_TYPES, EXCHANGE_RATES, SPACING } from './config';
 
 // ============================================================
 // Costing Engine — real profile weights + ex-factory pricing
 // ============================================================
+
+export interface CostingOptions {
+  wireMeshDeck?: boolean;
+  hasGroundLevel?: boolean;
+}
 
 /**
  * Generate complete Bill of Materials with real profile data.
@@ -19,10 +24,11 @@ export function generateBOMFromLayout(
   input: PlannerInput,
   layout: LayoutData,
   beamSelection: BeamSelection | null,
-  uprightSelection: UprightSelection | null
+  uprightSelection: UprightSelection | null,
+  options: CostingOptions = {}
 ): BOMItem[] {
-  const { warehouse, rackType, rack, pallet, budget } = input;
-  const budgetConfig = BUDGET_TIERS[budget];
+  const { warehouse, rackType, rack, pallet } = input;
+  const { wireMeshDeck = false, hasGroundLevel = false } = options;
 
   // Calculate rack height
   const beamSectionHeight = beamSelection?.heightMm ?? 120;
@@ -35,16 +41,22 @@ export function generateBOMFromLayout(
   // Beam length = effective span
   const beamLength = beamSelection?.effectiveSpanMm ?? (pallet.width * rack.palletsPerBay);
 
+  // Number of beam bays
   const totalBays = layout.baysPerRow * layout.rackRows;
+
+  // Frame positions (upright columns)
   const framePositions = totalBays + 1;
 
-  // Beams per bay = levels × 2 (both sides of bay)
-  const beamsPerBay = rack.levels * 2;
+  // Beam levels (exclude ground level)
+  const beamLevels = hasGroundLevel ? Math.max(0, rack.levels - 1) : rack.levels;
+
+  // Beams per bay = beamLevels × 2 (both sides of bay)
+  const beamsPerBay = beamLevels * 2;
   const totalBeams = beamsPerBay * totalBays;
 
-  // Deck panels: one per pallet position per level
+  // Deck panels: one per pallet position per beam level
   const deckPanelsPerBay = rack.palletsPerBay * 2; // both sides
-  const totalDecks = deckPanelsPerBay * layout.baysPerRow * layout.rackRows * rack.levels;
+  const totalDecks = deckPanelsPerBay * layout.baysPerRow * layout.rackRows * beamLevels;
 
   // Material price from upright selection
   const materialPricePerKg = uprightSelection
@@ -53,17 +65,18 @@ export function generateBOMFromLayout(
         : COST_REFERENCE.q355PricePerKg)
     : COST_REFERENCE.q235PricePerKg;
 
-  // Apply budget tier multiplier
-  const effectivePricePerKg = materialPricePerKg * budgetConfig.multiplier;
-  const effectiveDeckPerM2 = COST_REFERENCE.deckingPerM2PriceCNY * budgetConfig.multiplier;
-  const effectiveSafetyPerPos = COST_REFERENCE.safetyPerPositionPriceCNY * budgetConfig.multiplier;
+  // Wire mesh deck price (fixed ex-factory, no budget multiplier)
+  const effectiveDeckPerM2 = COST_REFERENCE.deckingPerM2PriceCNY;
+
+  // Safety accessories price (fixed ex-factory)
+  const effectiveSafetyPerPos = COST_REFERENCE.safetyPerPositionPriceCNY;
 
   const bom: BOMItem[] = [];
 
   // 1. Upright Frames
   if (uprightSelection) {
     const frameWeight = uprightSelection.weightPerMeter * rackHeight / 1000;
-    const frameCost = frameWeight * effectivePricePerKg;
+    const frameCost = frameWeight * materialPricePerKg;
     bom.push({
       description: `Upright Frame ${uprightSelection.profileCode} (${uprightSelection.material}, H=${uprightSelection.frameHeightMm}mm, ${uprightSelection.bracingType}-bracing)`,
       unit: 'pcs',
@@ -76,10 +89,10 @@ export function generateBOMFromLayout(
     });
   }
 
-  // 2. Box Beams
-  if (beamSelection) {
+  // 2. Box Beams (only for beam levels, not ground level)
+  if (beamSelection && beamLevels > 0) {
     const beamWeight = beamSelection.weightPerMeter * beamLength / 1000;
-    const beamCost = beamWeight * COST_REFERENCE.q235PricePerKg * budgetConfig.multiplier; // beams are Q235
+    const beamCost = beamWeight * COST_REFERENCE.q235PricePerKg; // beams are Q235
     bom.push({
       description: `Box Beam ${beamSelection.profileCode} (L=${beamLength}mm)`,
       unit: 'pcs',
@@ -93,7 +106,7 @@ export function generateBOMFromLayout(
 
     // Beam connectors (柱卡) — one pair per beam
     const connectorWeight = beamSelection.heightMm >= 150 ? 1.51 : 1.10; // DE75-4H or DE75-3H
-    const connectorCost = connectorWeight * effectivePricePerKg;
+    const connectorCost = connectorWeight * materialPricePerKg;
     bom.push({
       description: `Beam Connector Pair (${beamSelection.heightMm >= 150 ? 'DE75-4H' : 'DE75-3H'})`,
       unit: 'pairs',
@@ -106,27 +119,29 @@ export function generateBOMFromLayout(
     });
   }
 
-  // 3. Wire Mesh Decks
-  const deckWidth = pallet.width;
-  const deckDepth = pallet.depth - SPACING.frameDepthOffset;
-  const deckAreaM2 = (deckWidth * deckDepth) / 1e6;
-  const deckWeight = Math.round(deckAreaM2 * 15); // ~15 kg/m²
-  const deckCost = Math.round(effectiveDeckPerM2 * deckAreaM2 * 100) / 100;
+  // 3. Wire Mesh Decks (optional)
+  if (wireMeshDeck && beamLevels > 0) {
+    const deckWidth = pallet.width;
+    const deckDepth = pallet.depth - SPACING.frameDepthOffset;
+    const deckAreaM2 = (deckWidth * deckDepth) / 1e6;
+    const deckWeight = Math.round(deckAreaM2 * 10); // 10 kg/m²
+    const deckCost = Math.round(effectiveDeckPerM2 * deckAreaM2 * 100) / 100;
 
-  bom.push({
-    description: `Wire Mesh Deck (${deckWidth}×${deckDepth}mm)`,
-    unit: 'pcs',
-    quantity: totalDecks,
-    unitWeight: deckWeight,
-    totalWeight: Math.round(deckWeight * totalDecks * 100) / 100,
-    unitCost: deckCost,
-    totalCost: Math.round(deckCost * totalDecks * 100) / 100,
-    category: 'decking',
-  });
+    bom.push({
+      description: `Wire Mesh Deck (${deckWidth}×${deckDepth}mm)`,
+      unit: 'pcs',
+      quantity: totalDecks,
+      unitWeight: deckWeight,
+      totalWeight: Math.round(deckWeight * totalDecks * 100) / 100,
+      unitCost: deckCost,
+      totalCost: Math.round(deckCost * totalDecks * 100) / 100,
+      category: 'decking',
+    });
+  }
 
   // 4. Frame Base Plates
   const basePlateWeight = uprightSelection ? (uprightSelection.profileCode.includes('120') ? 1.52 : 1.30) : 1.27;
-  const basePlateCost = basePlateWeight * effectivePricePerKg;
+  const basePlateCost = basePlateWeight * materialPricePerKg;
   bom.push({
     description: 'Frame Base Plate',
     unit: 'pcs',
@@ -143,14 +158,14 @@ export function generateBOMFromLayout(
     const bracingWeightPerPiece = 1.0; // ~1.0 kg/m × ~1m average length
     const totalBracingPieces = layout.rackRows * (uprightSelection.bracingCount.diagonal + uprightSelection.bracingCount.horizontal);
     const bracingWeight = bracingWeightPerPiece * totalBracingPieces;
-    const bracingCost = bracingWeight * effectivePricePerKg;
+    const bracingCost = bracingWeight * materialPricePerKg;
     bom.push({
-      description: `Cross/Horizontal Bracing (${uprightSelection.bracingType}-type, ${uprightSelection.bracingCount.diagonal} diagonal + ${uprightSelection.bracingCount.horizontal} horizontal per row)`,
+      description: `Cross/Horizontal Bracing (${uprightSelection.bracingType}-type, ${uprightSelection.bracingCount.diagonal} diagonal, ${uprightSelection.bracingCount.horizontal} horizontal)`,
       unit: 'pcs',
       quantity: totalBracingPieces,
       unitWeight: Math.round(bracingWeightPerPiece * 100) / 100,
       totalWeight: Math.round(bracingWeight * 100) / 100,
-      unitCost: Math.round(bracingWeightPerPiece * effectivePricePerKg * 100) / 100,
+      unitCost: Math.round(bracingWeightPerPiece * materialPricePerKg * 100) / 100,
       totalCost: Math.round(bracingCost * 100) / 100,
       category: 'frame',
     });
@@ -169,18 +184,35 @@ export function generateBOMFromLayout(
     category: 'safety',
   });
 
-  bom.push({
-    description: 'Row Spacers & Rack Clamps',
-    unit: 'set',
-    quantity: layout.rackRows * layout.baysPerRow,
-    unitWeight: 2,
-    totalWeight: Math.round(2 * layout.rackRows * layout.baysPerRow * 100) / 100,
-    unitCost: Math.round(safetyCostPerPos * 2 * 100) / 100,
-    totalCost: Math.round(safetyCostPerPos * 2 * layout.rackRows * layout.baysPerRow * 100) / 100,
-    category: 'safety',
-  });
+  // 7. Row Spacers — 矩管 50×30×1.5 + 1kg connector plate
+  // Back-to-back connections: rackRows - 1 (each pair of adjacent rows)
+  // Quantity per connection: from 300mm start, every 2000mm up the frame height
+  const backToBackConnections = Math.max(0, layout.rackRows - 1);
+  if (backToBackConnections > 0) {
+    const spacerHeight = rackHeight; // total frame height
+    const spacersPerConnection = Math.floor((spacerHeight - 300) / 2000) + 1;
+    const totalSpacers = spacersPerConnection * backToBackConnections * layout.baysPerRow;
 
-  // 7. Drive-in specific items
+    // 矩管 50×30×1.5, width = aisleWidth (default 200mm)
+    const spacerWidth = COST_REFERENCE.rowSpacerWidthMm;
+    const tubeWeightPerPiece = 1.0; // 矩管 50×30×1.5 × ~200mm
+    const connectorPlateWeight = 1.0; // 连接板
+    const totalWeightPerPiece = tubeWeightPerPiece + connectorPlateWeight;
+    const costPerPiece = totalWeightPerPiece * materialPricePerKg;
+
+    bom.push({
+      description: `Row Spacer (矩管 50×30×1.5 × ${spacerWidth}mm + 连接板)`,
+      unit: 'pcs',
+      quantity: totalSpacers,
+      unitWeight: totalWeightPerPiece,
+      totalWeight: Math.round(totalWeightPerPiece * totalSpacers * 100) / 100,
+      unitCost: Math.round(costPerPiece * 100) / 100,
+      totalCost: Math.round(costPerPiece * totalSpacers * 100) / 100,
+      category: 'safety',
+    });
+  }
+
+  // 8. Drive-in specific items
   if (rackType === 'drive-in') {
     const palletsDeep = 6;
     const driveInRails = layout.rackRows * layout.baysPerRow * palletsDeep;
@@ -190,13 +222,13 @@ export function generateBOMFromLayout(
       quantity: driveInRails,
       unitWeight: 12,
       totalWeight: Math.round(12 * driveInRails * 100) / 100,
-      unitCost: Math.round(12 * effectivePricePerKg * 100) / 100,
-      totalCost: Math.round(12 * effectivePricePerKg * driveInRails * 100) / 100,
+      unitCost: Math.round(12 * materialPricePerKg * 100) / 100,
+      totalCost: Math.round(12 * materialPricePerKg * driveInRails * 100) / 100,
       category: 'accessory',
     });
   }
 
-  // 8. Radio shuttle specific items
+  // 9. Radio shuttle specific items
   if (rackType === 'radio-shuttle') {
     const shuttleLanes = layout.rackRows;
     const laneLengthM = beamLength / 1000;
@@ -206,8 +238,8 @@ export function generateBOMFromLayout(
       quantity: Math.round(shuttleLanes * layout.baysPerRow * laneLengthM),
       unitWeight: 15,
       totalWeight: Math.round(15 * shuttleLanes * layout.baysPerRow * laneLengthM * 100) / 100,
-      unitCost: Math.round(15 * effectivePricePerKg * 100) / 100,
-      totalCost: Math.round(15 * effectivePricePerKg * shuttleLanes * layout.baysPerRow * laneLengthM * 100) / 100,
+      unitCost: Math.round(15 * materialPricePerKg * 100) / 100,
+      totalCost: Math.round(15 * materialPricePerKg * shuttleLanes * layout.baysPerRow * laneLengthM * 100) / 100,
       category: 'accessory',
     });
     bom.push({
@@ -216,8 +248,8 @@ export function generateBOMFromLayout(
       quantity: shuttleLanes,
       unitWeight: 350,
       totalWeight: 350 * shuttleLanes,
-      unitCost: Math.round(3500 * budgetConfig.multiplier),
-      totalCost: Math.round(3500 * budgetConfig.multiplier * shuttleLanes * 100) / 100,
+      unitCost: Math.round(3500),
+      totalCost: Math.round(3500 * shuttleLanes * 100) / 100,
       category: 'accessory',
     });
   }
@@ -240,15 +272,21 @@ export function generateBOM(input: PlannerInput): BOMItem[] {
 export function calculateSummaryFromResults(
   input: PlannerInput,
   layout: LayoutData,
-  bom: BOMItem[]
+  bom: BOMItem[],
+  options: CostingOptions = {}
 ): PlanSummary {
+  const { hasGroundLevel = false } = options;
   const config = RACK_TYPES[input.rackType];
 
+  // Total pallet positions includes ground level if applicable
   const totalPalletPositions =
     layout.baysPerRow *
     input.rack.palletsPerBay *
     input.rack.levels *
-    layout.rackRows;
+    layout.rackRows +
+    (hasGroundLevel
+      ? layout.baysPerRow * input.rack.palletsPerBay * layout.rackRows
+      : 0);
 
   const totalCapacity = totalPalletPositions * input.pallet.loadPerPallet;
 
@@ -256,6 +294,11 @@ export function calculateSummaryFromResults(
   const costPerPosition = totalPalletPositions > 0 ? totalCost / totalPalletPositions : 0;
 
   const rate = EXCHANGE_RATES[input.displayCurrency] ?? EXCHANGE_RATES.USD;
+
+  // Effective beam levels
+  const beamLevels = hasGroundLevel
+    ? Math.max(0, input.rack.levels - 1)
+    : input.rack.levels;
 
   return {
     totalPalletPositions,
@@ -267,6 +310,8 @@ export function calculateSummaryFromResults(
     costPerPalletPosition: Math.round(costPerPosition / rate * 100) / 100,
     rackSystem: config.name,
     rackType: input.rackType,
+    beamLevels,
+    hasGroundLevel,
   };
 }
 

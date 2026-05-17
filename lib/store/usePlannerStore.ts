@@ -4,7 +4,6 @@ import type {
   RackParams,
   PalletParams,
   RackType,
-  BudgetTier,
   CurrencyCode,
   PlanSummary,
   BOMItem,
@@ -21,6 +20,7 @@ import {
   DEFAULT_PALLET,
   RACK_TYPES,
   EXCHANGE_RATES,
+  SPACING,
 } from '@/lib/calculator/config';
 import { calculateLayout, validateLayout } from '@/lib/calculator/layout';
 import { generateBOMFromLayout, calculateSummaryFromResults } from '@/lib/calculator/costing';
@@ -40,8 +40,8 @@ interface PlannerState {
   rackType: RackType;
   rack: RackParams;
   pallet: PalletParams;
-  budget: BudgetTier;
   displayCurrency: CurrencyCode;
+  wireMeshDeck: boolean;
 
   // Output
   summary: PlanSummary | null;
@@ -60,7 +60,7 @@ interface PlannerState {
   setRackType: (type: RackType) => void;
   setRack: (partial: Partial<RackParams>) => void;
   setPallet: (partial: Partial<PalletParams>) => void;
-  setBudget: (tier: BudgetTier) => void;
+  setWireMeshDeck: (enabled: boolean) => void;
   setDisplayCurrency: (currency: CurrencyCode) => void;
   calculate: () => void;
   reset: () => void;
@@ -71,8 +71,8 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   rackType: 'selective',
   rack: { ...DEFAULT_RACK },
   pallet: { ...DEFAULT_PALLET },
-  budget: 'standard',
   displayCurrency: 'USD',
+  wireMeshDeck: false,
 
   summary: null,
   bom: [],
@@ -102,21 +102,35 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   },
 
   setRack: (partial) => {
-    set((state) => ({
-      rack: { ...state.rack, ...partial },
-    }));
+    set((state) => {
+      const newRack = { ...state.rack, ...partial };
+      // Auto-update firstBeamHeight based on ground level setting
+      if (partial.hasGroundLevel !== undefined) {
+        if (partial.hasGroundLevel) {
+          newRack.firstBeamHeight = state.pallet.height;
+        } else {
+          newRack.firstBeamHeight = 300;
+        }
+      }
+      return { rack: newRack };
+    });
     debounce(() => get().calculate(), 120);
   },
 
   setPallet: (partial) => {
-    set((state) => ({
-      pallet: { ...state.pallet, ...partial },
-    }));
+    set((state) => {
+      const newPallet = { ...state.pallet, ...partial };
+      // If ground level is enabled, update first beam height to match new pallet height
+      const newRack = state.rack.hasGroundLevel
+        ? { ...state.rack, firstBeamHeight: newPallet.height }
+        : state.rack;
+      return { pallet: newPallet, rack: newRack };
+    });
     debounce(() => get().calculate(), 120);
   },
 
-  setBudget: (tier) => {
-    set({ budget: tier });
+  setWireMeshDeck: (enabled) => {
+    set({ wireMeshDeck: enabled });
     get().calculate();
   },
 
@@ -128,45 +142,65 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
 
   calculate: () => {
     const state = get();
+
+    // Compute firstBeamHeight based on ground level setting
+    const firstBeamHeight = state.rack.hasGroundLevel
+      ? state.pallet.height
+      : state.rack.firstBeamHeight;
+    const rack = { ...state.rack, firstBeamHeight };
+
     try {
       const input: PlannerInput = {
         warehouse: state.warehouse,
         rackType: state.rackType,
-        rack: state.rack,
+        rack,
         pallet: state.pallet,
-        budget: state.budget,
         displayCurrency: state.displayCurrency,
       };
+
+      // Effective levels for beam calculation (exclude ground level)
+      const beamLevels = state.rack.hasGroundLevel
+        ? Math.max(0, state.rack.levels - 1)
+        : state.rack.levels;
 
       // 1. Calculate layout
       const layout = calculateLayout(input);
 
-      // 2. Select beam
-      const beamSelection = selectBeam({
-        palletsPerBay: state.rack.palletsPerBay,
-        palletWidth: state.pallet.width,
-        loadPerPallet: state.pallet.loadPerPallet,
-      });
+      // 2. Select beam (only if there are beam levels)
+      let beamSelection: BeamSelection | null = null;
+      if (beamLevels > 0) {
+        beamSelection = selectBeam({
+          palletsPerBay: state.rack.palletsPerBay,
+          palletWidth: state.pallet.width,
+          loadPerPallet: state.pallet.loadPerPallet,
+        });
+      }
 
       // 3. Select upright (auto-selects material)
+      // Total load includes ground level if applicable
       const uprightSelection = selectUpright({
         palletsPerBay: state.rack.palletsPerBay,
         levels: state.rack.levels,
         loadPerPallet: state.pallet.loadPerPallet,
         palletDepth: state.pallet.depth,
         palletHeight: state.pallet.height,
-        firstBeamHeightMm: state.rack.firstBeamHeight,
+        firstBeamHeightMm: firstBeamHeight,
         beamHeightMm: beamSelection?.heightMm ?? 120,
+        hasGroundLevel: state.rack.hasGroundLevel,
       });
 
       // 4. Generate BOM
-      const bom = generateBOMFromLayout(input, layout, beamSelection, uprightSelection);
+      const bom = generateBOMFromLayout(input, layout, beamSelection, uprightSelection, {
+        wireMeshDeck: state.wireMeshDeck,
+      });
 
       // 5. Validate
       const warnings = validateLayout(input, layout, beamSelection, uprightSelection);
 
       // 6. Summary + currency + shipping
-      const summary = calculateSummaryFromResults(input, layout, bom);
+      const summary = calculateSummaryFromResults(input, layout, bom, {
+        hasGroundLevel: state.rack.hasGroundLevel,
+      });
       const rate = EXCHANGE_RATES[state.displayCurrency] ?? EXCHANGE_RATES.USD;
       const totalExFactoryCNY = bom.reduce((s, item) => s + item.totalCost, 0);
       const totalWeightKg = bom.reduce((s, item) => s + item.totalWeight, 0);
@@ -202,8 +236,8 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       rackType: 'selective',
       rack: { ...DEFAULT_RACK },
       pallet: { ...DEFAULT_PALLET },
-      budget: 'standard',
       displayCurrency: 'USD',
+      wireMeshDeck: false,
       summary: null,
       bom: [],
       layout: null,

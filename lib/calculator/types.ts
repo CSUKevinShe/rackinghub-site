@@ -5,9 +5,6 @@
 /** Supported racking system types */
 export type RackType = 'selective' | 'drive-in' | 'radio-shuttle';
 
-/** Budget tier for cost estimation */
-export type BudgetTier = 'economy' | 'standard' | 'premium';
-
 /** Warehouse building dimensions */
 export interface WarehouseParams {
   /** Building interior length in mm */
@@ -32,6 +29,8 @@ export interface RackParams {
   aisleWidth: number;
   /** Height from floor to bottom of first beam, mm */
   firstBeamHeight: number;
+  /** Whether ground-level pallets are stored directly on floor (no beams needed) */
+  hasGroundLevel: boolean;
 }
 
 /** Pallet / load specifications */
@@ -55,7 +54,6 @@ export interface PlannerInput {
   rackType: RackType;
   rack: RackParams;
   pallet: PalletParams;
-  budget: BudgetTier;
   /** User-selected display currency */
   displayCurrency: CurrencyCode;
 }
@@ -169,6 +167,10 @@ export interface PlanSummary {
   costPerPalletPosition: number; // display currency
   rackSystem: string;
   rackType: RackType;
+  /** Effective beam levels (excludes ground level) */
+  beamLevels: number;
+  /** Whether ground level pallets are included */
+  hasGroundLevel: boolean;
 }
 
 /** Complete planner output */
@@ -207,7 +209,7 @@ export interface RackTypeConfig {
 
 /**
  * Cost reference — single source of truth for material costs.
- * Base steel price is adjusted by BUDGET_TIERS[budget].multiplier.
+ * All prices are ex-factory (factory cost × 1.20).
  */
 export interface CostReference {
   /** Base structural steel price in USD/kg (before budget multiplier) */
@@ -225,4 +227,7 @@ export interface CostReference {
   deckingPerM2PriceCNY: number;
   safetyPerPositionCostCNY: number;
   safetyPerPositionPriceCNY: number;
+  // Row spacer
+  rowSpacerWidthMm: number;
+  rowSpacerWeightPerPiece: number;
 }

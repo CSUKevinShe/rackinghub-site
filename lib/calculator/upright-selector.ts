@@ -7,20 +7,24 @@ import type { UprightSelection } from './types';
 
 export function selectUpright(params: {
   palletsPerBay: number;
-  levels: number;
+  levels: number;         // total storage levels (including ground if hasGroundLevel)
   loadPerPallet: number;
   palletDepth: number;
   palletHeight: number;
   firstBeamHeightMm: number;
   beamHeightMm: number;
+  hasGroundLevel: boolean;
 }): UprightSelection | null {
-  const { palletsPerBay, levels, loadPerPallet, palletHeight, firstBeamHeightMm, beamHeightMm } = params;
+  const { palletsPerBay, levels, loadPerPallet, palletHeight, firstBeamHeightMm, beamHeightMm, hasGroundLevel } = params;
 
-  // 1. Total load per frame pair
+  // Total load per frame pair — includes ground level pallets
   const totalLoadKg = palletsPerBay * levels * loadPerPallet * SAFETY_FACTOR;
 
-  // 2. Frame height
-  const frameHeight = calculateFrameHeight(palletHeight, levels, firstBeamHeightMm, beamHeightMm);
+  // Number of beam levels (ground level doesn't need beams)
+  const beamLevels = hasGroundLevel ? Math.max(0, levels - 1) : levels;
+
+  // Frame height
+  const frameHeight = calculateFrameHeight(palletHeight, beamLevels, firstBeamHeightMm, beamHeightMm, hasGroundLevel);
 
   // 3. Beam load per level → thickness constraint
   const beamLoadPerLevel = palletsPerBay * loadPerPallet * SAFETY_FACTOR;
@@ -113,17 +117,29 @@ export function selectUpright(params: {
 
 /**
  * Calculate upright frame height.
- * Level 1 beam at firstBeamHeight (bottom of beam)
- * Level N beam at firstBeamHeight + (N-1) × (palletHeight + topClearance)
+ * With ground level: first beam at pallet.height, then beamLevels - 1 more levels above
+ * Without ground level: first beam at firstBeamHeight, then levels - 1 more levels above
  * Top of frame = last beam bottom + beamHeight + topClearance
  */
 function calculateFrameHeight(
   palletHeight: number,
-  levels: number,
+  beamLevels: number,
   firstBeamHeightMm: number,
-  beamHeightMm: number
+  beamHeightMm: number,
+  hasGroundLevel: boolean
 ): number {
-  const lastLevelBeamBottom = firstBeamHeightMm + (levels - 1) * (palletHeight + SPACING.topClearance);
+  if (beamLevels === 0) {
+    // Only ground level — frame height = pallet height + top clearance
+    return palletHeight + SPACING.topClearance;
+  }
+
+  let lastLevelBeamBottom: number;
+  if (hasGroundLevel) {
+    // With ground level: first beam at pallet.height
+    lastLevelBeamBottom = palletHeight + (beamLevels - 1) * (palletHeight + SPACING.topClearance);
+  } else {
+    lastLevelBeamBottom = firstBeamHeightMm + (beamLevels - 1) * (palletHeight + SPACING.topClearance);
+  }
   return lastLevelBeamBottom + beamHeightMm + SPACING.topClearance;
 }
 

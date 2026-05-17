@@ -102,10 +102,14 @@ export const COST_REFERENCE: CostReference = {
   q235PricePerKg: 8.4,   // 7.0 × 1.20
   q355PricePerKg: 9.6,   // 8.0 × 1.20
 
-  deckingPerM2CostCNY: 126,
-  deckingPerM2PriceCNY: 151.2,  // 126 × 1.20
+  deckingPerM2CostCNY: 70,    // 10kg/m² × 7 CNY/kg
+  deckingPerM2PriceCNY: 84,   // 70 × 1.20
   safetyPerPositionCostCNY: 24.5,
   safetyPerPositionPriceCNY: 29.4,  // 24.5 × 1.20
+
+  // Row spacer: 矩管 50×30×1.5, default width 200mm
+  rowSpacerWidthMm: 200,
+  rowSpacerWeightPerPiece: 1.0,  // 矩管 + 连接板 ≈ 1kg
 };
 
 export const PROFIT_MARGIN = 1.20;
@@ -154,6 +158,7 @@ export const DEFAULT_RACK: RackParams = {
   palletsPerBay: 3,
   aisleWidth: 2500,
   firstBeamHeight: 300,
+  hasGroundLevel: false,
 };
 
 export const DEFAULT_PALLET: PalletParams = {
@@ -168,7 +173,6 @@ export const DEFAULT_INPUT: PlannerInput = {
   rackType: 'selective',
   rack: DEFAULT_RACK,
   pallet: DEFAULT_PALLET,
-  budget: 'standard',
   displayCurrency: 'USD',
 };
 
@@ -185,10 +189,10 @@ export const CONSTRAINTS = {
     columnSpacing: { min: 0, max: 15000 },
   },
   rack: {
-    levels: { min: 1, max: 8 },
+    levels: { min: 1, max: 15 },
     palletsPerBay: { min: 1, max: 6 },
     aisleWidth: { min: 1500, max: 4000 },
-    firstBeamHeight: { min: 200, max: 1500 },
+    firstBeamHeight: { min: 200, max: 2500 },
   },
   pallet: {
     width: { min: 600, max: 1500 },
@@ -198,28 +202,4 @@ export const CONSTRAINTS = {
   },
 };
 
-// ============================================================
-// Budget Tier Display Names & Multipliers
-// multiplier adjusts the base steel price from COST_REFERENCE.
-// Economy: basic steel, minimal accessories → 0.85x
-// Standard: quality steel, full safety accessories → 1.10x
-// Premium: high-grade steel, enhanced safety, branded → 1.40x
-// ============================================================
-
-export const BUDGET_TIERS = {
-  economy: {
-    label: 'Economy',
-    description: 'Standard steel grade, basic accessories',
-    multiplier: 0.85,
-  },
-  standard: {
-    label: 'Standard',
-    description: 'Quality steel, full safety accessories',
-    multiplier: 1.10,
-  },
-  premium: {
-    label: 'Premium',
-    description: 'High-grade steel, enhanced safety, branded components',
-    multiplier: 1.40,
-  },
-};
+// Budget tier removed — all prices use fixed ex-factory pricing

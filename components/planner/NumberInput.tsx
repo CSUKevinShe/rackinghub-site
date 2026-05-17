@@ -10,6 +10,7 @@ type NumberInputProps = {
   max: number;
   step?: number;
   unit?: string;
+  hint?: string;
 };
 
 /**
@@ -25,6 +26,7 @@ export function NumberInput({
   max,
   step = 100,
   unit,
+  hint,
 }: NumberInputProps) {
   const displayValue = unit ? `${value} ${unit}` : formatMm(value);
 
@@ -63,6 +65,7 @@ export function NumberInput({
           +
         </button>
       </div>
+      {hint && <p className="text-[11px] text-slate-400 mt-1.5">{hint}</p>}
     </div>
   );
 }
