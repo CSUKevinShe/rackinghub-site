@@ -145,8 +145,8 @@ export function generateBOMFromLayout(
   });
 
   // 5. Bracing (cross & horizontal)
-  // Bracing count from upright selector is per complete frame (立柱片)
-  // One frame = 2 uprights + 2 base plates + 1 set of bracing
+  // Each upright frame (立柱片) has its own set of bracing
+  // Use real bracing profile weights from profiles table
   if (uprightSelection && beamLevels > 0) {
     const { bracingCount, bracingType, profileCode } = uprightSelection;
     const nDiagonal = bracingCount.diagonal;
@@ -156,6 +156,7 @@ export function generateBOMFromLayout(
     const uprightSizeMatch = profileCode.match(/^(\d+)/);
     const uprightSizeNum = uprightSizeMatch ? parseInt(uprightSizeMatch[1]) : 90;
 
+    // Map upright size to bracing profile key
     let bracingProfileKey: string;
     if (uprightSizeNum >= 120) {
       bracingProfileKey = 'DE120 C40*39.5';
@@ -178,10 +179,13 @@ export function generateBOMFromLayout(
     // Horizontal bracing length = frame depth
     const horizontalLengthM = frameDepth / 1000;
 
-    // One complete frame = 1 set of bracing (nDiagonal + nHorizontal pieces)
-    const totalFrames = uprightPositions / 2;
-    const totalBracingWeight = (nDiagonal * diagonalLengthM + nHorizontal * horizontalLengthM) * bracingWeightPerMeter * totalFrames;
-    const totalBracingPieces = (nDiagonal + nHorizontal) * totalFrames;
+    // Total weight per frame
+    const diagWeightPerFrame = nDiagonal * diagonalLengthM * bracingWeightPerMeter;
+    const horizWeightPerFrame = nHorizontal * horizontalLengthM * bracingWeightPerMeter;
+    const bracingWeightPerFrame = diagWeightPerFrame + horizWeightPerFrame;
+
+    const totalBracingWeight = bracingWeightPerFrame * uprightPositions;
+    const totalBracingPieces = (nDiagonal + nHorizontal) * uprightPositions;
     const bracingCost = totalBracingWeight * materialPricePerKg;
     const avgWeightPerPiece = totalBracingWeight / totalBracingPieces;
 
