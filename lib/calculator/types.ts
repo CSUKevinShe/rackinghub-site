@@ -21,10 +21,10 @@ export interface WarehouseParams {
 
 /** Rack system configuration */
 export interface RackParams {
-  /** Number of storage levels (excluding ground) */
-  levels: number;
-  /** Number of pallets per bay (along the beam) */
-  palletsPerBay: number;
+  /** Number of beam levels (ground level is separate — total storage levels = beamLevels + 1 if hasGroundLevel) */
+  beamLevels: number;
+  /** Number of pallets per level (along the beam) */
+  palletsPerLevel: number;
   /** Aisle width between opposing rack faces in mm */
   aisleWidth: number;
   /** Height from floor to bottom of first beam, mm */
@@ -93,7 +93,8 @@ export interface ValidationWarning {
 /** Container shipping result */
 export interface ShippingResult {
   containerCount: number;
-  totalFOBUSD: number;
+  totalFOBCNY: number;
+  totalFOBDisplay: number;
   totalWeightKg: number;
   weightPerContainer: number[];
 }
@@ -167,7 +168,7 @@ export interface PlanSummary {
   costPerPalletPosition: number; // display currency
   rackSystem: string;
   rackType: RackType;
-  /** Effective beam levels (excludes ground level) */
+  /** Number of beam levels */
   beamLevels: number;
   /** Whether ground level pallets are included */
   hasGroundLevel: boolean;

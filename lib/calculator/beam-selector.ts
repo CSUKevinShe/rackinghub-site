@@ -5,20 +5,20 @@ import { SPACING, SAFETY_FACTOR, COST_REFERENCE } from './config';
 import type { BeamSelection } from './types';
 
 export function selectBeam(params: {
-  palletsPerBay: number;
+  palletsPerLevel: number;
   palletWidth: number;
   loadPerPallet: number;
 }): BeamSelection | null {
-  const { palletsPerBay, palletWidth, loadPerPallet } = params;
+  const { palletsPerLevel, palletWidth, loadPerPallet } = params;
 
   // 1. Effective span
   const effectiveSpan =
-    palletsPerBay * palletWidth +
-    (palletsPerBay - 1) * SPACING.palletToPallet +
+    palletsPerLevel * palletWidth +
+    (palletsPerLevel - 1) * SPACING.palletToPallet +
     2 * SPACING.palletToUpright;
 
   // 2. Required capacity per level
-  const requiredKg = palletsPerBay * loadPerPallet * SAFETY_FACTOR;
+  const requiredKg = palletsPerLevel * loadPerPallet * SAFETY_FACTOR;
 
   // 3. Sort by I_cm4 ascending (smallest first, cheapest)
   const profileOrder = Object.entries(BEAM_CAPACITY)

@@ -34,12 +34,12 @@ export function generateBOMFromLayout(
   const beamSectionHeight = beamSelection?.heightMm ?? 120;
   const rackHeight =
     rack.firstBeamHeight +
-    (rack.levels - 1) * (pallet.height + SPACING.topClearance) +
+    (rack.beamLevels - 1) * (pallet.height + SPACING.topClearance) +
     beamSectionHeight +
     SPACING.topClearance;
 
   // Beam length = effective span
-  const beamLength = beamSelection?.effectiveSpanMm ?? (pallet.width * rack.palletsPerBay);
+  const beamLength = beamSelection?.effectiveSpanMm ?? (pallet.width * rack.palletsPerLevel);
 
   // Number of beam bays
   const totalBays = layout.baysPerRow * layout.rackRows;
@@ -47,15 +47,15 @@ export function generateBOMFromLayout(
   // Frame positions (upright columns)
   const framePositions = totalBays + 1;
 
-  // Beam levels (exclude ground level)
-  const beamLevels = hasGroundLevel ? Math.max(0, rack.levels - 1) : rack.levels;
+  // Beam levels (directly from rack config)
+  const beamLevels = rack.beamLevels;
 
   // Beams per bay = beamLevels × 2 (both sides of bay)
   const beamsPerBay = beamLevels * 2;
   const totalBeams = beamsPerBay * totalBays;
 
   // Deck panels: one per pallet position per beam level
-  const deckPanelsPerBay = rack.palletsPerBay * 2; // both sides
+  const deckPanelsPerBay = rack.palletsPerLevel * 2; // both sides
   const totalDecks = deckPanelsPerBay * layout.baysPerRow * layout.rackRows * beamLevels;
 
   // Material price from upright selection
@@ -278,15 +278,13 @@ export function calculateSummaryFromResults(
   const { hasGroundLevel = false } = options;
   const config = RACK_TYPES[input.rackType];
 
-  // Total pallet positions includes ground level if applicable
+  // Total pallet positions: beam levels + ground level (if enabled)
+  const totalLevels = input.rack.beamLevels + (hasGroundLevel ? 1 : 0);
   const totalPalletPositions =
     layout.baysPerRow *
-    input.rack.palletsPerBay *
-    input.rack.levels *
-    layout.rackRows +
-    (hasGroundLevel
-      ? layout.baysPerRow * input.rack.palletsPerBay * layout.rackRows
-      : 0);
+    input.rack.palletsPerLevel *
+    totalLevels *
+    layout.rackRows;
 
   const totalCapacity = totalPalletPositions * input.pallet.loadPerPallet;
 
@@ -294,11 +292,6 @@ export function calculateSummaryFromResults(
   const costPerPosition = totalPalletPositions > 0 ? totalCost / totalPalletPositions : 0;
 
   const rate = EXCHANGE_RATES[input.displayCurrency] ?? EXCHANGE_RATES.USD;
-
-  // Effective beam levels
-  const beamLevels = hasGroundLevel
-    ? Math.max(0, input.rack.levels - 1)
-    : input.rack.levels;
 
   return {
     totalPalletPositions,
@@ -310,7 +303,7 @@ export function calculateSummaryFromResults(
     costPerPalletPosition: Math.round(costPerPosition / rate * 100) / 100,
     rackSystem: config.name,
     rackType: input.rackType,
-    beamLevels,
+    beamLevels: input.rack.beamLevels,
     hasGroundLevel,
   };
 }

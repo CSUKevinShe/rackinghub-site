@@ -154,8 +154,8 @@ export const DEFAULT_WAREHOUSE: WarehouseParams = {
 };
 
 export const DEFAULT_RACK: RackParams = {
-  levels: 4,
-  palletsPerBay: 3,
+  beamLevels: 4,
+  palletsPerLevel: 3,
   aisleWidth: 2500,
   firstBeamHeight: 300,
   hasGroundLevel: false,
@@ -189,8 +189,8 @@ export const CONSTRAINTS = {
     columnSpacing: { min: 0, max: 15000 },
   },
   rack: {
-    levels: { min: 1, max: 15 },
-    palletsPerBay: { min: 1, max: 6 },
+    beamLevels: { min: 1, max: 15 },
+    palletsPerLevel: { min: 1, max: 6 },
     aisleWidth: { min: 1500, max: 4000 },
     firstBeamHeight: { min: 200, max: 2500 },
   },

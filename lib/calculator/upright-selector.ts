@@ -6,8 +6,8 @@ import { selectBracingType } from './bracing-calculator';
 import type { UprightSelection } from './types';
 
 export function selectUpright(params: {
-  palletsPerBay: number;
-  levels: number;         // total storage levels (including ground if hasGroundLevel)
+  palletsPerLevel: number;
+  beamLevels: number;
   loadPerPallet: number;
   palletDepth: number;
   palletHeight: number;
@@ -15,19 +15,17 @@ export function selectUpright(params: {
   beamHeightMm: number;
   hasGroundLevel: boolean;
 }): UprightSelection | null {
-  const { palletsPerBay, levels, loadPerPallet, palletHeight, firstBeamHeightMm, beamHeightMm, hasGroundLevel } = params;
+  const { palletsPerLevel, beamLevels, loadPerPallet, palletHeight, firstBeamHeightMm, beamHeightMm, hasGroundLevel } = params;
 
   // Total load per frame pair — includes ground level pallets
-  const totalLoadKg = palletsPerBay * levels * loadPerPallet * SAFETY_FACTOR;
-
-  // Number of beam levels (ground level doesn't need beams)
-  const beamLevels = hasGroundLevel ? Math.max(0, levels - 1) : levels;
+  const totalLevels = beamLevels + (hasGroundLevel ? 1 : 0);
+  const totalLoadKg = palletsPerLevel * totalLevels * loadPerPallet * SAFETY_FACTOR;
 
   // Frame height
   const frameHeight = calculateFrameHeight(palletHeight, beamLevels, firstBeamHeightMm, beamHeightMm, hasGroundLevel);
 
   // 3. Beam load per level → thickness constraint
-  const beamLoadPerLevel = palletsPerBay * loadPerPallet * SAFETY_FACTOR;
+  const beamLoadPerLevel = palletsPerLevel * loadPerPallet * SAFETY_FACTOR;
   const requireMinThickness = beamLoadPerLevel > UPRIGHT_THICKNESS_THRESHOLD_KG;
   const minThickness = requireMinThickness ? UPRIGHT_MIN_THICKNESS_HEAVY : 0;
 

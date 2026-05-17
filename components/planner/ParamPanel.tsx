@@ -186,7 +186,7 @@ function SelectionResults() {
       {rack.hasGroundLevel && (
         <div className="text-xs text-slate-600">
           <span className="font-medium">Storage:</span>{' '}
-          Ground level + {rack.levels - 1} beam levels ({rack.levels} total)
+          Ground level + {rack.beamLevels} beam levels ({rack.beamLevels + 1} total)
         </div>
       )}
 

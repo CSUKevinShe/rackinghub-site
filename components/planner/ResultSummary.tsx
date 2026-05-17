@@ -121,7 +121,7 @@ export function ResultSummary() {
                   <p className="text-sm font-bold text-slate-800">{formatWeight(shipping.totalWeightKg)}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-slate-50/50">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                 <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                   <Container className="w-4 h-4 text-blue-600" />
                 </div>
@@ -130,16 +130,16 @@ export function ResultSummary() {
                   <p className="text-sm font-bold text-slate-800">{shipping.containerCount} × 40ft</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-slate-50/50">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                 <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                   <DollarSign className="w-4 h-4 text-green-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] text-slate-400 font-medium">Est. FOB Cost</p>
-                  <p className="text-sm font-bold text-slate-800">${shipping.totalFOBUSD.toLocaleString()}</p>
+                  <p className="text-[11px] text-slate-400 font-medium">Est. FOB (Shanghai)</p>
+                  <p className="text-sm font-bold text-slate-800">{formatCurrency(shipping.totalFOBDisplay, displayCurrency)}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-slate-50/50">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
                 <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
                   <Ship className="w-4 h-4 text-amber-600" />
                 </div>
@@ -150,7 +150,7 @@ export function ResultSummary() {
               </div>
             </div>
             <p className="text-[11px] text-slate-400 mt-3">
-              Based on 25,000 kg per 40ft container. Actual ocean freight varies by destination port and season.
+              Based on 25,000 kg per 40ft container. FOB Shanghai ¥10,000 CNY/container. Actual ocean freight varies by destination port and season.
             </p>
           </div>
         </div>

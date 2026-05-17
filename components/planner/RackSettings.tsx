@@ -6,13 +6,13 @@ import type { CurrencyCode } from '@/lib/calculator/types';
 import { NumberInput } from './NumberInput';
 import { cn } from '@/lib/utils';
 
-const CURRENCY_LABELS: Record<CurrencyCode, string> = {
-  USD: '$ USD',
-  EUR: '€ EUR',
-  GBP: '£ GBP',
-  AUD: 'A$ AUD',
-  CAD: 'C$ CAD',
-  CNY: '¥ CNY',
+const CURRENCY_INFO: Record<CurrencyCode, { symbol: string; country: string; defaultRate: number }> = {
+  USD: { symbol: '$', country: 'US Dollar', defaultRate: 7.25 },
+  EUR: { symbol: '€', country: 'Euro', defaultRate: 7.85 },
+  GBP: { symbol: '£', country: 'British Pound', defaultRate: 9.15 },
+  AUD: { symbol: 'A$', country: 'Australian Dollar', defaultRate: 4.75 },
+  CAD: { symbol: 'C$', country: 'Canadian Dollar', defaultRate: 5.30 },
+  CNY: { symbol: '¥', country: 'Chinese Yuan', defaultRate: 1.0 },
 };
 
 export function RackSettings() {
@@ -23,13 +23,14 @@ export function RackSettings() {
     setPallet,
     displayCurrency,
     setDisplayCurrency,
+    exchangeRate,
+    setExchangeRate,
     wireMeshDeck,
     setWireMeshDeck,
   } = usePlannerStore();
   const constraints = CONSTRAINTS.rack;
 
   const hasGroundLevel = rack.hasGroundLevel;
-  const effectiveFirstBeam = hasGroundLevel ? pallet.height : rack.firstBeamHeight;
 
   return (
     <div className="space-y-4">
@@ -70,28 +71,28 @@ export function RackSettings() {
         </button>
         {hasGroundLevel && (
           <div className="mt-2 text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
-            First beam height: <strong>{pallet.height}mm</strong> (pallet height) — ground level pallets don't need beams
+            First beam height: <strong>{pallet.height}mm</strong> (pallet height) — ground level pallets don&apos;t need beams
           </div>
         )}
       </div>
 
       <NumberInput
-        label="Number of Levels"
-        value={rack.levels}
-        onChange={(v) => setRack({ levels: v })}
-        min={constraints.levels.min}
-        max={constraints.levels.max}
+        label="Beam Levels"
+        value={rack.beamLevels}
+        onChange={(v) => setRack({ beamLevels: v })}
+        min={constraints.beamLevels.min}
+        max={constraints.beamLevels.max}
         step={1}
         unit="levels"
-        hint={hasGroundLevel ? `Total storage levels: ${rack.levels} (${rack.levels - 1} beam + 1 ground)` : undefined}
+        hint={hasGroundLevel ? `Total storage levels: ${rack.beamLevels + 1} (${rack.beamLevels} beam + 1 ground)` : undefined}
       />
 
       <NumberInput
-        label="Pallets per Bay"
-        value={rack.palletsPerBay}
-        onChange={(v) => setRack({ palletsPerBay: v })}
-        min={constraints.palletsPerBay.min}
-        max={constraints.palletsPerBay.max}
+        label="Pallets per Level"
+        value={rack.palletsPerLevel}
+        onChange={(v) => setRack({ palletsPerLevel: v })}
+        min={constraints.palletsPerLevel.min}
+        max={constraints.palletsPerLevel.max}
         step={1}
         unit="pallets"
       />
@@ -159,22 +160,54 @@ export function RackSettings() {
         <label className="text-sm font-medium text-slate-700 block mb-2">
           Display Currency
         </label>
-        <div className="grid grid-cols-3 gap-2">
-          {(Object.keys(EXCHANGE_RATES) as CurrencyCode[]).map((currency) => (
-            <button
-              key={currency}
-              type="button"
-              onClick={() => setDisplayCurrency(currency)}
-              className={cn(
-                'px-2 py-1.5 rounded-lg text-center text-xs font-medium transition-all',
-                displayCurrency === currency
-                  ? 'bg-primary-950 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              )}
-            >
-              {CURRENCY_LABELS[currency]}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-1.5 mb-3">
+          {(Object.keys(EXCHANGE_RATES) as CurrencyCode[]).map((currency) => {
+            const info = CURRENCY_INFO[currency];
+            return (
+              <button
+                key={currency}
+                type="button"
+                onClick={() => setDisplayCurrency(currency)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-all',
+                  displayCurrency === currency
+                    ? 'bg-primary-950 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                )}
+              >
+                <span className="text-sm font-bold w-6">{info.symbol}</span>
+                <span className="text-xs font-medium">{info.country}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Exchange Rate Input */}
+        <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2">
+          <label className="text-xs text-slate-500 shrink-0">
+            1 {displayCurrency} =
+          </label>
+          <input
+            type="number"
+            value={exchangeRate}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              if (!isNaN(v) && v > 0) {
+                setExchangeRate(v);
+              }
+            }}
+            step={0.01}
+            min={0.01}
+            className="flex-1 h-7 px-2 text-center text-xs font-mono border border-slate-200 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none bg-white"
+          />
+          <span className="text-xs text-slate-500 shrink-0">CNY</span>
+          <button
+            type="button"
+            onClick={() => setExchangeRate(CURRENCY_INFO[displayCurrency].defaultRate)}
+            className="text-[10px] text-primary-600 hover:text-primary-800 font-medium shrink-0"
+          >
+            Reset
+          </button>
         </div>
       </div>
     </div>

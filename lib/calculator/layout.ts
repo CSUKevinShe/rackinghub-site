@@ -24,15 +24,15 @@ export function calculateLayout(input: PlannerInput): LayoutData {
 
   // Bay width with precise gaps
   const bayWidth =
-    rack.palletsPerBay * pallet.width +
-    (rack.palletsPerBay - 1) * SPACING.palletToPallet +
+    rack.palletsPerLevel * pallet.width +
+    (rack.palletsPerLevel - 1) * SPACING.palletToPallet +
     2 * SPACING.palletToUpright;
 
   // Rack height based on first beam height
   const beamSectionHeight = 120; // default beam section height
   const lastLevelBeamBottom =
     rack.firstBeamHeight +
-    (rack.levels - 1) * (pallet.height + SPACING.topClearance);
+    (rack.beamLevels - 1) * (pallet.height + SPACING.topClearance);
   const rackHeight = lastLevelBeamBottom + beamSectionHeight + SPACING.topClearance;
 
   // Validate height
@@ -309,7 +309,7 @@ export function validateLayout(
   const beamSectionHeight = beamSelection?.heightMm ?? 120;
   const lastLevelBeamBottom =
     rack.firstBeamHeight +
-    (rack.levels - 1) * (pallet.height + SPACING.topClearance);
+    (rack.beamLevels - 1) * (pallet.height + SPACING.topClearance);
   const rackHeight = lastLevelBeamBottom + beamSectionHeight + SPACING.topClearance;
 
   const clearanceToCeiling = warehouse.height - rackHeight;

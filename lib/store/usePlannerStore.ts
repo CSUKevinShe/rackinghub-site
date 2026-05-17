@@ -62,6 +62,7 @@ interface PlannerState {
   setPallet: (partial: Partial<PalletParams>) => void;
   setWireMeshDeck: (enabled: boolean) => void;
   setDisplayCurrency: (currency: CurrencyCode) => void;
+  setExchangeRate: (rate: number) => void;
   calculate: () => void;
   reset: () => void;
 }
@@ -140,6 +141,11 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     get().calculate();
   },
 
+  setExchangeRate: (rate) => {
+    set({ exchangeRate: rate });
+    get().calculate();
+  },
+
   calculate: () => {
     const state = get();
 
@@ -158,29 +164,24 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
         displayCurrency: state.displayCurrency,
       };
 
-      // Effective levels for beam calculation (exclude ground level)
-      const beamLevels = state.rack.hasGroundLevel
-        ? Math.max(0, state.rack.levels - 1)
-        : state.rack.levels;
-
       // 1. Calculate layout
       const layout = calculateLayout(input);
 
       // 2. Select beam (only if there are beam levels)
       let beamSelection: BeamSelection | null = null;
-      if (beamLevels > 0) {
+      if (state.rack.beamLevels > 0) {
         beamSelection = selectBeam({
-          palletsPerBay: state.rack.palletsPerBay,
+          palletsPerLevel: state.rack.palletsPerLevel,
           palletWidth: state.pallet.width,
           loadPerPallet: state.pallet.loadPerPallet,
         });
       }
 
       // 3. Select upright (auto-selects material)
-      // Total load includes ground level if applicable
+      const totalLevels = state.rack.beamLevels + (state.rack.hasGroundLevel ? 1 : 0);
       const uprightSelection = selectUpright({
-        palletsPerBay: state.rack.palletsPerBay,
-        levels: state.rack.levels,
+        palletsPerLevel: state.rack.palletsPerLevel,
+        beamLevels: state.rack.beamLevels,
         loadPerPallet: state.pallet.loadPerPallet,
         palletDepth: state.pallet.depth,
         palletHeight: state.pallet.height,
@@ -192,6 +193,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       // 4. Generate BOM
       const bom = generateBOMFromLayout(input, layout, beamSelection, uprightSelection, {
         wireMeshDeck: state.wireMeshDeck,
+        hasGroundLevel: state.rack.hasGroundLevel,
       });
 
       // 5. Validate
@@ -201,10 +203,10 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       const summary = calculateSummaryFromResults(input, layout, bom, {
         hasGroundLevel: state.rack.hasGroundLevel,
       });
-      const rate = EXCHANGE_RATES[state.displayCurrency] ?? EXCHANGE_RATES.USD;
+      const rate = state.exchangeRate ?? EXCHANGE_RATES[state.displayCurrency];
       const totalExFactoryCNY = bom.reduce((s, item) => s + item.totalCost, 0);
       const totalWeightKg = bom.reduce((s, item) => s + item.totalWeight, 0);
-      const shipping = calculateShipping(totalWeightKg);
+      const shipping = calculateShipping(totalWeightKg, state.exchangeRate);
 
       // Convert BOM costs from CNY to display currency
       const bomDisplay = bom.map(item => ({
