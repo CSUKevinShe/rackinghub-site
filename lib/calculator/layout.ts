@@ -85,6 +85,15 @@ export function calculateLayout(input: PlannerInput): LayoutData {
     rackType
   );
 
+  // Generate column positions when columnSpacing > 0
+  const { columnPositions, rackRowPositions } = generateColumnPositions(
+    effectiveLength,
+    layoutResult,
+    frameDepth,
+    rack.aisleWidth,
+    warehouse.columnSpacing
+  );
+
   const warehouseArea = (warehouse.length * warehouse.width) / 1e6;
   const rackingArea =
     (layoutResult.baysPerRow * bayWidth * layoutResult.rackRows * frameDepth) /
@@ -102,6 +111,8 @@ export function calculateLayout(input: PlannerInput): LayoutData {
     rackingArea: Math.round(rackingArea),
     warehouseArea: Math.round(warehouseArea),
     utilization: Math.round(utilization * 10) / 10,
+    columnPositions,
+    rackRowPositions,
   };
 }
 
@@ -294,6 +305,52 @@ function generateLayoutElements(
   }
 
   return elements;
+}
+
+/** Generate column positions when columnSpacing > 0 */
+function generateColumnPositions(
+  effectiveLength: number,
+  layout: { rackRows: number; aisles: number; rackBlocks: number; baysPerRow: number },
+  frameDepth: number,
+  aisleWidth: number,
+  columnSpacing: number
+): { columnPositions: { x: number; y: number }[]; rackRowPositions: { index: number; y: number; height: number }[] } {
+  if (columnSpacing <= 0) {
+    return { columnPositions: [], rackRowPositions: [] };
+  }
+
+  // Calculate rack row Y positions (same logic as generateLayoutElements)
+  const rackRowPositions: { index: number; y: number; height: number }[] = [];
+  let currentY = 0;
+
+  // First row
+  rackRowPositions.push({ index: 0, y: currentY, height: frameDepth });
+  currentY += frameDepth;
+
+  for (let block = 0; block < layout.rackBlocks; block++) {
+    rackRowPositions.push({ index: rackRowPositions.length, y: currentY, height: frameDepth });
+    currentY += frameDepth;
+    currentY += aisleWidth;
+    rackRowPositions.push({ index: rackRowPositions.length, y: currentY, height: frameDepth });
+    currentY += frameDepth;
+  }
+
+  // For selective: check if there's an end row
+  if (layout.rackRows > rackRowPositions.length) {
+    currentY += aisleWidth;
+    rackRowPositions.push({ index: rackRowPositions.length, y: currentY, height: frameDepth });
+  }
+
+  // Generate column positions at columnSpacing intervals along the length,
+  // aligned with each rack row
+  const columnPositions: { x: number; y: number }[] = [];
+  for (const row of rackRowPositions) {
+    for (let x = columnSpacing; x < effectiveLength; x += columnSpacing) {
+      columnPositions.push({ x, y: row.y });
+    }
+  }
+
+  return { columnPositions, rackRowPositions };
 }
 
 /** Validate layout and generate warnings */

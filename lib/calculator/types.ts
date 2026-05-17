@@ -155,6 +155,10 @@ export interface LayoutData {
   warehouseArea: number;
   /** Space utilization percentage */
   utilization: number;
+  /** Column positions when columnSpacing > 0, in mm from warehouse origin */
+  columnPositions?: { x: number; y: number }[];
+  /** Y positions of each rack row for column alignment */
+  rackRowPositions?: { index: number; y: number; height: number }[];
 }
 
 /** Plan summary (for display) */
