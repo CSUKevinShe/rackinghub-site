@@ -101,7 +101,7 @@ function findProfileMatch(beamCode: string): { weight: number } | null {
   // Search PROFILES for matching Step Beam profile
   const key = `${height}x${width}`;
   const profile = PROFILES[key];
-  if (profile && ['Box Beam', 'Step Beam', 'HS Beam'].includes(profile.category) && profile.weight !== undefined) {
+  if (profile && ['Box Beam', 'P梁', '美制P梁', '矩管'].includes(profile.category) && profile.weight !== undefined) {
     return { weight: profile.weight };
   }
 
