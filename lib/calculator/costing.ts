@@ -92,31 +92,20 @@ export function generateBOMFromLayout(
   }
 
   // 2. Box Beams (only for beam levels, not ground level)
+  // Includes beam profile + connector pair (柱卡)
   if (beamSelection && beamLevels > 0) {
-    const beamWeight = beamSelection.weightPerMeter * beamLength / 1000;
-    const beamCost = beamWeight * COST_REFERENCE.q235PricePerKg; // beams are Q235
+    const beamProfileWeight = beamSelection.weightPerMeter * beamLength / 1000;
+    const connectorWeight = beamSelection.heightMm >= 150 ? 1.51 : 1.10; // DE75-4H or DE75-3H pair
+    const unitWeight = beamProfileWeight + connectorWeight;
+    const unitCost = unitWeight * COST_REFERENCE.q235PricePerKg; // beams + connectors are Q235
     bom.push({
-      description: `Box Beam ${beamSelection.profileCode} (L=${beamLength}mm)`,
+      description: `Box Beam ${beamSelection.profileCode} (L=${beamLength}mm) + ${beamSelection.heightMm >= 150 ? 'DE75-4H' : 'DE75-3H'} connectors`,
       unit: 'pcs',
       quantity: totalBeams,
-      unitWeight: Math.round(beamWeight * 100) / 100,
-      totalWeight: Math.round(beamWeight * totalBeams * 100) / 100,
-      unitCost: Math.round(beamCost * 100) / 100,
-      totalCost: Math.round(beamCost * totalBeams * 100) / 100,
-      category: 'beam',
-    });
-
-    // Beam connectors (柱卡) — one pair per beam
-    const connectorWeight = beamSelection.heightMm >= 150 ? 1.51 : 1.10; // DE75-4H or DE75-3H
-    const connectorCost = connectorWeight * materialPricePerKg;
-    bom.push({
-      description: `Beam Connector Pair (${beamSelection.heightMm >= 150 ? 'DE75-4H' : 'DE75-3H'})`,
-      unit: 'pairs',
-      quantity: totalBeams,
-      unitWeight: connectorWeight,
-      totalWeight: Math.round(connectorWeight * totalBeams * 100) / 100,
-      unitCost: Math.round(connectorCost * 100) / 100,
-      totalCost: Math.round(connectorCost * totalBeams * 100) / 100,
+      unitWeight: Math.round(unitWeight * 100) / 100,
+      totalWeight: Math.round(unitWeight * totalBeams * 100) / 100,
+      unitCost: Math.round(unitCost * 100) / 100,
+      totalCost: Math.round(unitCost * totalBeams * 100) / 100,
       category: 'beam',
     });
   }

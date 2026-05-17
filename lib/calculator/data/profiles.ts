@@ -175,8 +175,8 @@ export const PROFILES: Record<string, Profile> = {
   },
   "150x50": {
     thickness: 1.5,
-    expanded: 255,
-    weight: 3.0026,
+    expanded: 510,
+    weight: 6.01,
     Ix: 247.98,
     Iy: 32.05,
     category: "Step Beam"
@@ -633,8 +633,8 @@ export const UPRIGHT_WEIGHTS: Record<string, { thickness: number; weight: number
   "90*70 (2.0)": { thickness: 2.0, weight: 3.92 },
   "90*70 (2.3)": { thickness: 2.3, weight: 4.50 },
   // 100*70 series
-  "100*70(2.3)": { thickness: 2.3, weight: 5.30 },
-  "100*70(2.5)": { thickness: 2.5, weight: 5.70 },
+  "100*70(2.3)": { thickness: 2.3, weight: 4.87 },
+  "100*70(2.5)": { thickness: 2.5, weight: 5.30 },
   // 120*70 series
   "120*70(2.3)": { thickness: 2.3, weight: 5.69 },
   "120*70(2.5)": { thickness: 2.5, weight: 6.15 },
