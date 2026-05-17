@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { usePlannerStore } from '@/lib/store/usePlannerStore';
 import { formatMm } from '@/lib/utils';
 
@@ -42,17 +42,17 @@ export function LayoutCanvas() {
   const svgWidth = 700;
   const padding = 50;
 
+  const viewProps = { view, setView, rackType };
+
   if (view === 'top') {
     return (
       <TopView
+        {...viewProps}
         layout={layout}
-        rackType={rackType}
         svgWidth={svgWidth}
         padding={padding}
         bayWidth={bayWidth}
         frameDepth={frameDepth}
-        view={view}
-        setView={setView}
       />
     );
   }
@@ -60,8 +60,7 @@ export function LayoutCanvas() {
   if (view === 'front') {
     return (
       <FrontView
-        layout={layout}
-        rackType={rackType}
+        {...viewProps}
         svgWidth={svgWidth}
         padding={padding}
         bayWidth={bayWidth}
@@ -69,20 +68,20 @@ export function LayoutCanvas() {
         beamSectionHeight={beamSectionHeight}
         firstBeamBottom={firstBeamBottom}
         palletHeight={pallet.height}
+        palletWidth={pallet.width}
         beamLevels={rack.beamLevels}
         hasGroundLevel={rack.hasGroundLevel}
         palletsPerLevel={rack.palletsPerLevel}
         totalLevels={totalLevels}
-        view={view}
-        setView={setView}
+        baysPerRow={layout.baysPerRow}
+        uprightSelection={uprightSelection}
       />
     );
   }
 
   return (
     <SideView
-      layout={layout}
-      rackType={rackType}
+      {...viewProps}
       svgWidth={svgWidth}
       padding={padding}
       frameDepth={frameDepth}
@@ -96,32 +95,30 @@ export function LayoutCanvas() {
       palletsPerLevel={rack.palletsPerLevel}
       totalLevels={totalLevels}
       uprightSelection={uprightSelection}
-      view={view}
-      setView={setView}
     />
   );
 }
 
 // ============================================================
-// Shared view selector component
+// Shared view selector
 // ============================================================
 function ViewSelector({ view, setView }: { view: ViewType; setView: (v: ViewType) => void }) {
-  const views: { key: ViewType; label: string; icon: string }[] = [
-    { key: 'top', label: 'Top View', icon: '⊤' },
-    { key: 'front', label: 'Front View', icon: '⊥' },
-    { key: 'side', label: 'Side View', icon: '◧' },
+  const views: { key: ViewType; label: string }[] = [
+    { key: 'top', label: 'Plan' },
+    { key: 'front', label: 'Front' },
+    { key: 'side', label: 'Side' },
   ];
   return (
-    <div className="flex items-center gap-1">
+    <div className="inline-flex bg-slate-100 rounded-lg p-0.5">
       {views.map((v) => (
         <button
           key={v.key}
           type="button"
           onClick={() => setView(v.key)}
-          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+          className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
             view === v.key
-              ? 'bg-primary-950 text-white'
-              : 'text-slate-500 hover:bg-slate-100'
+              ? 'bg-white text-slate-800 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
           }`}
         >
           {v.label}
@@ -132,7 +129,7 @@ function ViewSelector({ view, setView }: { view: ViewType; setView: (v: ViewType
 }
 
 // ============================================================
-// Top-down view (existing)
+// Top-down plan view
 // ============================================================
 function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView }: any) {
   const scale = Math.min(
@@ -146,14 +143,14 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
       <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="text-xs font-medium text-slate-600">Warehouse Layout</span>
+          <span className="text-xs font-medium text-slate-600">Floor Plan</span>
         </div>
         <div className="flex items-center gap-4">
           <ViewSelector view={view} setView={setView} />
           <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span>{formatMm(layout.warehouseLength)} × {formatMm(layout.warehouseWidth)}</span>
-            <span>{layout.rackRows} rows</span>
-            <span>{layout.aisles} aisles</span>
+            <span>{formatMm(layout.warehouseLength)} x {formatMm(layout.warehouseWidth)}</span>
+            <span>{layout.rackRows} row{layout.rackRows > 1 ? 's' : ''}</span>
+            <span>{layout.aisles} aisle{layout.aisles > 1 ? 's' : ''}</span>
           </div>
         </div>
       </div>
@@ -165,39 +162,48 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
           </pattern>
         </defs>
         <g transform={`translate(${padding}, ${padding})`}>
-          <rect width={layout.warehouseLength / 1000 * scale} height={layout.warehouseWidth / 1000 * scale} fill="url(#grid)" />
+          {/* Warehouse outline */}
+          <rect
+            x={0} y={0}
+            width={layout.warehouseLength / 1000 * scale}
+            height={layout.warehouseWidth / 1000 * scale}
+            fill="#f8fafc" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="8 4" rx="4"
+          />
+          {/* Dimension labels */}
+          <text x={layout.warehouseLength / 1000 * scale / 2} y={-8} textAnchor="middle" fontSize="9" fill="#94a3b8">{formatMm(layout.warehouseLength)}</text>
+          <text x={-8} y={layout.warehouseWidth / 1000 * scale / 2} textAnchor="middle" fontSize="9" fill="#94a3b8" transform={`rotate(-90, -8, ${layout.warehouseWidth / 1000 * scale / 2})`}>{formatMm(layout.warehouseWidth)}</text>
+
           {layout.elements.map((el: any, i: number) => {
             const x = (el.x / 1000) * scale;
             const y = (el.y / 1000) * scale;
             const w = (el.width / 1000) * scale;
             const h = (el.height / 1000) * scale;
-            if (el.type === 'wall') {
-              return (
-                <g key={i}>
-                  <rect x={x} y={y} width={w} height={h} fill="#f8fafc" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="8 4" rx="4" />
-                  <text x={x + w / 2} y={y - 8} textAnchor="middle" fontSize="9" fill="#94a3b8">{formatMm(layout.warehouseLength)}</text>
-                  <text x={x - 8} y={y + h / 2} textAnchor="middle" fontSize="9" fill="#94a3b8" transform={`rotate(-90, ${x - 8}, ${y + h / 2})`}>{formatMm(layout.warehouseWidth)}</text>
-                </g>
-              );
-            }
+
             if (el.type === 'aisle') {
               return (
                 <g key={i}>
-                  <rect x={x} y={y} width={w} height={h} fill="#f1f5f9" stroke="none" />
+                  <rect x={x} y={y} width={w} height={h} fill="#f1f5f9" />
                   <text x={x + w / 2} y={y + h / 2 + 3} textAnchor="middle" fontSize="8" fill="#cbd5e1">{el.label}</text>
                 </g>
               );
             }
             if (el.type === 'rack-row') {
               const color = el.color || '#3b82f6';
-              const labelX = Math.max(2, x - 4);
+              // Draw rack row with individual bay dividers
+              const bayWidthPx = (bayWidth / 1000) * scale;
+              const frameDepthPx = (frameDepth / 1000) * scale;
               return (
                 <g key={i}>
-                  <rect x={x} y={y} width={w} height={h} fill={color} fillOpacity="0.15" stroke={color} strokeWidth="1.5" rx="2" />
-                  {Array.from({ length: Math.floor(w / (1000 * scale)) - 1 }).map((_, j) => (
-                    <line key={j} x1={x + (j + 1) * 1000 * scale} y1={y} x2={x + (j + 1) * 1000 * scale} y2={y + h} stroke={color} strokeWidth="0.5" strokeOpacity="0.4" />
+                  <rect x={x} y={y} width={w} height={h} fill={color} fillOpacity="0.08" />
+                  {/* Bay dividers (upright positions) */}
+                  {Array.from({ length: Math.floor(w / bayWidthPx) + 1 }).map((_, j) => (
+                    <line key={`bay-${j}`} x1={x + j * bayWidthPx} y1={y} x2={x + j * bayWidthPx} y2={y + frameDepthPx} stroke={color} strokeWidth="2" strokeOpacity="0.6" />
                   ))}
-                  {el.label && <text x={labelX} y={y + h / 2 + 3} textAnchor="end" fontSize="8" fill="#94a3b8">{el.label}</text>}
+                  {/* Top/bottom edges */}
+                  <line x1={x} y1={y} x2={x + w} y2={y} stroke={color} strokeWidth="1" strokeOpacity="0.4" />
+                  <line x1={x} y1={y + frameDepthPx} x2={x + w} y2={y + frameDepthPx} stroke={color} strokeWidth="1" strokeOpacity="0.4" />
+                  {/* Row label */}
+                  <text x={x + 4} y={y + frameDepthPx / 2 + 3} fontSize="7" fill={color} fillOpacity="0.7">{el.label}</text>
                 </g>
               );
             }
@@ -227,29 +233,31 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
 // ============================================================
 // Front elevation view
 // ============================================================
-function FrontView({ layout, rackType, svgWidth, padding, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, view, setView }: any) {
+function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, palletWidth, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, baysPerRow, uprightSelection, view, setView }: any) {
+  const maxDisplayBays = Math.min(baysPerRow, 10);
+  const totalWidthMm = bayWidth * maxDisplayBays;
+
   const scale = Math.min(
-    (svgWidth - padding * 2) / (bayWidth / 1000 * Math.min(layout.baysPerRow, 8)),
-    400 / (frameHeight / 1000)
+    (svgWidth - padding * 2) / (totalWidthMm / 1000),
+    450 / (frameHeight / 1000)
   );
 
-  const displayBays = Math.min(layout.baysPerRow, 8);
-  const displayWidth = bayWidth * displayBays;
-  const svgHeight = Math.max(350, (frameHeight / 1000) * scale + padding * 2 + 30);
+  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 40);
+  const totalPx = totalWidthMm / 1000 * scale;
+  const frameHPx = frameHeight / 1000 * scale;
+  const uprightPx = Math.max(6, Math.min(16, totalPx / maxDisplayBays * 0.04));
+  const beamHPx = Math.max(3, Math.min(10, beamSectionHeight / 1000 * scale));
+  const palletHPx = palletHeight / 1000 * scale;
+  const palletWPx = palletWidth / 1000 * scale;
 
-  const beamLevelYPositions: number[] = [];
+  // Calculate beam level positions from bottom (y=0 at ground)
+  const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) {
-    beamLevelYPositions.push(0); // ground level at bottom
+    levels.push({ bottomMm: 0, isGround: true });
   }
   for (let i = 0; i < beamLevels; i++) {
-    const beamBottom = firstBeamBottom + i * (palletHeight + 100);
-    beamLevelYPositions.push(beamBottom);
+    levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
-
-  const frameW = 30; // upright width in px (visual)
-  const palletW = (bayWidth / palletsPerLevel - 100 - 200 / palletsPerLevel) / 1000 * scale;
-  const palletH = palletHeight / 1000 * scale;
-  const beamH = beamSectionHeight / 1000 * scale;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -261,138 +269,114 @@ function FrontView({ layout, rackType, svgWidth, padding, bayWidth, frameHeight,
         <div className="flex items-center gap-4">
           <ViewSelector view={view} setView={setView} />
           <span className="text-xs text-slate-400">
-            {displayBays} bay{displayBays > 1 ? 's' : ''} shown · {totalLevels} levels ({beamLevels} beam{hasGroundLevel ? ' + ground' : ''})
+            {maxDisplayBays} of {baysPerRow} bays shown
           </span>
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full" style={{ minHeight: 350 }}>
+      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full" style={{ minHeight: 400 }}>
         <defs>
-          <pattern id="grid-front" width={1000 * scale} height={1000 * scale} patternUnits="userSpaceOnUse">
-            <path d={`M ${1000 * scale} 0 L 0 0 0 ${1000 * scale}`} fill="none" stroke="#f1f5f9" strokeWidth="0.5" />
+          <pattern id="grid-front" width={1000 * scale} height={500 * scale} patternUnits="userSpaceOnUse">
+            <path d={`M ${1000 * scale} 0 L 0 0 0 ${500 * scale}`} fill="none" stroke="#f1f5f9" strokeWidth="0.3" />
           </pattern>
         </defs>
         <g transform={`translate(${padding}, ${padding + 10})`}>
-          <rect width={displayWidth / 1000 * scale} height={frameHeight / 1000 * scale} fill="url(#grid-front)" />
+          {/* Grid background */}
+          <rect width={totalPx} height={frameHPx} fill="url(#grid-front)" />
 
-          {/* Upright frames */}
-          {Array.from({ length: displayBays + 1 }).map((_, i) => {
-            const xPos = (i * bayWidth / 1000 * scale);
-            return (
-              <rect
-                key={`upright-${i}`}
-                x={xPos - frameW / 2}
-                y={0}
-                width={frameW}
-                height={frameHeight / 1000 * scale}
-                fill="#64748b"
-                rx="2"
-              />
-            );
-          })}
+          {/* Floor line */}
+          <line x1={-10} y1={frameHPx} x2={totalPx + 10} y2={frameHPx} stroke="#94a3b8" strokeWidth="2" />
+          <line x1={-10} y1={frameHPx + 2} x2={totalPx + 10} y2={frameHPx + 2} stroke="#cbd5e1" strokeWidth="0.5" />
 
-          {/* Pallets and beams per level */}
-          {beamLevelYPositions.map((beamBottom, levelIdx) => {
-            const yPos = (frameHeight - beamBottom - palletHeight) / 1000 * scale;
-            const beamY = (frameHeight - beamBottom) / 1000 * scale - beamH / 2;
-
-            // Ground level has no beams
-            const isGround = hasGroundLevel && levelIdx === 0;
+          {/* Each bay */}
+          {Array.from({ length: maxDisplayBays }).map((_, bayIdx) => {
+            const bayStartX = bayIdx * bayWidth / 1000 * scale;
+            const bayEndX = (bayIdx + 1) * bayWidth / 1000 * scale;
+            const bayCenterX = (bayStartX + bayEndX) / 2;
 
             return (
-              <g key={`level-${levelIdx}`}>
-                {/* Beam (skip for ground level) */}
-                {!isGround && (
-                  <rect
-                    x={0}
-                    y={beamY}
-                    width={displayWidth / 1000 * scale}
-                    height={beamH}
-                    fill="#f59e0b"
-                    fillOpacity="0.8"
-                    rx="1"
-                  />
+              <g key={`bay-${bayIdx}`}>
+                {/* Left upright */}
+                {bayIdx === 0 && (
+                  <rect x={-uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill="#475569" rx="1" />
+                )}
+                <rect x={bayStartX - uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill="#475569" rx="1" />
+                {/* Right upright (last bay only) */}
+                {bayIdx === maxDisplayBays - 1 && (
+                  <rect x={bayEndX - uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill="#475569" rx="1" />
                 )}
 
-                {/* Pallets */}
-                {Array.from({ length: palletsPerLevel }).map((_, pi) => {
-                  const pxStart = ((pi * bayWidth / palletsPerLevel + 100) / 1000 * scale);
+                {/* Pallets and beams at each level */}
+                {levels.map((lvl, lvlIdx) => {
+                  const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
+                  const palletTopPx = beamBottomPx - palletHPx;
+                  const beamTopPx = beamBottomPx - beamHPx;
+
                   return (
-                    <g key={`pallet-${levelIdx}-${pi}`}>
-                      <rect
-                        x={pxStart}
-                        y={yPos}
-                        width={palletW}
-                        height={palletH}
-                        fill="#3b82f6"
-                        fillOpacity="0.2"
-                        stroke="#3b82f6"
-                        strokeWidth="1"
-                        strokeOpacity="0.5"
-                        rx="2"
-                      />
-                      {/* Pallet base line */}
-                      <line
-                        x1={pxStart}
-                        y1={yPos + palletH}
-                        x2={pxStart + palletW}
-                        y2={yPos + palletH}
-                        stroke="#3b82f6"
-                        strokeWidth="1.5"
-                        strokeOpacity="0.6"
-                      />
+                    <g key={`lvl-${lvlIdx}`}>
+                      {/* Beam (skip ground level) */}
+                      {!lvl.isGround && (
+                        <>
+                          <rect x={bayStartX} y={beamTopPx} width={bayEndX - bayStartX} height={beamHPx} fill="#d97706" fillOpacity="0.7" rx="0.5" />
+                          {/* Beam connector dots at upright */}
+                          <circle cx={bayStartX} cy={beamTopPx + beamHPx / 2} r={1.5} fill="#b45309" />
+                        </>
+                      )}
+
+                      {/* Pallets in this bay */}
+                      {Array.from({ length: palletsPerLevel }).map((_, pIdx) => {
+                        const palletGap = 100 / 1000 * scale;
+                        const palletStartX = bayStartX + 100 / 1000 * scale + pIdx * (palletWPx + palletGap);
+                        return (
+                          <g key={`p-${lvlIdx}-${pIdx}`}>
+                            <rect x={palletStartX} y={palletTopPx} width={palletWPx} height={palletHPx} fill="#3b82f6" fillOpacity="0.12" stroke="#3b82f6" strokeWidth="0.8" strokeOpacity="0.4" rx="1" />
+                            {/* Pallet base line */}
+                            <line x1={palletStartX} y1={palletTopPx + palletHPx} x2={palletStartX + palletWPx} y2={palletTopPx + palletHPx} stroke="#3b82f6" strokeWidth="1.2" strokeOpacity="0.5" />
+                            {/* Load indicator */}
+                            <text x={palletStartX + palletWPx / 2} y={palletTopPx + palletHPx / 2 + 3} textAnchor="middle" fontSize="6" fill="#3b82f6" fillOpacity="0.5">
+                              {palletWPx > 20 ? `${(palletWPx / scale * 1000).toFixed(0)}` : ''}
+                            </text>
+                          </g>
+                        );
+                      })}
                     </g>
                   );
                 })}
-
-                {/* Level label */}
-                <text
-                  x={-4}
-                  y={beamY + beamH / 2 + 3}
-                  textAnchor="end"
-                  fontSize="7"
-                  fill="#94a3b8"
-                >
-                  {isGround ? 'G' : `L${levelIdx}`}
-                </text>
               </g>
             );
           })}
 
-          {/* Dimension: frame height */}
-          <line
-            x1={displayWidth / 1000 * scale + 15}
-            y1={0}
-            x2={displayWidth / 1000 * scale + 15}
-            y2={frameHeight / 1000 * scale}
-            stroke="#cbd5e1"
-            strokeWidth="1"
-            markerEnd="url(#arrowhead)"
-          />
-          <text
-            x={displayWidth / 1000 * scale + 20}
-            y={frameHeight / 1000 * scale / 2}
-            textAnchor="start"
-            fontSize="8"
-            fill="#94a3b8"
-            transform={`rotate(90, ${displayWidth / 1000 * scale + 20}, ${frameHeight / 1000 * scale / 2})`}
-          >
-            {formatMm(frameHeight)}
-          </text>
+          {/* Height dimension on right */}
+          <line x1={totalPx + 12} y1={0} x2={totalPx + 12} y2={frameHPx} stroke="#cbd5e1" strokeWidth="0.8" />
+          <line x1={totalPx + 8} y1={0} x2={totalPx + 16} y2={0} stroke="#cbd5e1" strokeWidth="0.8" />
+          <line x1={totalPx + 8} y1={frameHPx} x2={totalPx + 16} y2={frameHPx} stroke="#cbd5e1" strokeWidth="0.8" />
+          <text x={totalPx + 18} y={frameHPx / 2 + 3} textAnchor="start" fontSize="8" fill="#94a3b8">{formatMm(frameHeight)}</text>
+
+          {/* Level labels on left */}
+          {levels.map((lvl, i) => {
+            const y = (frameHeight - lvl.bottomMm) / 1000 * scale;
+            return (
+              <g key={`lbl-${i}`}>
+                <text x={-6} y={y + 3} textAnchor="end" fontSize="7" fill="#94a3b8">
+                  {lvl.isGround ? 'G' : `L${lvl.isGround ? '' : i - (hasGroundLevel ? 1 : 0)}`}
+                </text>
+              </g>
+            );
+          })}
         </g>
       </svg>
 
       <div className="px-4 py-2.5 border-t border-slate-100 flex items-center gap-6 text-xs text-slate-500">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-slate-500" />
+          <div className="w-3 h-3 rounded-sm bg-slate-600" />
           Upright Frame
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-amber-400" />
+          <div className="w-3 h-3 rounded-sm bg-amber-600" />
           Beam
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#3b82f6', opacity: 0.2, border: '1.5px solid #3b82f6' }} />
+          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#3b82f6', opacity: 0.12, border: '1px solid #3b82f6' }} />
           Pallet
         </div>
       </div>
@@ -403,21 +387,29 @@ function FrontView({ layout, rackType, svgWidth, padding, bayWidth, frameHeight,
 // ============================================================
 // Side elevation view
 // ============================================================
-function SideView({ layout, rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, uprightSelection, view, setView }: any) {
+function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, uprightSelection, view, setView }: any) {
   const scale = Math.min(
-    (svgWidth - padding * 2) / (frameDepth / 1000),
-    400 / (frameHeight / 1000)
+    (svgWidth - padding * 2) / Math.max(frameDepth / 1000, 0.8),
+    450 / (frameHeight / 1000)
   );
 
-  const svgHeight = Math.max(350, (frameHeight / 1000) * scale + padding * 2 + 30);
-  const displayDepth = frameDepth / 1000 * scale;
-  const uprightW = 12; // upright face width in px
+  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 40);
+  const depthPx = frameDepth / 1000 * scale;
+  const frameHPx = frameHeight / 1000 * scale;
+  const uprightPx = Math.max(8, Math.min(14, depthPx * 0.06));
+  const beamHPx = Math.max(3, Math.min(8, beamSectionHeight / 1000 * scale));
+  const palletDPx = palletDepth / 1000 * scale;
+  const palletHPx = palletHeight / 1000 * scale;
 
-  const beamLevelYPositions: number[] = [];
-  if (hasGroundLevel) beamLevelYPositions.push(0);
+  const levels: { bottomMm: number; isGround: boolean }[] = [];
+  if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
   for (let i = 0; i < beamLevels; i++) {
-    beamLevelYPositions.push(firstBeamBottom + i * (palletHeight + 100));
+    levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
+
+  const { bracingType, bracingCount } = uprightSelection || { bracingType: 'D', bracingCount: { diagonal: 8, horizontal: 2 } };
+  const nDiag = bracingCount?.diagonal || 8;
+  const nHoriz = bracingCount?.horizontal || 2;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -429,139 +421,126 @@ function SideView({ layout, rackType, svgWidth, padding, frameDepth, frameHeight
         <div className="flex items-center gap-4">
           <ViewSelector view={view} setView={setView} />
           <span className="text-xs text-slate-400">
-            Depth {formatMm(frameDepth)} · {totalLevels} levels · {uprightSelection?.bracingType || 'D'}-bracing
+            Depth {formatMm(frameDepth)} x {bracingType}-bracing ({nDiag}d {nHoriz}h)
           </span>
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full" style={{ minHeight: 350 }}>
+      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full" style={{ minHeight: 400 }}>
         <defs>
           <pattern id="grid-side" width={500 * scale} height={500 * scale} patternUnits="userSpaceOnUse">
-            <path d={`M ${500 * scale} 0 L 0 0 0 ${500 * scale}`} fill="none" stroke="#f1f5f9" strokeWidth="0.5" />
+            <path d={`M ${500 * scale} 0 L 0 0 0 ${500 * scale}`} fill="none" stroke="#f1f5f9" strokeWidth="0.3" />
           </pattern>
         </defs>
         <g transform={`translate(${padding}, ${padding + 10})`}>
-          <rect width={displayDepth} height={frameHeight / 1000 * scale} fill="url(#grid-side)" />
+          {/* Grid background */}
+          <rect width={depthPx} height={frameHPx} fill="url(#grid-side)" />
 
-          {/* Upright faces (left and right) */}
-          <rect x={0} y={0} width={uprightW} height={frameHeight / 1000 * scale} fill="#64748b" rx="1" />
-          <rect x={displayDepth - uprightW} y={0} width={uprightW} height={frameHeight / 1000 * scale} fill="#64748b" rx="1" />
+          {/* Floor line */}
+          <line x1={-10} y1={frameHPx} x2={depthPx + uprightPx + 10} y2={frameHPx} stroke="#94a3b8" strokeWidth="2" />
 
-          {/* Bracing (Z or D type) */}
-          {uprightSelection && beamLevels > 0 && (
-            <g opacity="0.4">
-              {(() => {
-                const { bracingCount, bracingType } = uprightSelection;
-                const nDiag = bracingCount.diagonal;
-                const nHoriz = bracingCount.horizontal;
-                const braceLeft = uprightW;
-                const braceRight = displayDepth - uprightW;
-                const braceWidth = braceRight - braceLeft;
-                const braceHeight = frameHeight / 1000 * scale;
-                const diagSpacing = braceHeight / (nDiag + 1);
+          {/* Left upright (front column) */}
+          <rect x={0} y={0} width={uprightPx} height={frameHPx} fill="#475569" rx="1" />
+          {/* Right upright (back column) */}
+          <rect x={depthPx - uprightPx} y={0} width={uprightPx} height={frameHPx} fill="#475569" rx="1" />
 
-                const lines: JSX.Element[] = [];
-                // Diagonal lines
-                for (let d = 0; d < nDiag; d++) {
-                  const y1 = (d + 0.5) * diagSpacing;
-                  const y2 = (d + 1.5) * diagSpacing;
-                  lines.push(
-                    <line
-                      key={`diag-${d}`}
-                      x1={braceLeft}
-                      y1={y1}
-                      x2={braceRight}
-                      y2={y2}
-                      stroke="#94a3b8"
-                      strokeWidth="1"
-                    />
-                  );
-                }
-                // Horizontal lines
+          {/* Bracing between uprights */}
+          <g opacity="0.35">
+            {(() => {
+              const innerLeft = uprightPx;
+              const innerRight = depthPx - uprightPx;
+              const innerW = innerRight - innerLeft;
+              const lines: JSX.Element[] = [];
+
+              if (bracingType === 'D') {
+                // D-type: horizontals at regular intervals, diagonals between them
+                const totalH = nHoriz + nDiag;
+                const spacing = frameHPx / totalH;
+                // Horizontal bracing
                 for (let h = 0; h < nHoriz; h++) {
-                  const y = h * (braceHeight / (nHoriz + 1));
+                  const y = (h + 1) * spacing * 2;
+                  lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke="#64748b" strokeWidth="1" />);
+                }
+                // Diagonal bracing
+                for (let d = 0; d < nDiag; d++) {
+                  const y1 = d * spacing * 2;
+                  const y2 = (d + 1) * spacing * 2;
+                  lines.push(<line key={`d-${d}`} x1={innerLeft} y1={y1} x2={innerRight} y2={y2} stroke="#64748b" strokeWidth="1" />);
+                }
+              } else {
+                // Z-type: similar but with zigzag pattern
+                const totalSegments = nDiag;
+                const segH = frameHPx / totalSegments;
+                for (let d = 0; d < nDiag; d++) {
+                  const y1 = d * segH;
+                  const y2 = (d + 1) * segH;
+                  const goRight = d % 2 === 0;
                   lines.push(
-                    <line
-                      key={`horiz-${h}`}
-                      x1={braceLeft}
-                      y1={y}
-                      x2={braceRight}
-                      y2={y}
-                      stroke="#94a3b8"
-                      strokeWidth="1"
+                    <line key={`d-${d}`}
+                      x1={goRight ? innerLeft : innerRight} y1={y1}
+                      x2={goRight ? innerRight : innerLeft} y2={y2}
+                      stroke="#64748b" strokeWidth="1"
                     />
                   );
                 }
-                return lines;
-              })()}
-            </g>
-          )}
+                for (let h = 0; h < nHoriz; h++) {
+                  const y = h * (frameHPx / (nHoriz + 1));
+                  lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke="#64748b" strokeWidth="1" />);
+                }
+              }
+              return lines;
+            })()}
+          </g>
 
-          {/* Pallets per level */}
-          {beamLevelYPositions.map((beamBottom, levelIdx) => {
-            const isGround = hasGroundLevel && levelIdx === 0;
-            const palletTopY = (frameHeight - beamBottom - palletHeight) / 1000 * scale;
-            const palletDepthPx = (palletDepth / 1000 * scale);
-            const palletX = (displayDepth - palletDepthPx) / 2;
-
-            // Beam line (skip ground)
-            const beamY = (frameHeight - beamBottom) / 1000 * scale - (beamSectionHeight / 1000 * scale) / 2;
+          {/* Beams and pallets at each level */}
+          {levels.map((lvl, lvlIdx) => {
+            const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
+            const palletTopPx = beamBottomPx - palletHPx;
+            const beamTopPx = beamBottomPx - beamHPx;
+            const palletX = (depthPx - palletDPx) / 2;
 
             return (
-              <g key={`side-level-${levelIdx}`}>
-                {!isGround && (
-                  <>
-                    <rect x={uprightW - 2} y={beamY} width={displayDepth - uprightW * 2 + 4} height={beamSectionHeight / 1000 * scale} fill="#f59e0b" fillOpacity="0.7" rx="1" />
-                  </>
+              <g key={`side-lvl-${lvlIdx}`}>
+                {/* Beam (skip ground) */}
+                {!lvl.isGround && (
+                  <rect x={0} y={beamTopPx} width={depthPx} height={beamHPx} fill="#d97706" fillOpacity="0.6" rx="0.5" />
                 )}
-                <rect
-                  x={palletX}
-                  y={palletTopY}
-                  width={palletDepthPx}
-                  height={palletHeight / 1000 * scale}
-                  fill="#3b82f6"
-                  fillOpacity="0.15"
-                  stroke="#3b82f6"
-                  strokeWidth="1"
-                  strokeOpacity="0.5"
-                  rx="2"
-                />
+                {/* Pallet (centered on frame depth) */}
+                <rect x={palletX} y={palletTopPx} width={palletDPx} height={palletHPx} fill="#3b82f6" fillOpacity="0.1" stroke="#3b82f6" strokeWidth="0.8" strokeOpacity="0.4" rx="1" />
+                {/* Pallet base line */}
+                <line x1={palletX} y1={palletTopPx + palletHPx} x2={palletX + palletDPx} y2={palletTopPx + palletHPx} stroke="#3b82f6" strokeWidth="1" strokeOpacity="0.5" />
                 {/* Level label */}
-                <text
-                  x={displayDepth + 8}
-                  y={beamY + 3}
-                  textAnchor="start"
-                  fontSize="7"
-                  fill="#94a3b8"
-                >
-                  {isGround ? 'G' : `L${levelIdx}`}
+                <text x={depthPx + 6} y={beamTopPx + beamHPx / 2 + 3} textAnchor="start" fontSize="7" fill="#94a3b8">
+                  {lvl.isGround ? 'G' : `L${lvl.isGround ? '' : lvlIdx - (hasGroundLevel ? 1 : 0)}`}
                 </text>
               </g>
             );
           })}
 
-          {/* Dimension: depth */}
-          <line x1={0} y1={frameHeight / 1000 * scale + 15} x2={displayDepth} y2={frameHeight / 1000 * scale + 15} stroke="#cbd5e1" strokeWidth="1" />
-          <text x={displayDepth / 2} y={frameHeight / 1000 * scale + 28} textAnchor="middle" fontSize="8" fill="#94a3b8">{formatMm(frameDepth)}</text>
+          {/* Depth dimension */}
+          <line x1={0} y1={frameHPx + 12} x2={depthPx} y2={frameHPx + 12} stroke="#cbd5e1" strokeWidth="0.8" />
+          <line x1={0} y1={frameHPx + 8} x2={0} y2={frameHPx + 16} stroke="#cbd5e1" strokeWidth="0.8" />
+          <line x1={depthPx} y1={frameHPx + 8} x2={depthPx} y2={frameHPx + 16} stroke="#cbd5e1" strokeWidth="0.8" />
+          <text x={depthPx / 2} y={frameHPx + 25} textAnchor="middle" fontSize="8" fill="#94a3b8">{formatMm(frameDepth)}</text>
         </g>
       </svg>
 
       <div className="px-4 py-2.5 border-t border-slate-100 flex items-center gap-6 text-xs text-slate-500">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-slate-500" />
+          <div className="w-3 h-3 rounded-sm bg-slate-600" />
           Upright
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-amber-400" />
+          <div className="w-3 h-3 rounded-sm bg-amber-600" />
           Beam
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#3b82f6', opacity: 0.15, border: '1.5px solid #3b82f6' }} />
+          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#3b82f6', opacity: 0.1, border: '1px solid #3b82f6' }} />
           Pallet
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-0.5 bg-slate-400" />
-          Bracing
+          Bracing ({bracingType}-type)
         </div>
       </div>
     </div>
