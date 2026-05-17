@@ -7,6 +7,7 @@ import type {
   UprightSelection,
 } from './types';
 import { COST_REFERENCE, RACK_TYPES, EXCHANGE_RATES, SPACING } from './config';
+import { PROFILES } from './data/profiles';
 
 // ============================================================
 // Costing Engine — real profile weights + ex-factory pricing
@@ -154,18 +155,59 @@ export function generateBOMFromLayout(
   });
 
   // 5. Bracing (cross & horizontal)
-  if (uprightSelection) {
-    const bracingWeightPerPiece = 1.0; // ~1.0 kg/m × ~1m average length
-    const totalBracingPieces = layout.rackRows * (uprightSelection.bracingCount.diagonal + uprightSelection.bracingCount.horizontal);
-    const bracingWeight = bracingWeightPerPiece * totalBracingPieces;
-    const bracingCost = bracingWeight * materialPricePerKg;
+  // Each upright frame (立柱片) has its own set of bracing
+  // Use real bracing profile weights from profiles table
+  if (uprightSelection && beamLevels > 0) {
+    const { bracingCount, bracingType, profileCode } = uprightSelection;
+    const nDiagonal = bracingCount.diagonal;
+    const nHorizontal = bracingCount.horizontal;
+
+    // Determine bracing profile based on upright size
+    const uprightSizeMatch = profileCode.match(/^(\d+)/);
+    const uprightSizeNum = uprightSizeMatch ? parseInt(uprightSizeMatch[1]) : 90;
+
+    // Map upright size to bracing profile key
+    let bracingProfileKey: string;
+    if (uprightSizeNum >= 120) {
+      bracingProfileKey = 'DE120 C40*39.5';
+    } else if (uprightSizeNum >= 100) {
+      bracingProfileKey = 'DE100 C40*29.5';
+    } else {
+      bracingProfileKey = 'DE90 C35*24';
+    }
+
+    const bracingProfile = PROFILES[bracingProfileKey];
+    const bracingWeightPerMeter = bracingProfile?.weight ?? 1.0; // kg/m
+
+    // Upright frame depth from profiles table (used for bracing length calc)
+    const uprightProfileKey = profileCode.split(' ')[0]; // e.g. "90*70"
+    const uprightProfileEntry = PROFILES[uprightProfileKey.replace('*', 'x')];
+    const frameDepth = uprightProfileEntry?.expanded ?? 250; // mm, upright depth
+
+    // Diagonal bracing length: √(frameDepth² + 600²) mm
+    const diagonalLengthMm = Math.sqrt(frameDepth * frameDepth + 600 * 600);
+    const diagonalLengthM = diagonalLengthMm / 1000;
+
+    // Horizontal bracing length = frame depth
+    const horizontalLengthM = frameDepth / 1000;
+
+    // Total weight per frame
+    const diagWeightPerFrame = nDiagonal * diagonalLengthM * bracingWeightPerMeter;
+    const horizWeightPerFrame = nHorizontal * horizontalLengthM * bracingWeightPerMeter;
+    const bracingWeightPerFrame = diagWeightPerFrame + horizWeightPerFrame;
+
+    const totalBracingWeight = bracingWeightPerFrame * framePositions;
+    const totalBracingPieces = (nDiagonal + nHorizontal) * framePositions;
+    const bracingCost = totalBracingWeight * materialPricePerKg;
+    const avgWeightPerPiece = totalBracingWeight / totalBracingPieces;
+
     bom.push({
-      description: `Cross/Horizontal Bracing (${uprightSelection.bracingType}-type, ${uprightSelection.bracingCount.diagonal} diagonal, ${uprightSelection.bracingCount.horizontal} horizontal)`,
+      description: `Bracing ${bracingType}-type (${bracingProfileKey}, ${nDiagonal} diagonal × ${Math.round(diagonalLengthMm)}mm, ${nHorizontal} horizontal × ${frameDepth}mm)`,
       unit: 'pcs',
       quantity: totalBracingPieces,
-      unitWeight: Math.round(bracingWeightPerPiece * 100) / 100,
-      totalWeight: Math.round(bracingWeight * 100) / 100,
-      unitCost: Math.round(bracingWeightPerPiece * materialPricePerKg * 100) / 100,
+      unitWeight: Math.round(avgWeightPerPiece * 100) / 100,
+      totalWeight: Math.round(totalBracingWeight * 100) / 100,
+      unitCost: Math.round(avgWeightPerPiece * materialPricePerKg * 100) / 100,
       totalCost: Math.round(bracingCost * 100) / 100,
       category: 'frame',
     });
