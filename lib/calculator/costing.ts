@@ -182,7 +182,7 @@ export function generateBOMFromLayout(
     // Upright frame depth from profiles table (used for bracing length calc)
     const uprightProfileKey = profileCode.split(' ')[0]; // e.g. "90*70"
     const uprightProfileEntry = PROFILES[uprightProfileKey.replace('*', 'x')];
-    const frameDepth = uprightProfileEntry?.expanded ?? 250; // mm, upright depth
+    const frameDepth = pallet.depth - SPACING.frameDepthOffset; // mm, rack depth (pallet overhangs 50mm each side)
 
     // Diagonal bracing length: √(frameDepth² + 600²) mm
     const diagonalLengthMm = Math.sqrt(frameDepth * frameDepth + 600 * 600);
