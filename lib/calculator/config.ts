@@ -114,13 +114,13 @@ export const COST_REFERENCE: CostReference = {
 
 export const PROFIT_MARGIN = 1.20;
 
-/** Exchange rates: 1 unit of currency = X CNY */
+/** Exchange rates: 1 unit of currency = X CNY (updated 2026-05-18) */
 export const EXCHANGE_RATES = {
-  USD: 7.25,
-  EUR: 7.85,
-  GBP: 9.15,
-  AUD: 4.75,
-  CAD: 5.30,
+  USD: 6.78,
+  EUR: 7.92,
+  GBP: 9.09,
+  AUD: 4.92,
+  CAD: 4.95,
   CNY: 1.0,
 } as const;
 
