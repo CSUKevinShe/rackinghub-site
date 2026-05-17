@@ -6,13 +6,13 @@ import type { CurrencyCode } from '@/lib/calculator/types';
 import { NumberInput } from './NumberInput';
 import { cn } from '@/lib/utils';
 
-const CURRENCY_INFO: Record<CurrencyCode, { symbol: string; country: string; defaultRate: number }> = {
-  USD: { symbol: '$', country: 'US Dollar', defaultRate: 7.25 },
-  EUR: { symbol: '€', country: 'Euro', defaultRate: 7.85 },
-  GBP: { symbol: '£', country: 'British Pound', defaultRate: 9.15 },
-  AUD: { symbol: 'A$', country: 'Australian Dollar', defaultRate: 4.75 },
-  CAD: { symbol: 'C$', country: 'Canadian Dollar', defaultRate: 5.30 },
-  CNY: { symbol: '¥', country: 'Chinese Yuan', defaultRate: 1.0 },
+const CURRENCY_INFO: Record<CurrencyCode, { symbol: string; country: string }> = {
+  USD: { symbol: '$', country: 'US Dollar' },
+  EUR: { symbol: '€', country: 'Euro' },
+  GBP: { symbol: '£', country: 'British Pound' },
+  AUD: { symbol: 'A$', country: 'Australian Dollar' },
+  CAD: { symbol: 'C$', country: 'Canadian Dollar' },
+  CNY: { symbol: '¥', country: 'Chinese Yuan' },
 };
 
 export function RackSettings() {
@@ -203,10 +203,31 @@ export function RackSettings() {
           <span className="text-xs text-slate-500 shrink-0">CNY</span>
           <button
             type="button"
-            onClick={() => setExchangeRate(CURRENCY_INFO[displayCurrency].defaultRate)}
+            onClick={() => setExchangeRate(EXCHANGE_RATES[displayCurrency])}
             className="text-[10px] text-primary-600 hover:text-primary-800 font-medium shrink-0"
           >
             Reset
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const res = await fetch(`https://open.er-api.com/v6/latest/USD`);
+                const data = await res.json();
+                if (data && data.rates) {
+                  const usdCny = data.rates.CNY;
+                  if (usdCny > 0) {
+                    setExchangeRate(usdCny);
+                  }
+                }
+              } catch {
+                // fallback to config rate
+                setExchangeRate(EXCHANGE_RATES[displayCurrency]);
+              }
+            }}
+            className="text-[10px] text-green-600 hover:text-green-800 font-medium shrink-0"
+          >
+            Live
           </button>
         </div>
       </div>
