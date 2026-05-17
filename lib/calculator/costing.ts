@@ -180,18 +180,20 @@ export function generateBOMFromLayout(
 
     // One complete frame = 1 set of bracing (nDiagonal + nHorizontal pieces)
     const totalFrames = uprightPositions / 2;
-    const totalBracingWeight = (nDiagonal * diagonalLengthM + nHorizontal * horizontalLengthM) * bracingWeightPerMeter * totalFrames;
-    const totalBracingPieces = (nDiagonal + nHorizontal) * totalFrames;
+
+    // Weight per set: total length × weight per meter
+    const totalLengthPerSetM = nDiagonal * diagonalLengthM + nHorizontal * horizontalLengthM;
+    const weightPerSetKg = totalLengthPerSetM * bracingWeightPerMeter;
+    const totalBracingWeight = weightPerSetKg * totalFrames;
     const bracingCost = totalBracingWeight * materialPricePerKg;
-    const avgWeightPerPiece = totalBracingWeight / totalBracingPieces;
 
     bom.push({
       description: `Bracing ${bracingType}-type (${bracingProfileKey}, ${nDiagonal} diagonal × ${Math.round(diagonalLengthMm)}mm, ${nHorizontal} horizontal × ${frameDepth}mm)`,
-      unit: 'pcs',
-      quantity: totalBracingPieces,
-      unitWeight: Math.round(avgWeightPerPiece * 100) / 100,
+      unit: 'set',
+      quantity: totalFrames,
+      unitWeight: Math.round(weightPerSetKg * 100) / 100,
       totalWeight: Math.round(totalBracingWeight * 100) / 100,
-      unitCost: Math.round(avgWeightPerPiece * materialPricePerKg * 100) / 100,
+      unitCost: Math.round(weightPerSetKg * materialPricePerKg * 100) / 100,
       totalCost: Math.round(bracingCost * 100) / 100,
       category: 'frame',
     });
