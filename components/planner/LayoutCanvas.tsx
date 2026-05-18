@@ -668,27 +668,26 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
   const displayBays = baysPerRow >= 2 ? 2 : 1;
   const totalWidthMm = bayWidth * displayBays;
 
+  // Larger scale — more height for dimensions
   const scale = Math.min(
-    (svgWidth - padding * 2) / (totalWidthMm / 1000),
-    500 / (warehouseHeight / 1000)
+    (svgWidth - padding * 2 - 100) / (totalWidthMm / 1000),
+    550 / (frameHeight / 1000)
   );
 
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
-  const ceilPx = warehouseHeight / 1000 * scale;
   const uprightPx = Math.max(6, Math.min(14, totalPx / displayBays * 0.04));
   const beamHPx = Math.max(3, Math.min(10, beamSectionHeight / 1000 * scale));
   const palletHPx = palletHeight / 1000 * scale;
   const palletWPx = palletWidth / 1000 * scale;
 
-  // In SVG, y=0 is at the top. For engineering elevation, ground should be at bottom.
-  // We position the drawing from near the top of the SVG so there's room for labels below.
-  const topMargin = 20;
-  const groundY = topMargin + ceilPx;
-  const ceilY = topMargin;
+  const topMargin = 30;
+  const groundY = topMargin + frameHPx + 30;
   const rackTopY = groundY - frameHPx;
 
-  const svgHeight = topMargin + ceilPx + 140;
+  // Extra bottom space for dimension labels
+  const bottomMargin = 120;
+  const svgHeight = groundY + bottomMargin;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -696,7 +695,11 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
 
-  const dimOff = 14;
+  // Left margin for level labels
+  const leftLabelSpace = 30;
+  // Right margin for height dimensions
+  const rightDimOffset = 20;
+  const heightDimX = totalPx + leftLabelSpace + rightDimOffset;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -717,13 +720,9 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             <line x1="0" y1="0" x2="0" y2="6" stroke={COLORS.groundHatch} strokeWidth="0.8" />
           </pattern>
         </defs>
-        <g transform={`translate(${padding}, 0)`}>
-          {/* Grid background from ceiling to ground */}
-          <rect x={0} y={ceilY} width={totalPx} height={ceilPx} fill={COLORS.grid} />
-
-          {/* Warehouse ceiling line at top */}
-          <line x1={-10} y1={ceilY} x2={totalPx + 10} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
-          <text x={totalPx + dimOff + 6} y={ceilY + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
+        <g transform={`translate(${padding + leftLabelSpace}, 0)`}>
+          {/* Grid background from rack top to ground */}
+          <rect x={0} y={rackTopY} width={totalPx} height={frameHPx} fill={COLORS.grid} />
 
           {/* Floor line at bottom with hatch below */}
           <line x1={-10} y1={groundY} x2={totalPx + 10} y2={groundY} stroke={COLORS.ground} strokeWidth="2" />
@@ -749,8 +748,6 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
                 {levels.map((lvl, lvlIdx) => {
                   const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
-                  // Pallet sits ON the beam (or on ground for ground level):
-                  // pallet bottom surface = beam bottom surface (or ground for ground level)
                   const palletBottomY = lvl.isGround ? groundY : beamBottomY;
                   const palletTopY = palletBottomY - palletHPx;
 
@@ -805,56 +802,162 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             );
           })()}
 
-          {/* Bay width dimension below ground */}
-          {displayBays >= 1 && (
-            <DimensionLine
-              x1={0} y1={groundY + 24} x2={bayWidth / 1000 * scale} y2={groundY + 24}
-              label={formatMm(bayWidth)}
-              offset={0}
-              fontSize={7 * fontScale}
-            />
-          )}
+          {/* ===== HEIGHT DIMENSIONS — right side, outside rack ===== */}
 
-          {/* Level labels on left */}
-          {levels.map((lvl, i) => {
-            const heightFromGround = lvl.bottomMm;
-            const beamY = groundY - heightFromGround / 1000 * scale;
-            return (
-              <g key={`lbl-${i}`}>
-                <line x1={-4} y1={beamY} x2={0} y2={beamY} stroke={COLORS.dimension} strokeWidth="0.5" />
-                <text x={-6} y={beamY + 3} textAnchor="end" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                  {lvl.isGround ? 'G' : `L${i - (hasGroundLevel ? 1 : 0)}`}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Total height dimension on right — floor to ceiling */}
-          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={ceilY} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
-
-          {/* Rack height sub-dimension */}
-          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={rackTopY} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
-
-          {/* Clearance to ceiling annotation */}
+          {/* Upright / frame height dimension (outermost) */}
           {(() => {
-            const clearanceY = (ceilY + rackTopY) / 2;
-            const clearanceMm = warehouseHeight - frameHeight;
+            const x = heightDimX;
             return (
               <g>
-                <line x1={totalPx / 4} y1={rackTopY} x2={totalPx / 4} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="0.5" strokeDasharray="3 2" />
-                <rect x={totalPx / 4 - 35 * fontScale} y={clearanceY - 7 * fontScale} width={70 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.textSecondary} strokeWidth="0.5" />
-                <text x={totalPx / 4} y={clearanceY + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
-                  ⬍ {formatMm(clearanceMm)}
+                <line x1={x} y1={groundY} x2={x} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.6" />
+                {/* Tick marks */}
+                <line x1={x - 3} y1={groundY} x2={x + 3} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                <line x1={x - 3} y1={rackTopY} x2={x + 3} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                {/* Extension lines */}
+                <line x1={0} y1={groundY} x2={x - 4} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                <line x1={totalPx} y1={rackTopY} x2={x - 4} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                {/* Label */}
+                <rect x={x + 4} y={(groundY + rackTopY) / 2 - 7 * fontScale} width={50 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
+                <text x={x + 6} y={(groundY + rackTopY) / 2 + 4 * fontScale} textAnchor="start" fontSize={8 * fontScale} fill={COLORS.upright} fontFamily="monospace" fontWeight="600">
+                  柱高 {formatMm(frameHeight)}
                 </text>
               </g>
             );
           })()}
 
-          {/* Scale bar below ground */}
+          {/* Per-level height dimensions (between levels) */}
+          {(() => {
+            const dimX = heightDimX + 56 * fontScale;
+            const els: JSX.Element[] = [];
+            const beamClearSpanMm = bayWidth - 2 * 100; // bay width minus upright face gaps
+            const bayClearPx = beamClearSpanMm / 1000 * scale;
+
+            for (let i = 0; i < levels.length; i++) {
+              const lvl = levels[i];
+              const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
+              const palletTopY = beamBottomY - palletHPx;
+              const levelLabel = lvl.isGround ? 'G' : `L${i - (hasGroundLevel ? 1 : 0)}`;
+
+              // Level label on left
+              els.push(
+                <text key={`ll-${i}`} x={-8} y={beamBottomY + 3} textAnchor="end" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                  {levelLabel}
+                </text>
+              );
+
+              if (!lvl.isGround) {
+                const prevLvl = levels[i - 1];
+                const prevBottomY = groundY - prevLvl.bottomMm / 1000 * scale;
+                const prevPalletTopY = prevBottomY - palletHPx;
+                const levelGapMm = lvl.bottomMm - prevLvl.bottomMm;
+
+                // Dimension line from previous pallet top to current beam bottom
+                const dimFromY = prevPalletTopY;
+                const dimToY = beamBottomY;
+                const midY = (dimFromY + dimToY) / 2;
+
+                els.push(
+                  <g key={`hdim-${i}`}>
+                    {/* Vertical dimension */}
+                    <line x1={dimX} y1={dimFromY} x2={dimX} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.6" />
+                    <line x1={dimX - 3} y1={dimFromY} x2={dimX + 3} y2={dimFromY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                    <line x1={dimX - 3} y1={dimToY} x2={dimX + 3} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                    {/* Label */}
+                    <rect x={dimX + 4} y={midY - 7 * fontScale} width={32 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
+                    <text x={dimX + 6} y={midY + 4 * fontScale} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                      {formatMm(levelGapMm)}
+                    </text>
+                  </g>
+                );
+
+                // Beam clear span dimension below this beam
+                const bayStartX = bayWidth / 1000 * scale;
+                const beamCenterY = beamBottomY - beamHPx / 2;
+                const spanLabelY = beamBottomY + 16;
+                els.push(
+                  <g key={`bspan-${i}`}>
+                    {/* Extension lines from upright inner faces */}
+                    <line x1={0 + uprightPx / 2} y1={beamCenterY} x2={0 + uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                    <line x1={bayStartX - uprightPx / 2} y1={beamCenterY} x2={bayStartX - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                    {/* Dimension line */}
+                    <line x1={uprightPx / 2} y1={spanLabelY} x2={bayStartX - uprightPx / 2} y2={spanLabelY} stroke={COLORS.beam} strokeWidth="0.6" />
+                    <line x1={uprightPx / 2} y1={spanLabelY - 3} x2={uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
+                    <line x1={bayStartX - uprightPx / 2} y1={spanLabelY - 3} x2={bayStartX - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
+                    {/* Label */}
+                    <rect x={(uprightPx / 2 + bayStartX - uprightPx / 2) / 2 - 30 * fontScale} y={spanLabelY + 6} width={60 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.beam} strokeWidth="0.3" />
+                    <text x={(uprightPx / 2 + bayStartX - uprightPx / 2) / 2} y={spanLabelY + 15} textAnchor="middle" fontSize={6.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                      {formatMm(beamClearSpanMm)}
+                    </text>
+                  </g>
+                );
+              }
+            }
+
+            return els;
+          })()}
+
+          {/* Bay width dimension at bottom */}
+          {(() => {
+            const bayW = bayWidth / 1000 * scale;
+            const bayY = groundY + 30;
+            return (
+              <g>
+                <line x1={0} y1={bayY} x2={bayW} y2={bayY} stroke={COLORS.dimension} strokeWidth="0.6" />
+                <line x1={0} y1={bayY - 3} x2={0} y2={bayY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
+                <line x1={bayW} y1={bayY - 3} x2={bayW} y2={bayY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
+                <rect x={bayW / 2 - 24 * fontScale} y={bayY + 6} width={48 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
+                <text x={bayW / 2} y={bayY + 15} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
+                  {formatMm(bayWidth)}
+                </text>
+              </g>
+            );
+          })()}
+
+          {/* First beam height dimension (ground to first beam bottom) — left side */}
+          {(() => {
+            if (levels.length > 1 && !levels[0].isGround) {
+              // No ground level — first beam height
+              const firstLvl = levels[0];
+              const firstBeamBottomY = groundY - firstLvl.bottomMm / 1000 * scale;
+              const dimX = -14;
+              return (
+                <g>
+                  <line x1={dimX} y1={groundY} x2={dimX} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.6" />
+                  <line x1={dimX - 3} y1={groundY} x2={dimX + 3} y2={groundY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <line x1={dimX - 3} y1={firstBeamBottomY} x2={dimX + 3} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <text x={dimX - 5} y={(groundY + firstBeamBottomY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                    {formatMm(firstLvl.bottomMm)}
+                  </text>
+                </g>
+              );
+            }
+            if (hasGroundLevel && levels.length > 1) {
+              // Ground level exists — first beam height above ground pallet
+              const groundLvl = levels[0];
+              const firstBeamLvl = levels[1];
+              const firstBeamBottomY = groundY - firstBeamLvl.bottomMm / 1000 * scale;
+              const groundPalletTopY = groundY - palletHPx;
+              const gapMm = firstBeamLvl.bottomMm - palletHeight;
+              const dimX = -14;
+              return (
+                <g>
+                  <line x1={dimX} y1={groundPalletTopY} x2={dimX} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.6" />
+                  <line x1={dimX - 3} y1={groundPalletTopY} x2={dimX + 3} y2={groundPalletTopY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <line x1={dimX - 3} y1={firstBeamBottomY} x2={dimX + 3} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <text x={dimX - 5} y={(groundPalletTopY + firstBeamBottomY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                    {formatMm(gapMm)}
+                  </text>
+                </g>
+              );
+            }
+            return null;
+          })()}
+
+          {/* Scale bar */}
           {(() => {
             const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = groundY + 40;
+            const barY = groundY + 60;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
@@ -875,33 +978,28 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 // ============================================================
 // Side elevation view — single row + back-to-back pair (typical)
 // ============================================================
-function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, view, setView, svgRef, handleExportPNG, fontScale, rackRows, aisleWidth, warehouseHeight }: any) {
-  // Show 2 typical: single row + back-to-back pair (3 frames)
-  // When only 1 row exists, show just 1
+function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, view, setView, svgRef, handleExportPNG, fontScale, rackRows, aisleWidth }: any) {
   const hasBackToBack = rackRows >= 2;
-  const displayRows = hasBackToBack ? 3 : 1; // single, [back-to-back pair]
-  // Back-to-back gap = 2×pallet overhang(50mm) + pallet-to-pallet(100mm) = 200mm between frames
+  const displayRows = hasBackToBack ? 3 : 1;
   const backToBackGap = 200;
-  // Pallet overhang beyond frame face (each side)
   const palletOverhang = 50;
   const totalWidthMm = frameDepth * displayRows + (hasBackToBack ? aisleWidth + backToBackGap : 0);
 
   const scale = Math.min(
-    (svgWidth - padding * 2) / Math.max(totalWidthMm / 1000, 0.8),
-    500 / (warehouseHeight / 1000)
+    (svgWidth - padding * 2 - 100) / Math.max(totalWidthMm / 1000, 0.8),
+    550 / (frameHeight / 1000)
   );
 
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
-  const ceilPx = warehouseHeight / 1000 * scale;
 
-  // In SVG, y=0 is at the top. For engineering elevation, ground should be at bottom.
-  const topMargin = 20;
-  const groundY = topMargin + ceilPx;
-  const ceilY = topMargin;
+  const topMargin = 30;
+  const groundY = topMargin + frameHPx + 30;
   const rackTopY = groundY - frameHPx;
 
-  const svgHeight = Math.max(450, topMargin + ceilPx + 140);
+  const bottomMargin = 120;
+  const svgHeight = groundY + bottomMargin;
+
   const frameDPx = frameDepth / 1000 * scale;
   const aislePx = aisleWidth / 1000 * scale;
   const uprightPx = Math.max(5, Math.min(12, frameDPx * 0.06));
@@ -915,7 +1013,9 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
 
-  const dimOff = 14;
+  const leftLabelSpace = 24;
+  const rightDimOffset = 20;
+  const heightDimX = totalPx + leftLabelSpace + rightDimOffset;
 
   // Calculate X offset for each row
   const rowOffsets: number[] = [];
@@ -923,11 +1023,9 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
   for (let i = 0; i < displayRows; i++) {
     rowOffsets.push(currentX);
     currentX += frameDPx;
-    // Add aisle gap between single row and back-to-back pair
     if (hasBackToBack && i === 0) {
       currentX += aislePx;
     }
-    // Add back-to-back gap between R2 and R3
     if (hasBackToBack && i === 1) {
       currentX += backToBackGap / 1000 * scale;
     }
@@ -952,15 +1050,11 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
             <line x1="0" y1="0" x2="0" y2="6" stroke={COLORS.groundHatch} strokeWidth="0.8" />
           </pattern>
         </defs>
-        <g transform={`translate(${padding}, 0)`}>
-          {/* Grid background from ceiling to ground */}
-          <rect x={0} y={ceilY} width={totalPx} height={ceilPx} fill={COLORS.grid} />
+        <g transform={`translate(${padding + leftLabelSpace}, 0)`}>
+          {/* Grid background from rack top to ground */}
+          <rect x={0} y={rackTopY} width={totalPx} height={frameHPx} fill={COLORS.grid} />
 
-          {/* Warehouse ceiling line at top */}
-          <line x1={-10} y1={ceilY} x2={totalPx + 10} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
-          <text x={totalPx + dimOff + 6} y={ceilY + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
-
-          {/* Floor line at bottom with hatch below */}
+          {/* Floor line with hatch */}
           <line x1={-10} y1={groundY} x2={totalPx + 10} y2={groundY} stroke={COLORS.ground} strokeWidth="2" />
           <rect x={-10} y={groundY} width={totalPx + 20} height="12" fill="url(#ground-hatch-side)" />
 
@@ -970,7 +1064,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
 
             return (
               <g key={`row-${rowIdx}`}>
-                {/* Left upright — from groundY upward */}
+                {/* Left upright */}
                 <rect x={rowX} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
                 {/* Right upright */}
                 <rect x={rowEndX - uprightPx} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
@@ -979,42 +1073,29 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 {levels.map((lvl, lvlIdx) => {
                   const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
-                  // Pallet sits ON beam (or on ground for ground level):
-                  // pallet bottom surface = beam bottom surface (or ground for ground level)
                   const palletBottomY = lvl.isGround ? groundY : beamBottomY;
                   const palletTopY = palletBottomY - palletHPx;
                   const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
-                  // Pallet direction: back-to-back pallets face toward the gap
-                  // Each pallet overhangs its frame by palletOverhang(50mm) on the facing side.
-                  // R2: right face at frame right + overhang
-                  // R3: left face at frame left - overhang
+
                   const overhangPx = palletOverhang / 1000 * scale;
                   let palletX: number;
                   if (hasBackToBack && rowIdx === 1) {
-                    // R2: pallet right face = frame right + overhang
-                    // palletX = frame right + overhang - pallet depth
                     palletX = rowEndX + overhangPx - palletDPx;
                   } else if (hasBackToBack && rowIdx === 2) {
-                    // R3: pallet left face = frame left - overhang
                     palletX = rowX - overhangPx;
                   } else {
-                    // Single row: centered on frame
                     palletX = rowX + (frameDPx - palletDPx) / 2;
                   }
 
                   return (
                     <g key={`side-r${rowIdx}-l${lvlIdx}`}>
-                      {/* Beam across full frame depth */}
+                      {/* Beam */}
                       {!lvl.isGround && (
                         <rect x={rowX} y={beamTopY} width={frameDPx} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
                       )}
                       {/* Pallet */}
                       <rect x={palletX} y={palletTopY} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
                       <line x1={palletX} y1={palletBottomY} x2={palletX + palletDPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
-                      {/* Level label */}
-                      <text x={rowEndX + 4} y={beamTopY + beamHPx / 2 + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                        {levelLabel}
-                      </text>
                     </g>
                   );
                 })}
@@ -1027,7 +1108,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 )}
                 {rowIdx === 1 && (
                   <text x={rowX + frameDPx / 2} y={groundY + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                    R{displayRows > 1 ? '2' : ''}
+                    R2
                   </text>
                 )}
                 {rowIdx === 2 && (
@@ -1039,71 +1120,170 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
             );
           })}
 
-          {/* Aisle width dimension between rows */}
-          {hasBackToBack && (() => {
-            const aisleStartX = rowOffsets[1] + frameDPx;
-            const aisleEndX = rowOffsets[2];
-            const aisleLabelY = groundY + 28;
-            return (
-              <DimensionLine
-                x1={aisleStartX} y1={aisleLabelY} x2={aisleEndX} y2={aisleLabelY}
-                label={formatMm(aisleWidth)}
-                offset={0}
-                fontSize={7 * fontScale}
-              />
-            );
-          })()}
+          {/* ===== HEIGHT DIMENSIONS — right side ===== */}
 
-          {/* Row Spacer dimension between back-to-back rows (R2 ↔ R3) */}
-          {hasBackToBack && (() => {
-            const spacerStartX = rowOffsets[1] + frameDPx; // right face of R2
-            const spacerEndX = rowOffsets[2];              // left face of R3
-            const spacerY = rackTopY + 8 * fontScale;
-            const gapPx = backToBackGap / 1000 * scale;
-            return (
-              <g>
-                {/* Dashed line in the gap */}
-                <line x1={spacerStartX} y1={rackTopY} x2={spacerStartX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
-                <line x1={spacerEndX} y1={rackTopY} x2={spacerEndX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
-                {/* Dimension line */}
-                <DimensionLine
-                  x1={spacerStartX} y1={spacerY} x2={spacerEndX} y2={spacerY}
-                  label={`Row Spacer ${formatMm(backToBackGap)}`}
-                  offset={-6}
-                  fontSize={7 * fontScale}
-                />
-                {/* Vertical extension lines from gap edges to dimension line */}
-                <line x1={spacerStartX} y1={rackTopY} x2={spacerStartX} y2={spacerY + 4} stroke={COLORS.column} strokeWidth="0.3" strokeOpacity="0.4" />
-                <line x1={spacerEndX} y1={rackTopY} x2={spacerEndX} y2={spacerY + 4} stroke={COLORS.column} strokeWidth="0.3" strokeOpacity="0.4" />
-              </g>
-            );
-          })()}
-
-          {/* Total height dimension on right — floor to ceiling */}
-          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={ceilY} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
-
-          {/* Rack height sub-dimension */}
-          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={rackTopY} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
-
-          {/* Clearance to ceiling annotation */}
+          {/* Frame height */}
           {(() => {
-            const clearanceY = (ceilY + rackTopY) / 2;
-            const clearanceMm = warehouseHeight - frameHeight;
+            const x = heightDimX;
             return (
               <g>
-                <rect x={totalPx / 2 - 35 * fontScale} y={clearanceY - 7 * fontScale} width={70 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.textSecondary} strokeWidth="0.5" />
-                <text x={totalPx / 2} y={clearanceY + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
-                   {formatMm(clearanceMm)}
+                <line x1={x} y1={groundY} x2={x} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.6" />
+                <line x1={x - 3} y1={groundY} x2={x + 3} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                <line x1={x - 3} y1={rackTopY} x2={x + 3} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                <line x1={0} y1={groundY} x2={x - 4} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                <line x1={totalPx} y1={rackTopY} x2={x - 4} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                <rect x={x + 4} y={(groundY + rackTopY) / 2 - 7 * fontScale} width={50 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
+                <text x={x + 6} y={(groundY + rackTopY) / 2 + 4 * fontScale} textAnchor="start" fontSize={8 * fontScale} fill={COLORS.upright} fontFamily="monospace" fontWeight="600">
+                  柱高 {formatMm(frameHeight)}
                 </text>
               </g>
             );
           })()}
 
-          {/* Scale bar below ground */}
+          {/* Per-level dimensions and labels */}
+          {(() => {
+            const dimX = heightDimX + 56 * fontScale;
+            const els: JSX.Element[] = [];
+            const frameClearSpanMm = frameDepth - 100; // frame depth minus pallet-to-upright gap on one side (simplified)
+            const spanPx = (frameDPx - uprightPx) ;
+
+            for (let i = 0; i < levels.length; i++) {
+              const lvl = levels[i];
+              const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
+              const palletTopY = beamBottomY - palletHPx;
+              const levelLabel = lvl.isGround ? 'G' : `L${i - (hasGroundLevel ? 1 : 0)}`;
+
+              // Level label on left
+              els.push(
+                <text key={`ll-${i}`} x={-6} y={beamBottomY + 3} textAnchor="end" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                  {levelLabel}
+                </text>
+              );
+
+              if (!lvl.isGround) {
+                const prevLvl = levels[i - 1];
+                const prevBottomY = groundY - prevLvl.bottomMm / 1000 * scale;
+                const prevPalletTopY = prevBottomY - palletHPx;
+                const levelGapMm = lvl.bottomMm - prevLvl.bottomMm;
+                const dimFromY = prevPalletTopY;
+                const dimToY = beamBottomY;
+                const midY = (dimFromY + dimToY) / 2;
+
+                // Vertical dimension
+                els.push(
+                  <g key={`hdim-${i}`}>
+                    <line x1={dimX} y1={dimFromY} x2={dimX} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.6" />
+                    <line x1={dimX - 3} y1={dimFromY} x2={dimX + 3} y2={dimFromY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                    <line x1={dimX - 3} y1={dimToY} x2={dimX + 3} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.8" />
+                    <rect x={dimX + 4} y={midY - 7 * fontScale} width={32 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
+                    <text x={dimX + 6} y={midY + 4 * fontScale} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                      {formatMm(levelGapMm)}
+                    </text>
+                  </g>
+                );
+
+                // Frame clear span dimension below the beam (show on first row only)
+                const beamCenterY = beamBottomY - beamHPx / 2;
+                const spanLabelY = beamBottomY + 16;
+                const r0x = rowOffsets[0];
+                const r0end = r0x + frameDPx;
+                els.push(
+                  <g key={`fspan-${i}`}>
+                    <line x1={r0x + uprightPx / 2} y1={beamCenterY} x2={r0x + uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                    <line x1={r0end - uprightPx / 2} y1={beamCenterY} x2={r0end - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                    <line x1={r0x + uprightPx / 2} y1={spanLabelY} x2={r0end - uprightPx / 2} y2={spanLabelY} stroke={COLORS.beam} strokeWidth="0.6" />
+                    <line x1={r0x + uprightPx / 2} y1={spanLabelY - 3} x2={r0x + uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
+                    <line x1={r0end - uprightPx / 2} y1={spanLabelY - 3} x2={r0end - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
+                    <rect x={(r0x + uprightPx / 2 + r0end - uprightPx / 2) / 2 - 28 * fontScale} y={spanLabelY + 6} width={56 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.beam} strokeWidth="0.3" />
+                    <text x={(r0x + uprightPx / 2 + r0end - uprightPx / 2) / 2} y={spanLabelY + 15} textAnchor="middle" fontSize={6.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                      {formatMm(frameDepth - 100)}
+                    </text>
+                  </g>
+                );
+              }
+            }
+            return els;
+          })()}
+
+          {/* Aisle dimension */}
+          {hasBackToBack && (() => {
+            const aisleStartX = rowOffsets[1] + frameDPx;
+            const aisleEndX = rowOffsets[2];
+            const aisleY = groundY + 30;
+            return (
+              <g>
+                <line x1={aisleStartX} y1={aisleY} x2={aisleEndX} y2={aisleY} stroke={COLORS.dimension} strokeWidth="0.6" />
+                <line x1={aisleStartX} y1={aisleY - 3} x2={aisleStartX} y2={aisleY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
+                <line x1={aisleEndX} y1={aisleY - 3} x2={aisleEndX} y2={aisleY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
+                <rect x={(aisleStartX + aisleEndX) / 2 - 26 * fontScale} y={aisleY + 6} width={52 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
+                <text x={(aisleStartX + aisleEndX) / 2} y={aisleY + 15} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
+                  {formatMm(aisleWidth)}
+                </text>
+              </g>
+            );
+          })()}
+
+          {/* Row Spacer between R2 ↔ R3 */}
+          {hasBackToBack && (() => {
+            const spacerStartX = rowOffsets[1] + frameDPx;
+            const spacerEndX = rowOffsets[2];
+            const spacerY = rackTopY + 8 * fontScale;
+            return (
+              <g>
+                <line x1={spacerStartX} y1={rackTopY} x2={spacerStartX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
+                <line x1={spacerEndX} y1={rackTopY} x2={spacerEndX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
+                <DimensionLine
+                  x1={spacerStartX} y1={spacerY} x2={spacerEndX} y2={spacerY}
+                  label={formatMm(backToBackGap)}
+                  offset={-6}
+                  fontSize={7 * fontScale}
+                />
+              </g>
+            );
+          })()}
+
+          {/* First beam height — left side */}
+          {(() => {
+            if (levels.length > 1 && !levels[0].isGround) {
+              const firstLvl = levels[0];
+              const firstBeamBottomY = groundY - firstLvl.bottomMm / 1000 * scale;
+              const dimX = -12;
+              return (
+                <g>
+                  <line x1={dimX} y1={groundY} x2={dimX} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.6" />
+                  <line x1={dimX - 3} y1={groundY} x2={dimX + 3} y2={groundY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <line x1={dimX - 3} y1={firstBeamBottomY} x2={dimX + 3} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <text x={dimX - 5} y={(groundY + firstBeamBottomY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                    {formatMm(firstLvl.bottomMm)}
+                  </text>
+                </g>
+              );
+            }
+            if (hasGroundLevel && levels.length > 1) {
+              const firstBeamLvl = levels[1];
+              const firstBeamBottomY = groundY - firstBeamLvl.bottomMm / 1000 * scale;
+              const groundPalletTopY = groundY - palletHPx;
+              const gapMm = firstBeamLvl.bottomMm - palletHeight;
+              const dimX = -12;
+              return (
+                <g>
+                  <line x1={dimX} y1={groundPalletTopY} x2={dimX} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.6" />
+                  <line x1={dimX - 3} y1={groundPalletTopY} x2={dimX + 3} y2={groundPalletTopY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <line x1={dimX - 3} y1={firstBeamBottomY} x2={dimX + 3} y2={firstBeamBottomY} stroke={COLORS.beam} strokeWidth="0.8" />
+                  <text x={dimX - 5} y={(groundPalletTopY + firstBeamBottomY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
+                    {formatMm(gapMm)}
+                  </text>
+                </g>
+              );
+            }
+            return null;
+          })()}
+
+          {/* Scale bar */}
           {(() => {
             const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = groundY + 46;
+            const barY = groundY + 60;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
