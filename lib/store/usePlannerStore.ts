@@ -156,7 +156,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       // Auto-update firstBeamHeight based on ground level setting
       if (partial.hasGroundLevel !== undefined) {
         if (partial.hasGroundLevel) {
-          newRack.firstBeamHeight = state.pallet.height;
+          newRack.firstBeamHeight = state.pallet.height + SPACING.topClearance;
         } else {
           newRack.firstBeamHeight = 300;
         }
@@ -171,7 +171,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       const newPallet = { ...state.pallet, ...partial };
       // If ground level is enabled, update first beam height to match new pallet height
       const newRack = state.rack.hasGroundLevel
-        ? { ...state.rack, firstBeamHeight: newPallet.height }
+        ? { ...state.rack, firstBeamHeight: newPallet.height + SPACING.topClearance }
         : state.rack;
       return { pallet: newPallet, rack: newRack };
     });
@@ -199,7 +199,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
 
     // Compute firstBeamHeight based on ground level setting
     const firstBeamHeight = state.rack.hasGroundLevel
-      ? state.pallet.height
+      ? state.pallet.height + SPACING.topClearance
       : state.rack.firstBeamHeight;
     const rack = { ...state.rack, firstBeamHeight };
 

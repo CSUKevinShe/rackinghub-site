@@ -12,6 +12,12 @@ import { RACK_TYPES, SPACING } from './config';
 // Layout Calculation Engine — precise spacing rules
 // ============================================================
 
+/**
+ * Minimum forklift access aisle width at walls (mm).
+ * Used when wall clearance alone is insufficient for forklift access.
+ */
+const WALL_ACCESS_AISLE_MM = 2000;
+
 export function calculateLayout(input: PlannerInput): LayoutData {
   const { warehouse, rackType, rack, pallet } = input;
   const config = RACK_TYPES[rackType];
@@ -121,27 +127,37 @@ function calculateSelectiveLayout(
   frameDepth: number,
   aisleWidth: number
 ) {
-  const doubleBlockWidth = 2 * frameDepth + aisleWidth;
+  // Every rack row must have an access aisle on at least one side.
+  // No back-to-back racks against walls — each row is single-deep.
+  // Structure: [wall-aisle] [row] [aisle] [row] [aisle] ... [row] [wall-aisle]
+  // N rows need N-1 intermediate aisles + 2 wall access aisles.
 
-  let rackBlocks = 0;
+  let rackRows = 0;
   let remainingWidth = effectiveWidth;
 
-  if (frameDepth < remainingWidth) {
+  // Reserve top and bottom wall access aisles
+  if (WALL_ACCESS_AISLE_MM * 2 < remainingWidth) {
+    remainingWidth -= WALL_ACCESS_AISLE_MM * 2;
+  } else {
+    return { rackRows: 0, aisles: 0, rackBlocks: 0, baysPerRow: 0 };
+  }
+
+  // First row needs only frameDepth (top wall access aisle already reserved)
+  if (remainingWidth >= frameDepth) {
+    rackRows++;
     remainingWidth -= frameDepth;
   }
 
-  while (remainingWidth >= doubleBlockWidth) {
-    rackBlocks++;
-    remainingWidth -= doubleBlockWidth;
+  // Each subsequent row needs: 1 aisle + 1 rack row
+  while (remainingWidth >= aisleWidth + frameDepth) {
+    rackRows++;
+    remainingWidth -= aisleWidth + frameDepth;
   }
 
-  const endRow = remainingWidth >= frameDepth ? 1 : 0;
-  const rackRows = 1 + 2 * rackBlocks + endRow;
-  const aisles = rackBlocks + (endRow > 0 ? 1 : 0);
-
+  const aisles = rackRows + 1; // N-1 intermediate + 2 wall access
   const baysPerRow = Math.max(1, Math.floor(effectiveLength / bayWidth));
 
-  return { rackRows, aisles, rackBlocks, baysPerRow };
+  return { rackRows, aisles, rackBlocks: 0, baysPerRow };
 }
 
 function calculateDriveInLayout(
@@ -160,16 +176,20 @@ function calculateDriveInLayout(
 
   let rackBlocks = 0;
   let remainingWidth = effectiveWidth;
-  if (frameDepth < remainingWidth) {
-    remainingWidth -= frameDepth;
-  }
-  while (remainingWidth >= frameSetWidth) {
-    rackBlocks++;
-    remainingWidth -= frameSetWidth;
+
+  // Reserve top wall access aisle
+  if (WALL_ACCESS_AISLE_MM < remainingWidth) {
+    remainingWidth -= WALL_ACCESS_AISLE_MM;
   }
 
-  const rackRows = rackBlocks * 2 + (remainingWidth >= frameDepth ? 1 : 0);
-  const aisles = rackBlocks;
+  while (remainingWidth >= frameSetWidth + WALL_ACCESS_AISLE_MM) {
+    rackBlocks++;
+    remainingWidth -= frameSetWidth + WALL_ACCESS_AISLE_MM;
+  }
+
+  const endRow = remainingWidth >= frameDepth + WALL_ACCESS_AISLE_MM ? 1 : 0;
+  const rackRows = rackBlocks * 2 + endRow;
+  const aisles = 1 + rackBlocks + (endRow > 0 ? 1 : 0);
   const baysPerRow = Math.max(1, Math.floor(effectiveLength / bayWidth));
 
   return { rackRows, aisles, rackBlocks, baysPerRow };
@@ -188,16 +208,20 @@ function calculateRadioShuttleLayout(
 
   let rackBlocks = 0;
   let remainingWidth = effectiveWidth;
-  if (frameDepth < remainingWidth) {
-    remainingWidth -= frameDepth;
-  }
-  while (remainingWidth >= blockWidth) {
-    rackBlocks++;
-    remainingWidth -= blockWidth;
+
+  // Reserve top wall access aisle
+  if (WALL_ACCESS_AISLE_MM < remainingWidth) {
+    remainingWidth -= WALL_ACCESS_AISLE_MM;
   }
 
-  const rackRows = rackBlocks * 2 + (remainingWidth >= frameDepth ? 1 : 0);
-  const aisles = rackBlocks;
+  while (remainingWidth >= blockWidth + WALL_ACCESS_AISLE_MM) {
+    rackBlocks++;
+    remainingWidth -= blockWidth + WALL_ACCESS_AISLE_MM;
+  }
+
+  const endRow = remainingWidth >= frameDepth + WALL_ACCESS_AISLE_MM ? 1 : 0;
+  const rackRows = rackBlocks * 2 + endRow;
+  const aisles = 1 + rackBlocks + (endRow > 0 ? 1 : 0);
   const baysPerRow = Math.max(1, Math.floor(effectiveLength / bayWidth));
 
   return { rackRows, aisles, rackBlocks, baysPerRow };
@@ -214,34 +238,54 @@ function generateLayoutElements(
 ): LayoutElement[] {
   const elements: LayoutElement[] = [];
   const startX = 0;
-  const startY = 0;
-
-  elements.push({
-    type: 'wall',
-    x: startX,
-    y: startY,
-    width: effectiveLength,
-    height: effectiveWidth,
-    label: 'Warehouse',
-    color: '#e2e8f0',
-  });
-
-  let currentY = startY;
+  let currentY = 0;
   let rowIndex = 0;
 
+  const rackColor = rackType === 'drive-in' ? '#fbbf24' : rackType === 'radio-shuttle' ? '#a78bfa' : '#3b82f6';
+
+  // Top wall access aisle
   elements.push({
-    type: 'rack-row',
-    x: startX + bayWidth * 0.5,
-    y: currentY,
-    width: layout.baysPerRow * bayWidth,
-    height: frameDepth,
-    label: `Row ${rowIndex + 1}`,
-    color: rackType === 'drive-in' ? '#fbbf24' : rackType === 'radio-shuttle' ? '#a78bfa' : '#3b82f6',
+    type: 'aisle',
+    x: startX,
+    y: 0,
+    width: effectiveLength,
+    height: WALL_ACCESS_AISLE_MM,
+    label: `${(WALL_ACCESS_AISLE_MM / 1000).toFixed(1)}m aisle (wall access)`,
+    color: '#f1f5f9',
   });
-  currentY += frameDepth;
-  rowIndex++;
+  currentY = WALL_ACCESS_AISLE_MM;
 
-  for (let block = 0; block < layout.rackBlocks; block++) {
+  if (rackType === 'selective') {
+    // Selective racking: every row is single-deep, aisle between each row
+    for (let i = 0; i < layout.rackRows; i++) {
+      elements.push({
+        type: 'rack-row',
+        x: startX + bayWidth * 0.5,
+        y: currentY,
+        width: layout.baysPerRow * bayWidth,
+        height: frameDepth,
+        label: `Row ${rowIndex + 1}`,
+        color: rackColor,
+      });
+      currentY += frameDepth;
+      rowIndex++;
+
+      if (i < layout.rackRows - 1) {
+        elements.push({
+          type: 'aisle',
+          x: startX,
+          y: currentY,
+          width: effectiveLength,
+          height: aisleWidth,
+          label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
+          color: '#f1f5f9',
+        });
+        currentY += aisleWidth;
+      }
+    }
+  } else {
+    // Drive-in / Radio-shuttle: back-to-back pairs with a single row at the top
+    // First row (single, not back-to-back against wall)
     elements.push({
       type: 'rack-row',
       x: startX + bayWidth * 0.5,
@@ -249,55 +293,105 @@ function generateLayoutElements(
       width: layout.baysPerRow * bayWidth,
       height: frameDepth,
       label: `Row ${rowIndex + 1}`,
-      color: rackType === 'drive-in' ? '#fbbf24' : rackType === 'radio-shuttle' ? '#a78bfa' : '#3b82f6',
+      color: rackColor,
     });
     currentY += frameDepth;
     rowIndex++;
 
-    elements.push({
-      type: 'aisle',
-      x: startX,
-      y: currentY,
-      width: effectiveLength,
-      height: aisleWidth,
-      label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
-      color: '#f1f5f9',
-    });
-    currentY += aisleWidth;
+    // Back-to-back pairs
+    for (let block = 0; block < layout.rackBlocks; block++) {
+      // Aisle before this pair
+      elements.push({
+        type: 'aisle',
+        x: startX,
+        y: currentY,
+        width: effectiveLength,
+        height: aisleWidth,
+        label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
+        color: '#f1f5f9',
+      });
+      currentY += aisleWidth;
 
-    elements.push({
-      type: 'rack-row',
-      x: startX + bayWidth * 0.5,
-      y: currentY,
-      width: layout.baysPerRow * bayWidth,
-      height: frameDepth,
-      label: `Row ${rowIndex + 1}`,
-      color: rackType === 'drive-in' ? '#fbbf24' : rackType === 'radio-shuttle' ? '#a78bfa' : '#3b82f6',
-    });
-    currentY += frameDepth;
-    rowIndex++;
+      // First row of pair
+      elements.push({
+        type: 'rack-row',
+        x: startX + bayWidth * 0.5,
+        y: currentY,
+        width: layout.baysPerRow * bayWidth,
+        height: frameDepth,
+        label: `Row ${rowIndex + 1}`,
+        color: rackColor,
+      });
+      currentY += frameDepth;
+      rowIndex++;
+
+      // Aisle between back-to-back rows
+      elements.push({
+        type: 'aisle',
+        x: startX,
+        y: currentY,
+        width: effectiveLength,
+        height: aisleWidth,
+        label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
+        color: '#f1f5f9',
+      });
+      currentY += aisleWidth;
+
+      // Second row of pair
+      elements.push({
+        type: 'rack-row',
+        x: startX + bayWidth * 0.5,
+        y: currentY,
+        width: layout.baysPerRow * bayWidth,
+        height: frameDepth,
+        label: `Row ${rowIndex + 1}`,
+        color: rackColor,
+      });
+      currentY += frameDepth;
+      rowIndex++;
+    }
+
+    // Closing row
+    if (layout.rackRows > 1 + layout.rackBlocks * 2) {
+      elements.push({
+        type: 'aisle',
+        x: startX,
+        y: currentY,
+        width: effectiveLength,
+        height: aisleWidth,
+        label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
+        color: '#f1f5f9',
+      });
+      currentY += aisleWidth;
+
+      elements.push({
+        type: 'rack-row',
+        x: startX + bayWidth * 0.5,
+        y: currentY,
+        width: layout.baysPerRow * bayWidth,
+        height: frameDepth,
+        label: `Row ${rowIndex + 1}`,
+        color: rackColor,
+      });
+      currentY += frameDepth;
+      rowIndex++;
+    }
   }
 
-  if (rackType === 'selective' && effectiveWidth - currentY >= frameDepth) {
+  // Bottom wall access aisle — fill remaining space
+  const bottomAisleY = currentY;
+  const bottomAisleHeight = effectiveWidth - bottomAisleY;
+  if (bottomAisleHeight > 0) {
     elements.push({
       type: 'aisle',
       x: startX,
-      y: currentY,
+      y: bottomAisleY,
       width: effectiveLength,
-      height: Math.min(aisleWidth, effectiveWidth - currentY - frameDepth),
-      label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
+      height: bottomAisleHeight,
+      label: bottomAisleHeight >= WALL_ACCESS_AISLE_MM
+        ? `${(bottomAisleHeight / 1000).toFixed(1)}m aisle (wall access)`
+        : `${(bottomAisleHeight / 1000).toFixed(1)}m clearance`,
       color: '#f1f5f9',
-    });
-    currentY += aisleWidth;
-
-    elements.push({
-      type: 'rack-row',
-      x: startX + bayWidth * 0.5,
-      y: currentY,
-      width: layout.baysPerRow * bayWidth,
-      height: frameDepth,
-      label: `Row ${rowIndex + 1}`,
-      color: '#3b82f6',
     });
   }
 

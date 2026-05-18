@@ -510,10 +510,12 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
           {(() => {
             const els = layout.elements;
             let rowNum = 0;
+            const wcOffsetX = (wallClearance / 1000) * scale;
+            const wcOffsetY = (wallClearance / 1000) * scale;
 
             return els.map((el: any, i: number) => {
-              const x = (el.x / 1000) * scale;
-              const y = (el.y / 1000) * scale;
+              const x = (el.x / 1000) * scale + wcOffsetX;
+              const y = (el.y / 1000) * scale + wcOffsetY;
               const w = (el.width / 1000) * scale;
               const h = (el.height / 1000) * scale;
 
@@ -747,10 +749,10 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
                 {levels.map((lvl, lvlIdx) => {
                   const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
-                  // Pallet sits ON the beam: pallet bottom = beam bottom surface
-                  // In SVG (y increases down): beam bottom > beam top, pallet sits above beam bottom
-                  const palletBottomY = beamBottomY - palletHPx;
-                  const palletTopY = palletBottomY;
+                  // Pallet sits ON the beam (or on ground for ground level):
+                  // pallet bottom surface = beam bottom surface (or ground for ground level)
+                  const palletBottomY = lvl.isGround ? groundY : beamBottomY;
+                  const palletTopY = palletBottomY - palletHPx;
 
                   return (
                     <g key={`lvl-${lvlIdx}`}>
@@ -977,8 +979,9 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 {levels.map((lvl, lvlIdx) => {
                   const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
-                  // Pallet sits ON beam: pallet bottom = beam bottom surface
-                  const palletBottomY = beamBottomY;
+                  // Pallet sits ON beam (or on ground for ground level):
+                  // pallet bottom surface = beam bottom surface (or ground for ground level)
+                  const palletBottomY = lvl.isGround ? groundY : beamBottomY;
                   const palletTopY = palletBottomY - palletHPx;
                   const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
                   // Pallet direction: back-to-back pallets face toward the gap
