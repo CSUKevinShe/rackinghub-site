@@ -542,25 +542,8 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
 
                     {/* Row label R1, R2... */}
                     <text x={x + 3} y={y + frameDepthPx / 2 + 3} fontSize={7 * fontScale} fill={color} fillOpacity="0.7" fontFamily="monospace">
-                      R{rowNum}{isBackToBack ? ' (B2B)' : ''}
+                      R{rowNum}{isBackToBack ? ' (Back-to-Back)' : ''}
                     </text>
-
-                    {/* Row spacer annotation between back-to-back rows */}
-                    {isBackToBack && (() => {
-                      const nextEl = els[i + 1];
-                      const nextY = (nextEl.y / 1000) * scale;
-                      const nextFrameDepthPx = (frameDepth / 1000) * scale;
-                      const spacerMidY = y + frameDepthPx + (nextY - (y + frameDepthPx)) / 2;
-                      return (
-                        <g>
-                          <line x1={x} y1={spacerMidY} x2={x + w} y2={spacerMidY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.5" />
-                          <rect x={x + w / 2 - 38 * fontScale} y={spacerMidY - 6 * fontScale} width={76 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.column} strokeWidth="0.5" />
-                          <text x={x + w / 2} y={spacerMidY + 3 * fontScale} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.column} fontFamily="monospace" fontWeight="600">
-                            Row Spacer 200mm
-                          </text>
-                        </g>
-                      );
-                    })()}
 
                     {/* Bay width dimension */}
                     <DimensionLine
@@ -1027,6 +1010,31 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 offset={0}
                 fontSize={7 * fontScale}
               />
+            );
+          })()}
+
+          {/* Row Spacer dimension between back-to-back rows (R2 ↔ R3) */}
+          {hasBackToBack && (() => {
+            const spacerStartX = rowOffsets[1] + frameDPx; // right face of R2
+            const spacerEndX = rowOffsets[2];              // left face of R3
+            const spacerY = rackTopY + 8 * fontScale;
+            const gapPx = backToBackGap / 1000 * scale;
+            return (
+              <g>
+                {/* Dashed line in the gap */}
+                <line x1={spacerStartX} y1={rackTopY} x2={spacerStartX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
+                <line x1={spacerEndX} y1={rackTopY} x2={spacerEndX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
+                {/* Dimension line */}
+                <DimensionLine
+                  x1={spacerStartX} y1={spacerY} x2={spacerEndX} y2={spacerY}
+                  label={`Row Spacer ${formatMm(backToBackGap)}`}
+                  offset={-6}
+                  fontSize={7 * fontScale}
+                />
+                {/* Vertical extension lines from gap edges to dimension line */}
+                <line x1={spacerStartX} y1={rackTopY} x2={spacerStartX} y2={spacerY + 4} stroke={COLORS.column} strokeWidth="0.3" strokeOpacity="0.4" />
+                <line x1={spacerEndX} y1={rackTopY} x2={spacerEndX} y2={spacerY + 4} stroke={COLORS.column} strokeWidth="0.3" strokeOpacity="0.4" />
+              </g>
             );
           })()}
 
