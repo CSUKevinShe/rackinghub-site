@@ -845,7 +845,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
                 </text>
               );
 
-              if (!lvl.isGround) {
+              if (!lvl.isGround && i > 0) {
                 const prevLvl = levels[i - 1];
                 const prevBottomY = groundY - prevLvl.bottomMm / 1000 * scale;
                 const prevPalletTopY = prevBottomY - palletHPx;
@@ -1160,7 +1160,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 </text>
               );
 
-              if (!lvl.isGround) {
+              if (!lvl.isGround && i > 0) {
                 const prevLvl = levels[i - 1];
                 const prevBottomY = groundY - prevLvl.bottomMm / 1000 * scale;
                 const prevPalletTopY = prevBottomY - palletHPx;
