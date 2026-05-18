@@ -157,6 +157,7 @@ export function LayoutCanvas() {
           columnSpacingY={warehouse.columnSpacingY}
           pallet={pallet}
           rack={rack}
+          wallClearance={warehouse.wallClearance}
         />
       )}
       {view === 'front' && (
@@ -379,7 +380,7 @@ function DimensionLine({
 // ============================================================
 // Top-down plan view
 // ============================================================
-function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale, columnSpacingX, columnSpacingY, pallet, rack }: any) {
+function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale, columnSpacingX, columnSpacingY, pallet, rack, wallClearance }: any) {
   const scale = Math.min(
     (svgWidth - padding * 2) / (layout.warehouseLength / 1000),
     400 / (layout.warehouseWidth / 1000)
@@ -415,6 +416,41 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
           />
           {/* Grid overlay */}
           <rect x={0} y={0} width={lenPx} height={widPx} fill="url(#grid)" />
+
+          {/* Wall clearance zone (4 sides) */}
+          {(() => {
+            const clearPx = (wallClearance / 1000) * scale;
+            return (
+              <g>
+                {/* Top wall clearance zone */}
+                <rect x={0} y={0} width={lenPx} height={clearPx} fill="rgba(148,163,184,0.06)" />
+                {/* Bottom wall clearance zone */}
+                <rect x={0} y={widPx - clearPx} width={lenPx} height={clearPx} fill="rgba(148,163,184,0.06)" />
+                {/* Left wall clearance zone */}
+                <rect x={0} y={0} width={clearPx} height={widPx} fill="rgba(148,163,184,0.06)" />
+                {/* Right wall clearance zone */}
+                <rect x={lenPx - clearPx} y={0} width={clearPx} height={widPx} fill="rgba(148,163,184,0.06)" />
+              </g>
+            );
+          })()}
+
+          {/* Wall clearance dimension lines (4 sides) */}
+          {(() => {
+            const clearPx = (wallClearance / 1000) * scale;
+            const dimOff2 = 10;
+            return (
+              <g>
+                {/* Top wall clearance */}
+                <DimensionLine x1={clearPx / 2} y1={0} x2={clearPx / 2} y2={clearPx} label={formatMm(wallClearance)} offset={-dimOff2} vertical fontSize={7 * fontScale} />
+                {/* Left wall clearance */}
+                <DimensionLine x1={0} y1={clearPx / 2} x2={clearPx} y2={clearPx / 2} label={formatMm(wallClearance)} offset={-dimOff2} fontSize={7 * fontScale} />
+                {/* Right wall clearance */}
+                <DimensionLine x1={lenPx} y1={clearPx / 2} x2={lenPx - clearPx} y2={clearPx / 2} label={formatMm(wallClearance)} offset={dimOff2} fontSize={7 * fontScale} />
+                {/* Bottom wall clearance */}
+                <DimensionLine x1={lenPx - clearPx / 2} y1={widPx} x2={lenPx - clearPx / 2} y2={widPx - clearPx} label={formatMm(wallClearance)} offset={dimOff2} vertical fontSize={7 * fontScale} />
+              </g>
+            );
+          })()}
 
           {/* Warehouse dimension lines */}
           <DimensionLine x1={0} y1={0} x2={lenPx} y2={0} label={formatMm(layout.warehouseLength)} offset={dimOff} fontSize={9 * fontScale} />

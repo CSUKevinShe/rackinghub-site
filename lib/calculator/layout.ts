@@ -86,8 +86,8 @@ export function calculateLayout(input: PlannerInput): LayoutData {
 
   // Generate column positions when columnSpacingX/Y > 0
   const { columnPositions, rackRowPositions } = generateColumnPositions(
-    effectiveLength,
-    effectiveWidth,
+    warehouse.length,
+    warehouse.width,
     warehouse.columnSpacingX,
     warehouse.columnSpacingY
   );
@@ -304,10 +304,10 @@ function generateLayoutElements(
   return elements;
 }
 
-/** Generate column positions at columnSpacingX/Y intervals — full 2D grid */
+/** Generate column positions at columnSpacingX/Y intervals — full 2D grid across entire warehouse */
 function generateColumnPositions(
-  effectiveLength: number,
-  effectiveWidth: number,
+  warehouseLength: number,
+  warehouseWidth: number,
   columnSpacingX: number,
   columnSpacingY: number
 ): { columnPositions: { x: number; y: number }[]; rackRowPositions: { index: number; y: number; height: number }[] } {
@@ -317,23 +317,23 @@ function generateColumnPositions(
     return { columnPositions: [], rackRowPositions: [] };
   }
 
-  // Generate column positions at independent X and Y intervals
+  // Generate column positions at independent X and Y intervals across the full warehouse
   const columnPositions: { x: number; y: number }[] = [];
   if (hasX && hasY) {
-    // Full 2D grid
-    for (let x = columnSpacingX; x < effectiveLength; x += columnSpacingX) {
-      for (let y = columnSpacingY; y < effectiveWidth; y += columnSpacingY) {
+    // Full 2D grid across entire warehouse
+    for (let x = columnSpacingX; x < warehouseLength; x += columnSpacingX) {
+      for (let y = columnSpacingY; y < warehouseWidth; y += columnSpacingY) {
         columnPositions.push({ x, y });
       }
     }
   } else if (hasX) {
     // Only X spacing — columns along each rack row edge
-    for (let x = columnSpacingX; x < effectiveLength; x += columnSpacingX) {
+    for (let x = columnSpacingX; x < warehouseLength; x += columnSpacingX) {
       columnPositions.push({ x, y: 0 });
     }
   } else {
     // Only Y spacing
-    for (let y = columnSpacingY; y < effectiveWidth; y += columnSpacingY) {
+    for (let y = columnSpacingY; y < warehouseWidth; y += columnSpacingY) {
       columnPositions.push({ x: 0, y });
     }
   }
