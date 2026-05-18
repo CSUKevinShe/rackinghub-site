@@ -597,6 +597,7 @@ function FrontView(props: any) {
 
   // Center content horizontally within the inner border
   const contentX = innerX + Math.max(0, (innerW - totalPx) / 2);
+  const contentY = innerY + 40;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -618,7 +619,7 @@ function FrontView(props: any) {
         <rect x={0} y={0} width={totalW} height={totalH} fill={COLORS.white} />
         <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
 
-        <g transform={`translate(${contentX}, ${innerY})`}>
+        <g transform={`translate(${contentX}, ${contentY})`}>
           {/* Ceiling line */}
           <line x1={-8} y1={ceilY} x2={totalPx + 8} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
 
@@ -721,7 +722,7 @@ function SideView(props: any) {
 
   const contentH = groundY + 30;
   const totalW = containerWidth;
-  const totalH = contentH + OUTER_MARGIN * 2 + INNER_MARGIN * 2 + TITLE_BLOCK_H + 10;
+  const totalH = contentH + OUTER_MARGIN * 2 + INNER_MARGIN * 2 + TITLE_BLOCK_H + 100;
 
   const innerX = OUTER_MARGIN + INNER_MARGIN;
   const innerY = OUTER_MARGIN + INNER_MARGIN;
@@ -730,6 +731,7 @@ function SideView(props: any) {
 
   // Center content horizontally within the inner border
   const contentX = innerX + Math.max(0, (innerW - totalPx) / 2);
+  const contentY = innerY + 80;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -761,7 +763,7 @@ function SideView(props: any) {
         <rect x={0} y={0} width={totalW} height={totalH} fill={COLORS.white} />
         <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
 
-        <g transform={`translate(${contentX}, ${innerY})`}>
+        <g transform={`translate(${contentX}, ${contentY})`}>
           {/* Ceiling line */}
           <line x1={-8} y1={ceilY} x2={totalPx + 8} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
 
