@@ -659,12 +659,11 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 
                 {/* Pallets and beams at each level */}
                 {levels.map((lvl, lvlIdx) => {
-                  // Y position measured upward from ground
-                  const heightFromGround = lvl.bottomMm + (lvl.isGround ? 0 : palletHeight);
-                  const palletBottomY = groundY - heightFromGround / 1000 * scale;
-                  const palletTopY = palletBottomY - palletHPx;
-                  const beamBottomY = palletBottomY;
+                  // Y position measured upward from ground (inverted SVG coordinates)
+                  const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
+                  const palletBottomY = beamTopY;          // pallet sits on top of beam
+                  const palletTopY = palletBottomY - palletHPx;
 
                   return (
                     <g key={`lvl-${lvlIdx}`}>
@@ -882,11 +881,10 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
 
                 {/* Beams and pallets at each level */}
                 {levels.map((lvl, lvlIdx) => {
-                  const heightFromGround = lvl.bottomMm + (lvl.isGround ? 0 : palletHeight);
-                  const palletBottomY = groundY - heightFromGround / 1000 * scale;
-                  const palletTopY = palletBottomY - palletHPx;
-                  const beamBottomY = palletBottomY;
+                  const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
+                  const palletBottomY = beamTopY;          // pallet sits on top of beam
+                  const palletTopY = palletBottomY - palletHPx;
                   const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
                   // Pallet centered on frame (overhangs 50mm each side)
                   const palletX = rowX + (frameDPx - palletDPx) / 2;
