@@ -791,8 +791,9 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
   // When only 1 row exists, show just 1
   const hasBackToBack = rackRows >= 2;
   const displayRows = hasBackToBack ? 3 : 1; // single, [back-to-back pair]
-  // Width = frameDepth × displayRows + aisleWidth × gaps
-  const totalWidthMm = frameDepth * displayRows + (hasBackToBack ? aisleWidth : 0);
+  // Width = frameDepth × displayRows + aisleWidth + back-to-back gap
+  const backToBackGap = 50; // mm gap between back-to-back frames
+  const totalWidthMm = frameDepth * displayRows + (hasBackToBack ? aisleWidth + backToBackGap : 0);
 
   const scale = Math.min(
     (svgWidth - padding * 2) / Math.max(totalWidthMm / 1000, 0.8),
@@ -831,9 +832,13 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
   for (let i = 0; i < displayRows; i++) {
     rowOffsets.push(currentX);
     currentX += frameDPx;
-    // Add aisle gap between single and back-to-back pair
+    // Add aisle gap between single row and back-to-back pair
     if (hasBackToBack && i === 0) {
       currentX += aislePx;
+    }
+    // Add small gap between back-to-back pair
+    if (hasBackToBack && i === 1) {
+      currentX += backToBackGap / 1000 * scale;
     }
   }
 
