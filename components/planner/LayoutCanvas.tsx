@@ -585,7 +585,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
     500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 50);
+  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 60);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
@@ -593,6 +593,11 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
   const beamHPx = Math.max(3, Math.min(10, beamSectionHeight / 1000 * scale));
   const palletHPx = palletHeight / 1000 * scale;
   const palletWPx = palletWidth / 1000 * scale;
+
+  // In SVG, y=0 is at the top. For engineering elevation, ground should be at bottom.
+  const groundY = svgHeight - padding - 20; // ground line Y position
+  const ceilY = groundY - ceilPx;             // ceiling line Y position
+  const rackTopY = groundY - frameHPx;        // top of rack frame Y position
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -617,24 +622,21 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
           <pattern id="grid-front" width={1000 * scale} height={500 * scale} patternUnits="userSpaceOnUse">
             <path d={`M ${1000 * scale} 0 L 0 0 0 ${500 * scale}`} fill="none" stroke={COLORS.gridLine} strokeWidth="0.3" />
           </pattern>
-          <pattern id="ground-hatch-front" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <pattern id="ground-hatch-front" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
             <line x1="0" y1="0" x2="0" y2="6" stroke={COLORS.groundHatch} strokeWidth="0.8" />
           </pattern>
-          <clipPath id="rack-clip">
-            <rect x={-uprightPx / 2} y={0} width={totalPx + uprightPx} height={frameHPx} />
-          </clipPath>
         </defs>
-        <g transform={`translate(${padding}, ${padding + 10})`}>
-          {/* Grid background (full warehouse height) */}
-          <rect width={totalPx} height={ceilPx} fill={COLORS.grid} />
+        <g transform={`translate(${padding}, 0)`}>
+          {/* Grid background from ceiling to ground */}
+          <rect x={0} y={ceilY} width={totalPx} height={ceilPx} fill={COLORS.grid} />
 
-          {/* Warehouse ceiling line */}
-          <line x1={-10} y1={ceilPx} x2={totalPx + 10} y2={ceilPx} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
-          <text x={totalPx + dimOff + 6} y={ceilPx + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
+          {/* Warehouse ceiling line at top */}
+          <line x1={-10} y1={ceilY} x2={totalPx + 10} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
+          <text x={totalPx + dimOff + 6} y={ceilY + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
 
-          {/* Floor line with hatch */}
-          <line x1={-10} y1={frameHPx} x2={totalPx + 10} y2={frameHPx} stroke={COLORS.ground} strokeWidth="2" />
-          <rect x={-10} y={frameHPx} width={totalPx + 20} height="12" fill="url(#ground-hatch-front)" />
+          {/* Floor line at bottom with hatch below */}
+          <line x1={-10} y1={groundY} x2={totalPx + 10} y2={groundY} stroke={COLORS.ground} strokeWidth="2" />
+          <rect x={-10} y={groundY} width={totalPx + 20} height="12" fill="url(#ground-hatch-front)" />
 
           {/* Each bay */}
           {Array.from({ length: displayBays }).map((_, bayIdx) => {
@@ -643,28 +645,31 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 
             return (
               <g key={`bay-${bayIdx}`}>
-                {/* Upright columns */}
+                {/* Upright columns — from groundY upward */}
                 {bayIdx === 0 && (
-                  <rect x={-uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+                  <rect x={-uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
                 )}
-                <rect x={bayStartX - uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+                <rect x={bayStartX - uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
                 {bayIdx === displayBays - 1 && (
-                  <rect x={bayEndX - uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+                  <rect x={bayEndX - uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
                 )}
 
                 {/* Pallets and beams at each level */}
                 {levels.map((lvl, lvlIdx) => {
-                  const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
-                  const palletTopPx = beamBottomPx - palletHPx;
-                  const beamTopPx = beamBottomPx - beamHPx;
+                  // Y position measured upward from ground
+                  const heightFromGround = lvl.bottomMm + (lvl.isGround ? 0 : palletHeight);
+                  const palletBottomY = groundY - heightFromGround / 1000 * scale;
+                  const palletTopY = palletBottomY - palletHPx;
+                  const beamBottomY = palletBottomY;
+                  const beamTopY = beamBottomY - beamHPx;
 
                   return (
                     <g key={`lvl-${lvlIdx}`}>
                       {/* Beam */}
                       {!lvl.isGround && (
                         <>
-                          <rect x={bayStartX} y={beamTopPx} width={bayEndX - bayStartX} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
-                          <circle cx={bayStartX} cy={beamTopPx + beamHPx / 2} r={1.5} fill={COLORS.beam} />
+                          <rect x={bayStartX} y={beamTopY} width={bayEndX - bayStartX} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
+                          <circle cx={bayStartX} cy={beamTopY + beamHPx / 2} r={1.5} fill={COLORS.beam} />
                         </>
                       )}
 
@@ -674,8 +679,8 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
                         const palletStartX = bayStartX + 100 / 1000 * scale + pIdx * (palletWPx + palletGap);
                         return (
                           <g key={`p-${lvlIdx}-${pIdx}`}>
-                            <rect x={palletStartX} y={palletTopPx} width={palletWPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
-                            <line x1={palletStartX} y1={palletTopPx + palletHPx} x2={palletStartX + palletWPx} y2={palletTopPx + palletHPx} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
+                            <rect x={palletStartX} y={palletTopY} width={palletWPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
+                            <line x1={palletStartX} y1={palletBottomY} x2={palletStartX + palletWPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
                           </g>
                         );
                       })}
@@ -692,12 +697,12 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             const zigN = 5;
             const zigH = frameHPx / (zigN * 2);
             const leftPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => {
-              const y = i * zigH;
+              const y = rackTopY + i * zigH;
               const x = i % 2 === 0 ? -uprightPx / 2 - zigW : -uprightPx / 2 + zigW;
               return `${x},${y}`;
             }).join(' ');
             const rightPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => {
-              const y = i * zigH;
+              const y = rackTopY + i * zigH;
               const x = i % 2 === 0 ? totalPx + uprightPx / 2 - zigW : totalPx + uprightPx / 2 + zigW;
               return `${x},${y}`;
             }).join(' ');
@@ -709,10 +714,10 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             );
           })()}
 
-          {/* Bay width dimension */}
+          {/* Bay width dimension below ground */}
           {displayBays >= 1 && (
             <DimensionLine
-              x1={0} y1={frameHPx + 24} x2={bayWidth / 1000 * scale} y2={frameHPx + 24}
+              x1={0} y1={groundY + 24} x2={bayWidth / 1000 * scale} y2={groundY + 24}
               label={formatMm(bayWidth)}
               offset={0}
               fontSize={7 * fontScale}
@@ -721,30 +726,31 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 
           {/* Level labels on left */}
           {levels.map((lvl, i) => {
-            const y = (frameHeight - lvl.bottomMm) / 1000 * scale;
+            const heightFromGround = lvl.bottomMm;
+            const beamY = groundY - heightFromGround / 1000 * scale;
             return (
               <g key={`lbl-${i}`}>
-                <line x1={-4} y1={y} x2={0} y2={y} stroke={COLORS.dimension} strokeWidth="0.5" />
-                <text x={-6} y={y + 3} textAnchor="end" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                <line x1={-4} y1={beamY} x2={0} y2={beamY} stroke={COLORS.dimension} strokeWidth="0.5" />
+                <text x={-6} y={beamY + 3} textAnchor="end" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
                   {lvl.isGround ? 'G' : `L${i - (hasGroundLevel ? 1 : 0)}`}
                 </text>
               </g>
             );
           })}
 
-          {/* Total height dimension on right — from floor to ceiling */}
-          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={ceilPx} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
+          {/* Total height dimension on right — floor to ceiling */}
+          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={ceilY} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
 
           {/* Rack height sub-dimension */}
-          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
+          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={rackTopY} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
 
           {/* Clearance to ceiling annotation */}
           {(() => {
-            const clearanceY = (ceilPx + frameHPx) / 2;
+            const clearanceY = (ceilY + rackTopY) / 2;
             const clearanceMm = warehouseHeight - frameHeight;
             return (
               <g>
-                <line x1={totalPx / 4} y1={frameHPx} x2={totalPx / 4} y2={ceilPx} stroke={COLORS.textSecondary} strokeWidth="0.5" strokeDasharray="3 2" />
+                <line x1={totalPx / 4} y1={rackTopY} x2={totalPx / 4} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="0.5" strokeDasharray="3 2" />
                 <rect x={totalPx / 4 - 35 * fontScale} y={clearanceY - 7 * fontScale} width={70 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.textSecondary} strokeWidth="0.5" />
                 <text x={totalPx / 4} y={clearanceY + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
                   ⬍ {formatMm(clearanceMm)}
@@ -753,11 +759,11 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             );
           })()}
 
-          {/* Scale bar */}
+          {/* Scale bar below ground */}
           {(() => {
             const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = ceilPx + 30;
+            const barY = groundY + 40;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
@@ -791,7 +797,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
     500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 60);
+  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 70);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
@@ -801,6 +807,11 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
   const beamHPx = Math.max(3, Math.min(8, beamSectionHeight / 1000 * scale));
   const palletDPx = palletDepth / 1000 * scale;
   const palletHPx = palletHeight / 1000 * scale;
+
+  // In SVG, y=0 is at the top. For engineering elevation, ground should be at bottom.
+  const groundY = svgHeight - padding - 20;
+  const ceilY = groundY - ceilPx;
+  const rackTopY = groundY - frameHPx;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -837,42 +848,40 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
           <pattern id="grid-side" width={500 * scale} height={500 * scale} patternUnits="userSpaceOnUse">
             <path d={`M ${500 * scale} 0 L 0 0 0 ${500 * scale}`} fill="none" stroke={COLORS.gridLine} strokeWidth="0.3" />
           </pattern>
-          <pattern id="ground-hatch-side" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <pattern id="ground-hatch-side" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
             <line x1="0" y1="0" x2="0" y2="6" stroke={COLORS.groundHatch} strokeWidth="0.8" />
           </pattern>
         </defs>
-        <g transform={`translate(${padding}, ${padding + 10})`}>
-          {/* Grid background (full warehouse height) */}
-          <rect width={totalPx} height={ceilPx} fill={COLORS.grid} />
+        <g transform={`translate(${padding}, 0)`}>
+          {/* Grid background from ceiling to ground */}
+          <rect x={0} y={ceilY} width={totalPx} height={ceilPx} fill={COLORS.grid} />
 
-          {/* Warehouse ceiling line */}
-          <line x1={-10} y1={ceilPx} x2={totalPx + 10} y2={ceilPx} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
-          <text x={totalPx + dimOff + 6} y={ceilPx + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
+          {/* Warehouse ceiling line at top */}
+          <line x1={-10} y1={ceilY} x2={totalPx + 10} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
+          <text x={totalPx + dimOff + 6} y={ceilY + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
 
-          {/* Floor line with hatch */}
-          <line x1={-10} y1={frameHPx} x2={totalPx + 10} y2={frameHPx} stroke={COLORS.ground} strokeWidth="2" />
-          <rect x={-10} y={frameHPx} width={totalPx + 20} height="12" fill="url(#ground-hatch-side)" />
+          {/* Floor line at bottom with hatch below */}
+          <line x1={-10} y1={groundY} x2={totalPx + 10} y2={groundY} stroke={COLORS.ground} strokeWidth="2" />
+          <rect x={-10} y={groundY} width={totalPx + 20} height="12" fill="url(#ground-hatch-side)" />
 
           {/* Each rack row */}
           {rowOffsets.map((rowX, rowIdx) => {
             const rowEndX = rowX + frameDPx;
 
-            // Determine if this row is part of back-to-back pair (share upright with neighbor)
-            const isBackToBackFirst = hasBackToBack && rowIdx === 1;
-            const isBackToBackSecond = hasBackToBack && rowIdx === 2;
-
             return (
               <g key={`row-${rowIdx}`}>
-                {/* Left upright */}
-                <rect x={rowX} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+                {/* Left upright — from groundY upward */}
+                <rect x={rowX} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
                 {/* Right upright */}
-                <rect x={rowEndX - uprightPx} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+                <rect x={rowEndX - uprightPx} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
 
                 {/* Beams and pallets at each level */}
                 {levels.map((lvl, lvlIdx) => {
-                  const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
-                  const palletTopPx = beamBottomPx - palletHPx;
-                  const beamTopPx = beamBottomPx - beamHPx;
+                  const heightFromGround = lvl.bottomMm + (lvl.isGround ? 0 : palletHeight);
+                  const palletBottomY = groundY - heightFromGround / 1000 * scale;
+                  const palletTopY = palletBottomY - palletHPx;
+                  const beamBottomY = palletBottomY;
+                  const beamTopY = beamBottomY - beamHPx;
                   const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
                   // Pallet centered on frame (overhangs 50mm each side)
                   const palletX = rowX + (frameDPx - palletDPx) / 2;
@@ -881,32 +890,32 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                     <g key={`side-r${rowIdx}-l${lvlIdx}`}>
                       {/* Beam across full frame depth */}
                       {!lvl.isGround && (
-                        <rect x={rowX} y={beamTopPx} width={frameDPx} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
+                        <rect x={rowX} y={beamTopY} width={frameDPx} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
                       )}
                       {/* Pallet */}
-                      <rect x={palletX} y={palletTopPx} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
-                      <line x1={palletX} y1={palletTopPx + palletHPx} x2={palletX + palletDPx} y2={palletTopPx + palletHPx} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
+                      <rect x={palletX} y={palletTopY} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
+                      <line x1={palletX} y1={palletBottomY} x2={palletX + palletDPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
                       {/* Level label */}
-                      <text x={rowEndX + 4} y={beamTopPx + beamHPx / 2 + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                      <text x={rowEndX + 4} y={beamTopY + beamHPx / 2 + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
                         {levelLabel}
                       </text>
                     </g>
                   );
                 })}
 
-                {/* Row label */}
+                {/* Row label below ground */}
                 {rowIdx === 0 && (
-                  <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                  <text x={rowX + frameDPx / 2} y={groundY + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
                     R1 (Single)
                   </text>
                 )}
                 {rowIdx === 1 && (
-                  <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                  <text x={rowX + frameDPx / 2} y={groundY + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
                     R{displayRows > 1 ? '2' : ''}
                   </text>
                 )}
                 {rowIdx === 2 && (
-                  <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                  <text x={rowX + frameDPx / 2} y={groundY + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
                     R{rackRows}
                   </text>
                 )}
@@ -918,7 +927,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
           {hasBackToBack && (() => {
             const aisleStartX = rowOffsets[1] + frameDPx;
             const aisleEndX = rowOffsets[2];
-            const aisleLabelY = ceilPx + 24;
+            const aisleLabelY = groundY + 28;
             return (
               <DimensionLine
                 x1={aisleStartX} y1={aisleLabelY} x2={aisleEndX} y2={aisleLabelY}
@@ -930,30 +939,30 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
           })()}
 
           {/* Total height dimension on right — floor to ceiling */}
-          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={ceilPx} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
+          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={ceilY} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
 
           {/* Rack height sub-dimension */}
-          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
+          <DimensionLine x1={totalPx} y1={groundY} x2={totalPx} y2={rackTopY} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
 
           {/* Clearance to ceiling annotation */}
           {(() => {
-            const clearanceY = (ceilPx + frameHPx) / 2;
+            const clearanceY = (ceilY + rackTopY) / 2;
             const clearanceMm = warehouseHeight - frameHeight;
             return (
               <g>
                 <rect x={totalPx / 2 - 35 * fontScale} y={clearanceY - 7 * fontScale} width={70 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.textSecondary} strokeWidth="0.5" />
                 <text x={totalPx / 2} y={clearanceY + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
-                  ⬍ {formatMm(clearanceMm)}
+                   {formatMm(clearanceMm)}
                 </text>
               </g>
             );
           })()}
 
-          {/* Scale bar */}
+          {/* Scale bar below ground */}
           {(() => {
             const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = ceilPx + 36;
+            const barY = groundY + 46;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
