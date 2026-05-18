@@ -585,7 +585,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
     500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 60);
+  const svgHeight = Math.max(450, (warehouseHeight / 1000) * scale + padding * 2 + 90);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
@@ -797,7 +797,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
     500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 70);
+  const svgHeight = Math.max(450, (warehouseHeight / 1000) * scale + padding * 2 + 90);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
