@@ -13,25 +13,209 @@ const COLORS = {
   grid: '#f8fafc',
   gridLine: '#f1f5f9',
   border: '#1e293b',
-  borderLight: '#cbd5e1',
+  borderLight: '#94a3b8',
   textPrimary: '#1e293b',
-  textSecondary: '#64748b',
+  textSecondary: '#475569',
   textMuted: '#94a3b8',
-  upright: '#475569',
-  beam: '#d97706',
-  beamFill: 'rgba(217,119,6,0.6)',
-  palletFill: 'rgba(160,82,45,0.12)',
-  palletStroke: '#a0522d',
-  palletStrokeOpacity: 0.4,
-  aisle: '#f1f5f9',
-  rackFill: 'rgba(59,130,246,0.06)',
+  upright: '#374151',
+  beam: '#b45309',
+  beamFill: 'rgba(217,119,6,0.65)',
+  palletFill: 'rgba(59,130,246,0.10)',
+  palletStroke: '#3b82f6',
+  palletStrokeOpacity: 0.45,
+  aisle: '#f8fafc',
+  rackFill: 'rgba(59,130,246,0.05)',
   rackStroke: '#3b82f6',
   column: '#ef4444',
-  dimension: '#94a3b8',
+  dimension: '#64748b',
   bracing: '#64748b',
   ground: '#1e293b',
   groundHatch: '#cbd5e1',
+  titleBlockBg: '#f8fafc',
+  titleBlockBorder: '#cbd5e1',
 } as const;
+
+// Drawing frame margins (px at 1:1 SVG scale)
+const OUTER_MARGIN = 12;
+const INNER_MARGIN = 4;
+const TITLE_BLOCK_H = 48;
+const TITLE_BLOCK_W = 260;
+
+// ============================================================
+// Title block component — standard engineering drawing format
+// ============================================================
+function TitleBlock({
+  view, scale, totalWidth, totalHeight, innerX, innerY, innerW, innerH,
+  warehouseLength, warehouseWidth, frameHeight, bayWidth, frameDepth,
+  rackType, beamLevels, palletsPerLevel, baysPerRow, rackRows,
+  fontScale,
+}: {
+  view: string;
+  scale: number;
+  totalWidth: number;
+  totalHeight: number;
+  innerX: number;
+  innerY: number;
+  innerW: number;
+  innerH: number;
+  warehouseLength: number;
+  warehouseWidth: number;
+  frameHeight: number;
+  bayWidth: number;
+  frameDepth: number;
+  rackType: string;
+  beamLevels: number;
+  palletsPerLevel: number;
+  baysPerRow: number;
+  rackRows: number;
+  fontScale: number;
+}) {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10);
+  const viewLabels: Record<string, string> = {
+    top: 'PLAN VIEW',
+    front: 'FRONT ELEVATION',
+    side: 'SIDE ELEVATION',
+  };
+  const rackTypeLabels: Record<string, string> = {
+    'selective': 'Selective Racking',
+    'drive-in': 'Drive-In Racking',
+    'radio-shuttle': 'Radio Shuttle',
+  };
+  const scaleRatio = Math.round(1 / scale * 1000);
+
+  const tbX = totalWidth - TITLE_BLOCK_W;
+  const tbY = totalHeight - TITLE_BLOCK_H;
+
+  return (
+    <g>
+      {/* Title block background */}
+      <rect x={tbX} y={tbY} width={TITLE_BLOCK_W} height={TITLE_BLOCK_H} fill={COLORS.titleBlockBg} stroke={COLORS.titleBlockBorder} strokeWidth="0.5" />
+
+      {/* Divider lines */}
+      <line x1={tbX} y1={tbY + 16} x2={tbX + TITLE_BLOCK_W} y2={tbY + 16} stroke={COLORS.titleBlockBorder} strokeWidth="0.3" />
+      <line x1={tbX} y1={tbY + 32} x2={tbX + TITLE_BLOCK_W} y2={tbY + 32} stroke={COLORS.titleBlockBorder} strokeWidth="0.3" />
+      <line x1={tbX + 100} y1={tbY} x2={tbX + 100} y2={tbY + 16} stroke={COLORS.titleBlockBorder} strokeWidth="0.3" />
+      <line x1={tbX + 180} y1={tbY} x2={tbX + 180} y2={tbY + 16} stroke={COLORS.titleBlockBorder} strokeWidth="0.3" />
+      <line x1={tbX + 100} y1={tbY + 16} x2={tbX + 100} y2={tbY + 32} stroke={COLORS.titleBlockBorder} strokeWidth="0.3" />
+      <line x1={tbX + 100} y1={tbY + 32} x2={tbX + 100} y2={totalHeight} stroke={COLORS.titleBlockBorder} strokeWidth="0.3" />
+
+      {/* RackingHub branding */}
+      <text x={tbX + 4} y={tbY + 11} fontSize={9 * fontScale} fill={COLORS.border} fontFamily="system-ui, sans-serif" fontWeight="700" letterSpacing="0.5">RACKINGHUB</text>
+      <text x={tbX + 4} y={tbY + 26} fontSize={5.5 * fontScale} fill={COLORS.textMuted} fontFamily="system-ui, sans-serif">rackinghub.com</text>
+
+      {/* Drawing title */}
+      <text x={tbX + 104} y={tbY + 11} fontSize={8 * fontScale} fill={COLORS.textPrimary} fontFamily="system-ui, sans-serif" fontWeight="600">{viewLabels[view] || view.toUpperCase()}</text>
+
+      {/* Scale */}
+      <text x={tbX + 184} y={tbY + 11} fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">SCALE 1:{scaleRatio}</text>
+
+      {/* Date */}
+      <text x={tbX + 4} y={tbY + 43} fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{dateStr}</text>
+
+      {/* Racking type */}
+      <text x={tbX + 104} y={tbY + 43} fontSize={6 * fontScale} fill={COLORS.textSecondary} fontFamily="system-ui, sans-serif">{rackTypeLabels[rackType] || rackType}</text>
+
+      {/* Units note — bottom row spanning full width */}
+      <text x={tbX + 4} y={totalHeight - 4} fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="system-ui, sans-serif" fontStyle="italic">ALL DIMENSIONS IN MM UNLESS NOTED</text>
+
+      {/* Configuration summary */}
+      {view === 'top' && (
+        <text x={tbX + 184} y={tbY + 43} fontSize={5.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+          {baysPerRow}×{rackRows} bays
+        </text>
+      )}
+      {view === 'front' && (
+        <text x={tbX + 184} y={tbY + 43} fontSize={5.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+          {beamLevels}L × {palletsPerLevel}P
+        </text>
+      )}
+      {view === 'side' && (
+        <text x={tbX + 184} y={tbY + 43} fontSize={5.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+          {rackRows} rows
+        </text>
+      )}
+    </g>
+  );
+}
+
+// ============================================================
+// Drawing frame — outer + inner border
+// ============================================================
+function DrawingFrame({ totalWidth, totalHeight, innerX, innerY, innerW, innerH }: { totalWidth: number; totalHeight: number; innerX: number; innerY: number; innerW: number; innerH: number }) {
+  return (
+    <g>
+      {/* Outer border */}
+      <rect x={0} y={0} width={totalWidth} height={totalHeight} fill="none" stroke={COLORS.border} strokeWidth="1.5" />
+      {/* Inner border */}
+      <rect x={innerX} y={innerY} width={innerW} height={innerH} fill="none" stroke={COLORS.borderLight} strokeWidth="0.5" />
+    </g>
+  );
+}
+
+// ============================================================
+// Scale bar — professional engineering style
+// ============================================================
+function ScaleBar({ x, y, lengthMm, scale, fontScale, label }: { x: number; y: number; lengthMm: number; scale: number; fontScale: number; label?: string }) {
+  const px = (lengthMm / 1000) * scale;
+  return (
+    <g>
+      <line x1={x} y1={y} x2={x + px} y2={y} stroke={COLORS.textMuted} strokeWidth="0.8" />
+      <line x1={x} y1={y - 3} x2={x} y2={y + 3} stroke={COLORS.textMuted} strokeWidth="0.8" />
+      <line x1={x + px} y1={y - 3} x2={x + px} y2={y + 3} stroke={COLORS.textMuted} strokeWidth="0.8" />
+      {/* Mid tick */}
+      <line x1={x + px / 2} y1={y - 2} x2={x + px / 2} y2={y + 2} stroke={COLORS.textMuted} strokeWidth="0.5" />
+      <text x={x + px / 2} y={y + 10} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+        {label ?? `${lengthMm / 1000}m`}
+      </text>
+    </g>
+  );
+}
+
+// ============================================================
+// Dimension line helper — AutoCAD style with tick marks
+// ============================================================
+function DimensionLine({
+  x1, y1, x2, y2, label, offset = 0, vertical = false, fontSize = 8, tickLen = 3,
+}: { x1: number; y1: number; x2: number; y2: number; label: string; offset?: number; vertical?: boolean; fontSize?: number; tickLen?: number }) {
+  const off = vertical ? -offset : offset;
+  const ex1 = vertical ? x1 + off : x1;
+  const ey1 = vertical ? y1 : y1 + off;
+  const ex2 = vertical ? x2 + off : x2;
+  const ey2 = vertical ? y2 : y2 + off;
+
+  return (
+    <g>
+      <line x1={ex1} y1={ey1} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.5" />
+      {vertical ? (
+        <>
+          <line x1={x1} y1={y1} x2={ex1} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.3" />
+          <line x1={x2} y1={y2} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.3" />
+          <line x1={ex1 - tickLen} y1={ey1} x2={ex1 + tickLen} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.6" />
+          <line x1={ex2 - tickLen} y1={ey2} x2={ex2 + tickLen} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.6" />
+        </>
+      ) : (
+        <>
+          <line x1={x1} y1={y1} x2={ex1} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.3" />
+          <line x1={x2} y1={y2} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.3" />
+          <line x1={ex1} y1={ey1 - tickLen} x2={ex1} y2={ey1 + tickLen} stroke={COLORS.dimension} strokeWidth="0.6" />
+          <line x1={ex2} y1={ey2 - tickLen} x2={ex2} y2={ey2 + tickLen} stroke={COLORS.dimension} strokeWidth="0.6" />
+        </>
+      )}
+      <text
+        x={vertical ? ex1 + 5 : (ex1 + ex2) / 2}
+        y={vertical ? (ey1 + ey2) / 2 + 3 : ey1 - 4}
+        textAnchor="middle"
+        fontSize={fontSize}
+        fill={COLORS.textSecondary}
+        fontFamily="monospace"
+        fontWeight="500"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
 
 export function LayoutCanvas() {
   const { layout, rackType, rack, pallet, uprightSelection, beamSelection, warehouse } = usePlannerStore();
@@ -41,7 +225,6 @@ export function LayoutCanvas() {
   const svgRef = useRef<SVGSVGElement>(null);
   const [containerWidth, setContainerWidth] = useState(800);
 
-  // Measure container width for responsive SVG
   useEffect(() => {
     if (!containerRef.current) return;
     const ro = new ResizeObserver(entries => {
@@ -79,7 +262,6 @@ export function LayoutCanvas() {
       }, 'image/png');
     };
     img.onerror = () => {
-      // Fallback: try without base64 encoding
       const blob = new Blob([svgStr], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
       img.onload = () => {
@@ -103,7 +285,6 @@ export function LayoutCanvas() {
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
   }, [view]);
 
-  // Early return after all hooks
   if (!layout || layout.elements.length === 0) {
     return (
       <div className="flex items-center justify-center h-full min-h-[300px] bg-slate-50 rounded-xl border border-slate-200">
@@ -114,30 +295,20 @@ export function LayoutCanvas() {
               <path d="M3 9h18M9 3v18" />
             </svg>
           </div>
-          <p className="text-sm text-slate-400">
-            Adjust parameters to generate layout
-          </p>
+          <p className="text-sm text-slate-400">Adjust parameters to generate layout</p>
         </div>
       </div>
     );
   }
 
   const frameDepth = pallet.depth - 100;
-  const bayWidth =
-    rack.palletsPerLevel * pallet.width +
-    (rack.palletsPerLevel - 1) * 100 +
-    2 * 100;
+  const bayWidth = rack.palletsPerLevel * pallet.width + (rack.palletsPerLevel - 1) * 100 + 2 * 100;
   const beamSectionHeight = beamSelection?.heightMm ?? 120;
   const firstBeamBottom = rack.firstBeamHeight;
   const lastLevelBeamBottom = firstBeamBottom + (rack.beamLevels - 1) * (pallet.height + 100);
   const frameHeight = lastLevelBeamBottom + beamSectionHeight + 100;
   const totalLevels = rack.beamLevels + (rack.hasGroundLevel ? 1 : 0);
 
-  // Responsive padding based on container width
-  const padding = containerWidth < 640 ? 20 : 40;
-  const svgWidth = containerWidth;
-
-  // Font size scaling for mobile
   const isMobile = containerWidth < 640;
   const fontScale = isMobile ? 1.3 : 1;
 
@@ -149,8 +320,7 @@ export function LayoutCanvas() {
         <TopView
           {...viewProps}
           layout={layout}
-          svgWidth={svgWidth}
-          padding={padding}
+          containerWidth={containerWidth}
           bayWidth={bayWidth}
           frameDepth={frameDepth}
           columnSpacingX={warehouse.columnSpacingX}
@@ -158,13 +328,19 @@ export function LayoutCanvas() {
           pallet={pallet}
           rack={rack}
           wallClearance={warehouse.wallClearance}
+          warehouseLength={warehouse.length}
+          warehouseWidth={warehouse.width}
+          rackType={rackType}
+          beamLevels={rack.beamLevels}
+          palletsPerLevel={rack.palletsPerLevel}
+          baysPerRow={layout.baysPerRow}
+          rackRows={layout.rackRows}
         />
       )}
       {view === 'front' && (
         <FrontView
           {...viewProps}
-          svgWidth={svgWidth}
-          padding={padding}
+          containerWidth={containerWidth}
           bayWidth={bayWidth}
           frameHeight={frameHeight}
           beamSectionHeight={beamSectionHeight}
@@ -178,13 +354,15 @@ export function LayoutCanvas() {
           baysPerRow={layout.baysPerRow}
           uprightSelection={uprightSelection}
           warehouseHeight={warehouse.height}
+          rackType={rackType}
+          beamLevelsParam={rack.beamLevels}
+          palletsPerLevelParam={rack.palletsPerLevel}
         />
       )}
       {view === 'side' && (
         <SideView
           {...viewProps}
-          svgWidth={svgWidth}
-          padding={padding}
+          containerWidth={containerWidth}
           frameDepth={frameDepth}
           frameHeight={frameHeight}
           beamSectionHeight={beamSectionHeight}
@@ -198,47 +376,35 @@ export function LayoutCanvas() {
           rackRows={layout.rackRows}
           aisleWidth={rack.aisleWidth}
           warehouseHeight={warehouse.height}
+          rackType={rackType}
+          beamLevelsParam={rack.beamLevels}
+          palletsPerLevelParam={rack.palletsPerLevel}
         />
       )}
 
-      {/* Quote prompt after export */}
       {showQuotePrompt && (
         <div className="animate-fade-in bg-amber-50 border border-amber-200 rounded-xl p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-semibold text-amber-800">
-                Need a formal quotation?
-              </p>
+              <p className="text-sm font-semibold text-amber-800">Need a formal quotation?</p>
               <p className="text-xs text-amber-700 mt-1">
                 Our engineering team will review your specs and provide CAD drawings,
                 structural calculations, and a binding quote within 24 hours.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowQuotePrompt(false)}
-              className="text-amber-400 hover:text-amber-600 shrink-0 ml-4"
-            >
+            <button type="button" onClick={() => setShowQuotePrompt(false)} className="text-amber-400 hover:text-amber-600 shrink-0 ml-4">
               <X className="w-4 h-4" />
             </button>
           </div>
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              onClick={() => {
-                setShowQuotePrompt(false);
-                // Scroll to CTA section
-                document.querySelector('[data-cta]')?.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => { setShowQuotePrompt(false); document.querySelector('[data-cta]')?.scrollIntoView({ behavior: 'smooth' }); }}
               className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition-colors"
             >
               Request Free Quote
             </button>
-            <button
-              type="button"
-              onClick={() => setShowQuotePrompt(false)}
-              className="px-4 py-2 text-sm text-amber-600 hover:text-amber-800 font-medium"
-            >
+            <button type="button" onClick={() => setShowQuotePrompt(false)} className="px-4 py-2 text-sm text-amber-600 hover:text-amber-800 font-medium">
               Maybe Later
             </button>
           </div>
@@ -249,7 +415,7 @@ export function LayoutCanvas() {
 }
 
 // ============================================================
-// Shared view toolbar
+// Shared view toolbar (HTML, not part of drawing)
 // ============================================================
 function ViewToolbar({ view, setView, rackType, handleExportPNG, fontScale }: { view: ViewType; setView: (v: ViewType) => void; rackType: string; handleExportPNG: () => void; fontScale: number }) {
   const views: { key: ViewType; label: string }[] = [
@@ -257,8 +423,6 @@ function ViewToolbar({ view, setView, rackType, handleExportPNG, fontScale }: { 
     { key: 'front', label: 'Front' },
     { key: 'side', label: 'Side' },
   ];
-
-  const rackColor = rackType === 'drive-in' ? '#fbbf24' : rackType === 'radio-shuttle' ? '#a78bfa' : '#3b82f6';
 
   return (
     <div className="px-4 py-2.5 border-b border-slate-100 bg-white flex flex-wrap items-center justify-between gap-2">
@@ -275,11 +439,7 @@ function ViewToolbar({ view, setView, rackType, handleExportPNG, fontScale }: { 
               key={v.key}
               type="button"
               onClick={() => setView(v.key)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                view === v.key
-                  ? 'bg-white text-slate-800 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${view === v.key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               style={{ fontSize: `${11 * fontScale}px` }}
             >
               {v.label}
@@ -301,162 +461,93 @@ function ViewToolbar({ view, setView, rackType, handleExportPNG, fontScale }: { 
   );
 }
 
-function Legend({ rackType, hasColumn, fontScale }: { rackType: string; hasColumn?: boolean; fontScale: number }) {
-  const rackColor = rackType === 'drive-in' ? '#fbbf24' : rackType === 'radio-shuttle' ? '#a78bfa' : '#3b82f6';
-
-  return (
-    <div className="px-4 py-2.5 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500">
-      <div className="flex items-center gap-1.5">
-        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: rackColor, opacity: 0.3, border: `1.5px solid ${rackColor}` }} />
-        <span style={{ fontSize: `${11 * fontScale}px` }}>Rack Row</span>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <div className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200" />
-        <span style={{ fontSize: `${11 * fontScale}px` }}>Aisle</span>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <div className="w-3 h-3 rounded-sm border-2 border-dashed border-slate-300" />
-        <span style={{ fontSize: `${11 * fontScale}px` }}>Wall</span>
-      </div>
-      {hasColumn && (
-        <div className="flex items-center gap-1.5">
-          <span className="text-red-400 font-bold" style={{ fontSize: `${12 * fontScale}px`, lineHeight: 1 }}>×</span>
-          <span style={{ fontSize: `${11 * fontScale}px` }}>Column</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ============================================================
-// Dimension line helper — AutoCAD style with tick marks
+// Top-down plan view — engineering drawing style
 // ============================================================
-function DimensionLine({
-  x1, y1, x2, y2, label, offset = 0, vertical = false, fontSize = 8,
-}: { x1: number; y1: number; x2: number; y2: number; label: string; offset?: number; vertical?: boolean; fontSize?: number }) {
-  const off = vertical ? -offset : offset;
-  const ex1 = vertical ? x1 + off : x1;
-  const ey1 = vertical ? y1 : y1 + off;
-  const ex2 = vertical ? x2 + off : x2;
-  const ey2 = vertical ? y2 : y2 + off;
-  const tick = 3;
+function TopView(props: any) {
+  const { layout, svgRef, containerWidth, fontScale, bayWidth, frameDepth, wallClearance, columnSpacingX, columnSpacingY, pallet, rack, warehouseLength, warehouseWidth, rackType, beamLevels, palletsPerLevel, baysPerRow, rackRows, view, setView, handleExportPNG } = props;
 
-  return (
-    <g>
-      <line x1={ex1} y1={ey1} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.5" />
-      {/* Extension lines */}
-      {vertical ? (
-        <>
-          <line x1={x1} y1={y1} x2={ex1} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.3" />
-          <line x1={x2} y1={y2} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.3" />
-          {/* Tick marks */}
-          <line x1={ex1 - tick} y1={ey1} x2={ex1 + tick} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.6" />
-          <line x1={ex2 - tick} y1={ey2} x2={ex2 + tick} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.6" />
-        </>
-      ) : (
-        <>
-          <line x1={x1} y1={y1} x2={ex1} y2={ey1} stroke={COLORS.dimension} strokeWidth="0.3" />
-          <line x1={x2} y1={y2} x2={ex2} y2={ey2} stroke={COLORS.dimension} strokeWidth="0.3" />
-          <line x1={ex1} y1={ey1 - tick} x2={ex1} y2={ey1 + tick} stroke={COLORS.dimension} strokeWidth="0.6" />
-          <line x1={ex2} y1={ey2 - tick} x2={ex2} y2={ey2 + tick} stroke={COLORS.dimension} strokeWidth="0.6" />
-        </>
-      )}
-      {/* Label */}
-      <text
-        x={vertical ? ex1 + 5 : (ex1 + ex2) / 2}
-        y={vertical ? (ey1 + ey2) / 2 + 3 : ey1 - 4}
-        textAnchor="middle"
-        fontSize={fontSize}
-        fill={COLORS.textSecondary}
-        fontFamily="monospace"
-        fontWeight="500"
-      >
-        {label}
-      </text>
-    </g>
-  );
-}
+  // Content area sizing
+  const contentPad = 20; // padding inside inner border
+  const contentW = layout.warehouseLength / 1000; // meters
+  const contentH = layout.warehouseWidth / 1000; // meters
+  const availW = containerWidth - OUTER_MARGIN * 2 - INNER_MARGIN * 2 - contentPad * 2 - TITLE_BLOCK_W;
+  const availH = 500 - OUTER_MARGIN * 2 - INNER_MARGIN * 2 - contentPad * 2 - TITLE_BLOCK_H;
 
-// ============================================================
-// Top-down plan view
-// ============================================================
-function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale, columnSpacingX, columnSpacingY, pallet, rack, wallClearance }: any) {
-  const scale = Math.min(
-    (svgWidth - padding * 2) / (layout.warehouseLength / 1000),
-    400 / (layout.warehouseWidth / 1000)
-  );
-  const svgHeight = Math.max(300, (layout.warehouseWidth / 1000) * scale + padding * 2 + 50);
+  const scale = Math.min(availW / contentW, availH / contentH, 40);
+  const contentPxW = contentW * scale;
+  const contentPxH = contentH * scale;
+
+  // Total SVG dimensions
+  const totalW = containerWidth;
+  const totalH = Math.max(400, contentPxH + (OUTER_MARGIN + INNER_MARGIN + contentPad) * 2 + TITLE_BLOCK_H + 10);
+
+  // Inner drawing area
+  const innerX = OUTER_MARGIN + INNER_MARGIN;
+  const innerY = OUTER_MARGIN + INNER_MARGIN;
+  const innerW = totalW - (OUTER_MARGIN + INNER_MARGIN) * 2;
+  const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
+
+  // Content position (centered within inner area, above title block)
+  const drawingAreaH = innerH - TITLE_BLOCK_H;
+  const contentX = innerX + contentPad + (innerW - contentPad * 2 - TITLE_BLOCK_W - contentPxW) / 2;
+  const contentY = innerY + contentPad + (drawingAreaH - contentPad * 2 - contentPxH) / 2;
+
+  const lenPx = contentPxW;
+  const widPx = contentPxH;
   const hasColumns = layout.columnPositions && layout.columnPositions.length > 0;
-  const lenPx = layout.warehouseLength / 1000 * scale;
-  const widPx = layout.warehouseWidth / 1000 * scale;
-  const dimOff = 18;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} fontScale={fontScale} />
 
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="w-full"
-        style={{ minHeight: 300 }}
-        data-view="top"
-      >
+      <svg ref={svgRef} viewBox={`0 0 ${totalW} ${totalH}`} className="w-full" style={{ minHeight: 380 }} data-view="top">
         <defs>
-          <pattern id="grid" width={1000 * scale} height={1000 * scale} patternUnits="userSpaceOnUse">
-            <path d={`M ${1000 * scale} 0 L 0 0 0 ${1000 * scale}`} fill="none" stroke={COLORS.gridLine} strokeWidth="0.5" />
+          <pattern id="grid-top" width={1000 / 1000 * scale} height={1000 / 1000 * scale} patternUnits="userSpaceOnUse">
+            <path d={`M ${scale} 0 L 0 0 0 ${scale}`} fill="none" stroke={COLORS.gridLine} strokeWidth="0.3" />
           </pattern>
         </defs>
-        <g transform={`translate(${padding}, ${padding})`}>
-          {/* Warehouse outline */}
-          <rect
-            x={0} y={0}
-            width={lenPx} height={widPx}
-            fill={COLORS.grid} stroke={COLORS.borderLight} strokeWidth="1.5" strokeDasharray="6 3" rx="2"
-          />
-          {/* Grid overlay */}
-          <rect x={0} y={0} width={lenPx} height={widPx} fill="url(#grid)" />
 
-          {/* Wall clearance zone (4 sides) */}
+        {/* Background */}
+        <rect x={0} y={0} width={totalW} height={totalH} fill={COLORS.white} />
+
+        {/* Drawing frame */}
+        <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
+
+        <g transform={`translate(${contentX}, ${contentY})`}>
+          {/* Warehouse outline */}
+          <rect x={0} y={0} width={lenPx} height={widPx} fill={COLORS.grid} stroke={COLORS.borderLight} strokeWidth="1" strokeDasharray="4 2" rx="1" />
+          <rect x={0} y={0} width={lenPx} height={widPx} fill="url(#grid-top)" />
+
+          {/* Wall clearance zone */}
           {(() => {
             const clearPx = (wallClearance / 1000) * scale;
             return (
               <g>
-                {/* Top wall clearance zone */}
                 <rect x={0} y={0} width={lenPx} height={clearPx} fill="rgba(148,163,184,0.06)" />
-                {/* Bottom wall clearance zone */}
                 <rect x={0} y={widPx - clearPx} width={lenPx} height={clearPx} fill="rgba(148,163,184,0.06)" />
-                {/* Left wall clearance zone */}
                 <rect x={0} y={0} width={clearPx} height={widPx} fill="rgba(148,163,184,0.06)" />
-                {/* Right wall clearance zone */}
                 <rect x={lenPx - clearPx} y={0} width={clearPx} height={widPx} fill="rgba(148,163,184,0.06)" />
               </g>
             );
           })()}
 
-          {/* Wall clearance dimension lines (4 sides) */}
+          {/* Warehouse dimension lines */}
+          <DimensionLine x1={0} y1={0} x2={lenPx} y2={0} label={formatMm(layout.warehouseLength)} offset={14} fontSize={7 * fontScale} />
+          <DimensionLine x1={0} y1={0} x2={0} y2={widPx} label={formatMm(layout.warehouseWidth)} offset={14} vertical fontSize={7 * fontScale} />
+
+          {/* Wall clearance dims */}
           {(() => {
             const clearPx = (wallClearance / 1000) * scale;
-            const dimOff2 = 10;
             return (
               <g>
-                {/* Top wall clearance */}
-                <DimensionLine x1={clearPx / 2} y1={0} x2={clearPx / 2} y2={clearPx} label={formatMm(wallClearance)} offset={-dimOff2} vertical fontSize={7 * fontScale} />
-                {/* Left wall clearance */}
-                <DimensionLine x1={0} y1={clearPx / 2} x2={clearPx} y2={clearPx / 2} label={formatMm(wallClearance)} offset={-dimOff2} fontSize={7 * fontScale} />
-                {/* Right wall clearance */}
-                <DimensionLine x1={lenPx} y1={clearPx / 2} x2={lenPx - clearPx} y2={clearPx / 2} label={formatMm(wallClearance)} offset={dimOff2} fontSize={7 * fontScale} />
-                {/* Bottom wall clearance */}
-                <DimensionLine x1={lenPx - clearPx / 2} y1={widPx} x2={lenPx - clearPx / 2} y2={widPx - clearPx} label={formatMm(wallClearance)} offset={dimOff2} vertical fontSize={7 * fontScale} />
+                <DimensionLine x1={clearPx / 2} y1={0} x2={clearPx / 2} y2={clearPx} label={formatMm(wallClearance)} offset={-8} vertical fontSize={5.5 * fontScale} />
+                <DimensionLine x1={0} y1={clearPx / 2} x2={clearPx} y2={clearPx / 2} label={formatMm(wallClearance)} offset={-8} fontSize={5.5 * fontScale} />
               </g>
             );
           })()}
 
-          {/* Warehouse dimension lines */}
-          <DimensionLine x1={0} y1={0} x2={lenPx} y2={0} label={formatMm(layout.warehouseLength)} offset={dimOff} fontSize={9 * fontScale} />
-          <DimensionLine x1={0} y1={0} x2={0} y2={widPx} label={formatMm(layout.warehouseWidth)} offset={dimOff} vertical fontSize={9 * fontScale} />
-
-          {/* Column spacing dimension (X direction) */}
+          {/* Column spacing dimensions */}
           {hasColumns && layout.columnPositions.length > 0 && (() => {
             const xSet = new Set<number>();
             const ySet = new Set<number>();
@@ -464,49 +555,20 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
             const xPositions = Array.from(xSet).sort((a, b) => a - b);
             const yPositions = Array.from(ySet).sort((a, b) => a - b);
             const els: JSX.Element[] = [];
-            // Dimension between adjacent column X positions on top row
             for (let i = 0; i < xPositions.length - 1; i++) {
-              const x1 = xPositions[i];
-              const x2 = xPositions[i + 1];
+              const x1 = xPositions[i], x2 = xPositions[i + 1];
               const y = yPositions.length > 0 ? yPositions[0] : 0;
-              const cx = ((x1 + x2) / 2 / 1000) * scale;
-              const sx1 = (x1 / 1000) * scale;
-              const sx2 = (x2 / 1000) * scale;
-              const sy = (y / 1000) * scale - 8;
-              const spacing = x2 - x1;
-              els.push(
-                <DimensionLine
-                  key={`csx-${i}`}
-                  x1={sx1} y1={sy} x2={sx2} y2={sy}
-                  label={formatMm(spacing)}
-                  offset={8}
-                  fontSize={7 * fontScale}
-                />
-              );
+              els.push(<DimensionLine key={`csx-${i}`} x1={(x1 / 1000) * scale} y1={(y / 1000) * scale - 6} x2={(x2 / 1000) * scale} y2={(y / 1000) * scale - 6} label={formatMm(x2 - x1)} offset={6} fontSize={5.5 * fontScale} />);
             }
-            // Dimension between adjacent column Y positions on left column
             for (let i = 0; i < yPositions.length - 1; i++) {
-              const y1 = yPositions[i];
-              const y2 = yPositions[i + 1];
+              const y1 = yPositions[i], y2 = yPositions[i + 1];
               const x = xPositions.length > 0 ? xPositions[0] : 0;
-              const sx = (x / 1000) * scale - 8;
-              const sy1 = (y1 / 1000) * scale;
-              const sy2 = (y2 / 1000) * scale;
-              const spacing = y2 - y1;
-              els.push(
-                <DimensionLine
-                  key={`csy-${i}`}
-                  x1={sx} y1={sy1} x2={sx} y2={sy2}
-                  label={formatMm(spacing)}
-                  offset={8}
-                  vertical
-                  fontSize={7 * fontScale}
-                />
-              );
+              els.push(<DimensionLine key={`csy-${i}`} x1={(x / 1000) * scale - 6} y1={(y1 / 1000) * scale} x2={(x / 1000) * scale - 6} y2={(y2 / 1000) * scale} label={formatMm(y2 - y1)} offset={6} vertical fontSize={5.5 * fontScale} />);
             }
             return els;
           })()}
 
+          {/* Rack rows and pallets */}
           {(() => {
             const els = layout.elements;
             let rowNum = 0;
@@ -523,15 +585,13 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
                 return (
                   <g key={i}>
                     <rect x={x} y={y} width={w} height={h} fill={COLORS.aisle} />
-                    <text x={x + 6} y={y + h / 2 + 3} fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{el.label}</text>
+                    <text x={x + 4} y={y + h / 2 + 3} fontSize={6.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{el.label}</text>
                   </g>
                 );
               }
               if (el.type === 'rack-row') {
                 rowNum++;
-                // Detect back-to-back: next element is also rack-row (no aisle between)
                 const isBackToBack = els[i + 1]?.type === 'rack-row';
-
                 const color = el.color || COLORS.rackStroke;
                 const frameDepthPx = (frameDepth / 1000) * scale;
                 const bayWidthPx = (bayWidth / 1000) * scale;
@@ -540,21 +600,14 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
                 const palletDPx = (pallet.depth / 1000) * scale;
                 const palletGapPx = (100 / 1000) * scale;
                 const palletToUprightPx = (100 / 1000) * scale;
-                const uprightPx = Math.max(3, Math.min(8, frameDepthPx * 0.08));
+                const uprightPx = Math.max(2, Math.min(6, frameDepthPx * 0.07));
 
                 return (
                   <g key={i}>
-                    {/* Rack row background */}
-                    <rect x={x} y={y} width={w} height={frameDepthPx} fill={COLORS.rackFill} stroke={color} strokeWidth="1" strokeOpacity="0.3" />
-
-                    {/* Bay dividers (uprights) */}
+                    <rect x={x} y={y} width={w} height={frameDepthPx} fill={COLORS.rackFill} stroke={color} strokeWidth="0.8" strokeOpacity="0.35" />
                     {Array.from({ length: numBays + 1 }).map((_, j) => (
-                      <g key={`bay-${j}`}>
-                        <rect x={x + j * bayWidthPx - uprightPx / 2} y={y} width={uprightPx} height={frameDepthPx} fill={COLORS.upright} opacity="0.5" rx="1" />
-                      </g>
+                      <rect key={`bay-${j}`} x={x + j * bayWidthPx - uprightPx / 2} y={y} width={uprightPx} height={frameDepthPx} fill={COLORS.upright} opacity="0.45" rx="0.5" />
                     ))}
-
-                    {/* Pallets in each bay */}
                     {Array.from({ length: numBays }).map((_, bayIdx) => {
                       const bayStartX = x + bayIdx * bayWidthPx + palletToUprightPx;
                       return (
@@ -563,34 +616,14 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
                             const palletX = bayStartX + pIdx * (palletWPx + palletGapPx);
                             const palletY = y + (frameDepthPx - palletDPx) / 2;
                             return (
-                              <rect
-                                key={`p-${bayIdx}-${pIdx}`}
-                                x={palletX} y={palletY}
-                                width={palletWPx} height={palletDPx}
-                                fill={COLORS.palletFill}
-                                stroke={COLORS.palletStroke}
-                                strokeWidth="0.6" strokeOpacity="0.5"
-                                rx="1"
-                              />
+                              <rect key={`p-${bayIdx}-${pIdx}`} x={palletX} y={palletY} width={palletWPx} height={palletDPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.5" strokeOpacity="0.5" rx="0.5" />
                             );
                           })}
                         </g>
                       );
                     })}
-
-                    {/* Row label R1, R2... */}
-                    <text x={x + 3} y={y + frameDepthPx / 2 + 3} fontSize={7 * fontScale} fill={color} fillOpacity="0.7" fontFamily="monospace">
-                      R{rowNum}{isBackToBack ? ' (Back-to-Back)' : ''}
-                    </text>
-
-                    {/* Bay width dimension */}
-                    <DimensionLine
-                      key={`bw-${i}`}
-                      x1={x} y1={y + frameDepthPx + 16} x2={x + bayWidthPx} y2={y + frameDepthPx + 16}
-                      label={formatMm(bayWidth)}
-                      offset={-8}
-                      fontSize={7 * fontScale}
-                    />
+                    <text x={x + 3} y={y + frameDepthPx / 2 + 3} fontSize={6 * fontScale} fill={color} fillOpacity="0.65" fontFamily="monospace">R{rowNum}{isBackToBack ? ' (B2B)' : ''}</text>
+                    <DimensionLine key={`bw-${i}`} x1={x} y1={y + frameDepthPx + 12} x2={x + bayWidthPx} y2={y + frameDepthPx + 12} label={formatMm(bayWidth)} offset={-6} fontSize={5.5 * fontScale} />
                   </g>
                 );
               }
@@ -602,92 +635,92 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
           {hasColumns && layout.columnPositions.map((col: { x: number; y: number }, i: number) => {
             const cx = (col.x / 1000) * scale;
             const cy = (col.y / 1000) * scale;
-            const s = 4 * fontScale;
+            const s = 3.5 * fontScale;
             return (
               <g key={`col-${i}`}>
-                <circle cx={cx} cy={cy} r={3 * fontScale} fill="none" stroke={COLORS.column} strokeWidth="1" strokeOpacity="0.4" />
-                <line x1={cx - s} y1={cy - s} x2={cx + s} y2={cy + s} stroke={COLORS.column} strokeWidth="1.5" strokeOpacity="0.5" />
-                <line x1={cx + s} y1={cy - s} x2={cx - s} y2={cy + s} stroke={COLORS.column} strokeWidth="1.5" strokeOpacity="0.5" />
+                <circle cx={cx} cy={cy} r={2.5 * fontScale} fill="none" stroke={COLORS.column} strokeWidth="0.8" strokeOpacity="0.5" />
+                <line x1={cx - s} y1={cy - s} x2={cx + s} y2={cy + s} stroke={COLORS.column} strokeWidth="1.2" strokeOpacity="0.5" />
+                <line x1={cx + s} y1={cy - s} x2={cx - s} y2={cy + s} stroke={COLORS.column} strokeWidth="1.2" strokeOpacity="0.5" />
               </g>
             );
           })}
 
           {/* Column grid label */}
           {hasColumns && (() => {
-            const cx = columnSpacingX / 1000 * scale / 2;
-            const cy = columnSpacingY / 1000 * scale / 2;
+            const cx = (columnSpacingX / 1000) * scale / 2;
+            const cy = (columnSpacingY / 1000) * scale / 2;
             return (
               <g>
-                <rect x={cx - 30 * fontScale} y={cy - 8 * fontScale} width={60 * fontScale} height={16 * fontScale} rx={3} fill="white" stroke={COLORS.column} strokeWidth="0.5" strokeOpacity="0.3" />
-                <text x={cx} y={cy + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.column} fontFamily="monospace" fontWeight="600">
-                  {formatMm(columnSpacingX)}×{formatMm(columnSpacingY)}
-                </text>
+                <rect x={cx - 24 * fontScale} y={cy - 7 * fontScale} width={48 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.column} strokeWidth="0.4" strokeOpacity="0.4" />
+                <text x={cx} y={cy + 3 * fontScale} textAnchor="middle" fontSize={5.5 * fontScale} fill={COLORS.column} fontFamily="monospace" fontWeight="600">{formatMm(columnSpacingX)}×{formatMm(columnSpacingY)}</text>
               </g>
             );
           })()}
 
           {/* North arrow */}
           {(() => {
-            const nx = lenPx - 20;
-            const ny = 20;
+            const nx = lenPx - 16;
+            const ny = 16;
             return (
               <g transform={`translate(${nx}, ${ny})`}>
-                <line x1="0" y1="8" x2="0" y2="-8" stroke={COLORS.textMuted} strokeWidth="1" />
-                <polygon points="0,-10 -3,-4 3,-4" fill={COLORS.textMuted} />
-                <text x="0" y="-14" textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">N</text>
+                <line x1="0" y1="6" x2="0" y2="-6" stroke={COLORS.textMuted} strokeWidth="0.8" />
+                <polygon points="0,-8 -2.5,-3 2.5,-3" fill={COLORS.textMuted} />
+                <text x="0" y="-11" textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">N</text>
               </g>
             );
           })()}
 
           {/* Scale bar */}
-          {(() => {
-            const scaleBarM = 10;
-            const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = widPx + 40;
-            return (
-              <g>
-                <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
-                <line x1={0} y1={barY - 3} x2={0} y2={barY + 3} stroke={COLORS.textMuted} strokeWidth="1" />
-                <line x1={scaleBarPx} y1={barY - 3} x2={scaleBarPx} y2={barY + 3} stroke={COLORS.textMuted} strokeWidth="1" />
-                <text x={scaleBarPx / 2} y={barY + 12} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{scaleBarM}m</text>
-              </g>
-            );
-          })()}
+          <ScaleBar x={4} y={widPx + 14} lengthMm={10000} scale={scale} fontScale={fontScale} />
         </g>
-      </svg>
 
-      <Legend rackType={rackType} hasColumn={hasColumns} fontScale={fontScale} />
+        {/* Title block */}
+        <TitleBlock
+          view="top" scale={scale} totalWidth={totalW} totalHeight={totalH}
+          innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH}
+          warehouseLength={warehouseLength} warehouseWidth={warehouseWidth}
+          frameHeight={0} bayWidth={bayWidth} frameDepth={frameDepth}
+          rackType={rackType} beamLevels={beamLevels} palletsPerLevel={palletsPerLevel}
+          baysPerRow={baysPerRow} rackRows={rackRows} fontScale={fontScale}
+        />
+      </svg>
     </div>
   );
 }
 
 // ============================================================
-// Front elevation view — 2 typical bays with break line
+// Front elevation view — engineering drawing style
 // ============================================================
-function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, palletWidth, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, baysPerRow, uprightSelection, view, setView, svgRef, handleExportPNG, fontScale, warehouseHeight }: any) {
+function FrontView(props: any) {
+  const { svgRef, containerWidth, fontScale, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, palletWidth, beamLevels, hasGroundLevel, palletsPerLevel, baysPerRow, uprightSelection, warehouseHeight, rackType, view, setView, handleExportPNG } = props;
+
   const displayBays = baysPerRow >= 2 ? 2 : 1;
   const totalWidthMm = bayWidth * displayBays;
-
-  const scale = Math.min(
-    (svgWidth - padding * 2 - 100) / (totalWidthMm / 1000),
-    550 / (frameHeight / 1000)
-  );
+  const scale = Math.min((containerWidth - OUTER_MARGIN * 2 - INNER_MARGIN * 2 - 60 - TITLE_BLOCK_W) / (totalWidthMm / 1000), 500 / (frameHeight / 1000), 40);
 
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
-  const uprightPx = Math.max(6, Math.min(14, totalPx / displayBays * 0.04));
-  const beamHPx = Math.max(3, Math.min(10, beamSectionHeight / 1000 * scale));
+  const uprightPx = Math.max(5, Math.min(12, totalPx / displayBays * 0.035));
+  const beamHPx = Math.max(3, Math.min(8, beamSectionHeight / 1000 * scale));
   const palletHPx = palletHeight / 1000 * scale;
   const palletWPx = palletWidth / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
 
-  const topMargin = 30;
-  const groundY = topMargin + frameHPx + 30;
+  const groundY = frameHPx + 40;
   const ceilY = groundY - ceilPx;
   const rackTopY = groundY - frameHPx;
 
-  const bottomMargin = 120;
-  const svgHeight = groundY + bottomMargin;
+  const contentH = groundY + 60;
+  const totalW = containerWidth;
+  const totalH = contentH + OUTER_MARGIN * 2 + INNER_MARGIN * 2 + TITLE_BLOCK_H + 10;
+
+  const innerX = OUTER_MARGIN + INNER_MARGIN;
+  const innerY = OUTER_MARGIN + INNER_MARGIN;
+  const innerW = totalW - (OUTER_MARGIN + INNER_MARGIN) * 2;
+  const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
+
+  const leftLabelSpace = 24;
+  const contentX = innerX + leftLabelSpace;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -695,11 +728,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
 
-  const leftLabelSpace = 30;
-  const rightDimOffset = 20;
-  const heightDimX = totalPx + leftLabelSpace + rightDimOffset;
-
-  // Beam clear span = distance between upright inner faces (bay width minus upright widths)
+  const heightDimX = totalPx + 16;
   const bayClearSpanPx = bayWidth / 1000 * scale - uprightPx;
   const bayClearSpanMm = Math.round(bayClearSpanPx / scale * 1000);
 
@@ -707,31 +736,23 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} fontScale={fontScale} />
 
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="w-full"
-        style={{ minHeight: svgHeight, display: 'block' }}
-        data-view="front"
-      >
+      <svg ref={svgRef} viewBox={`0 0 ${totalW} ${totalH}`} className="w-full" style={{ minHeight: 380 }} data-view="front">
         <defs>
-          <pattern id="grid-front" width={1000 * scale} height={500 * scale} patternUnits="userSpaceOnUse">
-            <path d={`M ${1000 * scale} 0 L 0 0 0 ${500 * scale}`} fill="none" stroke={COLORS.gridLine} strokeWidth="0.3" />
-          </pattern>
-          <pattern id="ground-hatch-front" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
-            <line x1="0" y1="0" x2="0" y2="6" stroke={COLORS.groundHatch} strokeWidth="0.8" />
+          <pattern id="ground-hatch-front" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+            <line x1="0" y1="0" x2="0" y2="5" stroke={COLORS.groundHatch} strokeWidth="0.6" />
           </pattern>
         </defs>
-        <g transform={`translate(${padding + leftLabelSpace}, 0)`}>
-          {/* Grid background from rack top to ground */}
-          <rect x={0} y={rackTopY} width={totalPx} height={frameHPx} fill={COLORS.grid} />
 
-          {/* Ceiling line (shown but not labeled) */}
-          <line x1={-10} y1={ceilY} x2={totalPx + 10} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="1" strokeDasharray="6 3" />
+        <rect x={0} y={0} width={totalW} height={totalH} fill={COLORS.white} />
+        <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
+
+        <g transform={`translate(${contentX}, ${innerY})`}>
+          {/* Ceiling line */}
+          <line x1={-8} y1={ceilY} x2={totalPx + 8} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
 
           {/* Floor line with hatch */}
-          <line x1={-10} y1={groundY} x2={totalPx + 10} y2={groundY} stroke={COLORS.ground} strokeWidth="2" />
-          <rect x={-10} y={groundY} width={totalPx + 20} height="12" fill="url(#ground-hatch-front)" />
+          <line x1={-8} y1={groundY} x2={totalPx + 8} y2={groundY} stroke={COLORS.ground} strokeWidth="1.5" />
+          <rect x={-8} y={groundY} width={totalPx + 16} height="10" fill="url(#ground-hatch-front)" />
 
           {/* Each bay */}
           {Array.from({ length: displayBays }).map((_, bayIdx) => {
@@ -740,39 +761,26 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 
             return (
               <g key={`bay-${bayIdx}`}>
-                {/* Upright columns */}
-                {bayIdx === 0 && (
-                  <rect x={-uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
-                )}
-                <rect x={bayStartX - uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
-                {bayIdx === displayBays - 1 && (
-                  <rect x={bayEndX - uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
-                )}
+                {bayIdx === 0 && <rect x={-uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="0.5" />}
+                <rect x={bayStartX - uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="0.5" />
+                {bayIdx === displayBays - 1 && <rect x={bayEndX - uprightPx / 2} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="0.5" />}
 
-                {/* Beams and pallets */}
                 {levels.map((lvl, lvlIdx) => {
-                  // beamTopY = load-bearing surface (beam top), beamBottomY = physical bottom
                   const beamTopY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamBottomY = beamTopY + beamHPx;
-                  // Pallet sits ON beam top (load-bearing surface)
                   const palletBottomY = lvl.isGround ? groundY : beamTopY;
                   const palletTopY = palletBottomY - palletHPx;
 
                   return (
                     <g key={`lvl-${lvlIdx}`}>
-                      {/* Beam — extends downward from load-bearing surface */}
-                      {!lvl.isGround && (
-                        <rect x={bayStartX} y={beamTopY} width={bayEndX - bayStartX} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
-                      )}
-
-                      {/* Pallets */}
+                      {!lvl.isGround && <rect x={bayStartX} y={beamTopY} width={bayEndX - bayStartX} height={beamHPx} fill={COLORS.beamFill} rx="0.3" />}
                       {Array.from({ length: palletsPerLevel }).map((_, pIdx) => {
                         const palletGap = 100 / 1000 * scale;
                         const palletStartX = bayStartX + 100 / 1000 * scale + pIdx * (palletWPx + palletGap);
                         return (
                           <g key={`p-${lvlIdx}-${pIdx}`}>
-                            <rect x={palletStartX} y={palletTopY} width={palletWPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
-                            <line x1={palletStartX} y1={palletBottomY} x2={palletStartX + palletWPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
+                            <rect x={palletStartX} y={palletTopY} width={palletWPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.6" strokeOpacity={COLORS.palletStrokeOpacity} rx="0.5" />
+                            <line x1={palletStartX} y1={palletBottomY} x2={palletStartX + palletWPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity="0.35" />
                           </g>
                         );
                       })}
@@ -785,74 +793,45 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 
           {/* Break lines */}
           {baysPerRow > displayBays && (() => {
-            const zigW = 4; const zigN = 5;
+            const zigW = 3; const zigN = 6;
             const zigH = frameHPx / (zigN * 2);
-            const leftPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => {
-              const y = rackTopY + i * zigH;
-              const x = i % 2 === 0 ? -uprightPx / 2 - zigW : -uprightPx / 2 + zigW;
-              return `${x},${y}`;
-            }).join(' ');
-            const rightPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => {
-              const y = rackTopY + i * zigH;
-              const x = i % 2 === 0 ? totalPx + uprightPx / 2 - zigW : totalPx + uprightPx / 2 + zigW;
-              return `${x},${y}`;
-            }).join(' ');
-            return (
-              <g>
-                <polyline points={leftPath} fill="none" stroke={COLORS.textMuted} strokeWidth="0.5" />
-                <polyline points={rightPath} fill="none" stroke={COLORS.textMuted} strokeWidth="0.5" />
-              </g>
-            );
+            const leftPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => `${i % 2 === 0 ? -uprightPx / 2 - zigW : -uprightPx / 2 + zigW},${rackTopY + i * zigH}`).join(' ');
+            const rightPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => `${i % 2 === 0 ? totalPx + uprightPx / 2 - zigW : totalPx + uprightPx / 2 + zigW},${rackTopY + i * zigH}`).join(' ');
+            return <g><polyline points={leftPath} fill="none" stroke={COLORS.textMuted} strokeWidth="0.4" /><polyline points={rightPath} fill="none" stroke={COLORS.textMuted} strokeWidth="0.4" /></g>;
           })()}
 
-          {/* ===== HEIGHT DIMENSIONS — right side ===== */}
-
-          {/* Upright height */}
+          {/* Height dimensions */}
           {(() => {
             const x = heightDimX;
             return (
               <g>
-                <line x1={x} y1={groundY} x2={x} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.6" />
-                <line x1={x - 3} y1={groundY} x2={x + 3} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <line x1={x - 3} y1={rackTopY} x2={x + 3} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <line x1={0} y1={groundY} x2={x - 4} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                <line x1={totalPx} y1={rackTopY} x2={x - 4} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                <rect x={x + 4} y={(groundY + rackTopY) / 2 - 7 * fontScale} width={50 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
-                <text x={x + 6} y={(groundY + rackTopY) / 2 + 4 * fontScale} textAnchor="start" fontSize={8 * fontScale} fill={COLORS.upright} fontFamily="monospace" fontWeight="600">
-                  柱高 {formatMm(frameHeight)}
-                </text>
+                <line x1={x} y1={groundY} x2={x} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.5" />
+                <line x1={x - 2.5} y1={groundY} x2={x + 2.5} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <line x1={x - 2.5} y1={rackTopY} x2={x + 2.5} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <line x1={0} y1={groundY} x2={x - 3} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.25" strokeDasharray="2 2" />
+                <line x1={totalPx} y1={rackTopY} x2={x - 3} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.25" strokeDasharray="2 2" />
+                <text x={x + 3} y={(groundY + rackTopY) / 2 + 3} textAnchor="start" fontSize={6.5 * fontScale} fill={COLORS.upright} fontFamily="monospace" fontWeight="600">{formatMm(frameHeight)}</text>
               </g>
             );
           })()}
 
-          {/* Per-level: height gaps + beam top labels + clear span */}
+          {/* Per-level dimensions */}
           {(() => {
-            const dimX = heightDimX + 56 * fontScale;
+            const dimX = heightDimX + 38 * fontScale;
             const els: JSX.Element[] = [];
 
             for (let i = 0; i < levels.length; i++) {
               const lvl = levels[i];
               const beamTopY = groundY - lvl.bottomMm / 1000 * scale;
-              const palletBottomY = lvl.isGround ? groundY : beamTopY;
-              const palletTopY = palletBottomY - palletHPx;
               const levelLabel = lvl.isGround ? 'G' : `L${i - (hasGroundLevel ? 1 : 0)}`;
 
-              // Level label on left
-              els.push(
-                <text key={`ll-${i}`} x={-8} y={beamTopY + 3} textAnchor="end" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                  {levelLabel}
-                </text>
-              );
+              els.push(<text key={`ll-${i}`} x={-6} y={beamTopY + 3} textAnchor="end" fontSize={6.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{levelLabel}</text>);
 
-              // Beam top height label on right (inner side of rightmost upright)
               if (!lvl.isGround) {
                 els.push(
                   <g key={`btl-${i}`}>
-                    <line x1={totalPx} y1={beamTopY} x2={totalPx + 4} y2={beamTopY} stroke={COLORS.beam} strokeWidth="0.5" />
-                    <rect x={totalPx + 6} y={beamTopY - 7 * fontScale} width={36 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.beam} strokeWidth="0.3" />
-                    <text x={totalPx + 8} y={beamTopY + 4 * fontScale} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                      {formatMm(lvl.bottomMm)}
-                    </text>
+                    <line x1={totalPx} y1={beamTopY} x2={totalPx + 3} y2={beamTopY} stroke={COLORS.beam} strokeWidth="0.4" />
+                    <text x={totalPx + 5} y={beamTopY + 3} textAnchor="start" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(lvl.bottomMm)}</text>
                   </g>
                 );
               }
@@ -862,76 +841,57 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
                 const prevBeamTopY = groundY - prevLvl.bottomMm / 1000 * scale;
                 const prevPalletTopY = prevBeamTopY - palletHPx;
                 const levelGapMm = lvl.bottomMm - prevLvl.bottomMm;
-
-                const dimFromY = prevPalletTopY;
-                const dimToY = beamTopY;
-                const midY = (dimFromY + dimToY) / 2;
+                const midY = (prevPalletTopY + beamTopY) / 2;
 
                 els.push(
                   <g key={`hdim-${i}`}>
-                    <line x1={dimX} y1={dimFromY} x2={dimX} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.6" />
-                    <line x1={dimX - 3} y1={dimFromY} x2={dimX + 3} y2={dimFromY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                    <line x1={dimX - 3} y1={dimToY} x2={dimX + 3} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                    <rect x={dimX + 4} y={midY - 7 * fontScale} width={32 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
-                    <text x={dimX + 6} y={midY + 4 * fontScale} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace" fontWeight="600">
-                      {formatMm(levelGapMm)}
-                    </text>
+                    <line x1={dimX} y1={prevPalletTopY} x2={dimX} y2={beamTopY} stroke={COLORS.dimension} strokeWidth="0.5" />
+                    <line x1={dimX - 2} y1={prevPalletTopY} x2={dimX + 2} y2={prevPalletTopY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                    <line x1={dimX - 2} y1={beamTopY} x2={dimX + 2} y2={beamTopY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                    <text x={dimX + 3} y={midY + 3} textAnchor="start" fontSize={5.5 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">{formatMm(levelGapMm)}</text>
                   </g>
                 );
 
-                // Beam clear span (upright inner face to inner face)
                 const beamMidY = beamTopY + beamHPx / 2;
-                const spanLabelY = beamTopY + 16;
+                const spanLabelY = beamTopY + 12;
                 els.push(
                   <g key={`bspan-${i}`}>
-                    <line x1={uprightPx / 2} y1={beamMidY} x2={uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                    <line x1={bayWidth / 1000 * scale - uprightPx / 2} y1={beamMidY} x2={bayWidth / 1000 * scale - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                    <line x1={uprightPx / 2} y1={spanLabelY} x2={bayWidth / 1000 * scale - uprightPx / 2} y2={spanLabelY} stroke={COLORS.beam} strokeWidth="0.6" />
-                    <line x1={uprightPx / 2} y1={spanLabelY - 3} x2={uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
-                    <line x1={bayWidth / 1000 * scale - uprightPx / 2} y1={spanLabelY - 3} x2={bayWidth / 1000 * scale - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
-                    <rect x={bayWidth / 1000 * scale / 2 - 30 * fontScale} y={spanLabelY + 6} width={60 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.beam} strokeWidth="0.3" />
-                    <text x={bayWidth / 1000 * scale / 2} y={spanLabelY + 15} textAnchor="middle" fontSize={6.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                      {formatMm(bayClearSpanMm)}
-                    </text>
+                    <line x1={uprightPx / 2} y1={spanLabelY} x2={bayWidth / 1000 * scale - uprightPx / 2} y2={spanLabelY} stroke={COLORS.beam} strokeWidth="0.5" />
+                    <line x1={uprightPx / 2} y1={spanLabelY - 2} x2={uprightPx / 2} y2={spanLabelY + 2} stroke={COLORS.beam} strokeWidth="0.7" />
+                    <line x1={bayWidth / 1000 * scale - uprightPx / 2} y1={spanLabelY - 2} x2={bayWidth / 1000 * scale - uprightPx / 2} y2={spanLabelY + 2} stroke={COLORS.beam} strokeWidth="0.7" />
+                    <text x={bayWidth / 1000 * scale / 2} y={spanLabelY + 10} textAnchor="middle" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(bayClearSpanMm)}</text>
                   </g>
                 );
               }
             }
-
             return els;
           })()}
 
-          {/* Bay width dimension at bottom */}
+          {/* Bay width dimension */}
           {(() => {
             const bayW = bayWidth / 1000 * scale;
-            const bayY = groundY + 30;
+            const bayY = groundY + 20;
             return (
               <g>
-                <line x1={0} y1={bayY} x2={bayW} y2={bayY} stroke={COLORS.dimension} strokeWidth="0.6" />
-                <line x1={0} y1={bayY - 3} x2={0} y2={bayY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <line x1={bayW} y1={bayY - 3} x2={bayW} y2={bayY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <rect x={bayW / 2 - 24 * fontScale} y={bayY + 6} width={48 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
-                <text x={bayW / 2} y={bayY + 15} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
-                  {formatMm(bayWidth)}
-                </text>
+                <line x1={0} y1={bayY} x2={bayW} y2={bayY} stroke={COLORS.dimension} strokeWidth="0.5" />
+                <line x1={0} y1={bayY - 2} x2={0} y2={bayY + 2} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <line x1={bayW} y1={bayY - 2} x2={bayW} y2={bayY + 2} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <text x={bayW / 2} y={bayY + 10} textAnchor="middle" fontSize={5.5 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">{formatMm(bayWidth)}</text>
               </g>
             );
           })()}
 
-          {/* First beam height — left side */}
+          {/* First beam height — left */}
           {(() => {
             if (levels.length > 1 && !levels[0].isGround) {
               const firstLvl = levels[0];
               const firstBeamTopY = groundY - firstLvl.bottomMm / 1000 * scale;
-              const dimX = -14;
               return (
                 <g>
-                  <line x1={dimX} y1={groundY} x2={dimX} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.6" />
-                  <line x1={dimX - 3} y1={groundY} x2={dimX + 3} y2={groundY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <line x1={dimX - 3} y1={firstBeamTopY} x2={dimX + 3} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <text x={dimX - 5} y={(groundY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                    {formatMm(firstLvl.bottomMm)}
-                  </text>
+                  <line x1={-10} y1={groundY} x2={-10} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.5" />
+                  <line x1={-12} y1={groundY} x2={-8} y2={groundY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <line x1={-12} y1={firstBeamTopY} x2={-8} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <text x={-13} y={(groundY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(firstLvl.bottomMm)}</text>
                 </g>
               );
             }
@@ -940,15 +900,12 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
               const firstBeamTopY = groundY - firstBeamLvl.bottomMm / 1000 * scale;
               const groundPalletTopY = groundY - palletHPx;
               const gapMm = firstBeamLvl.bottomMm - palletHeight;
-              const dimX = -14;
               return (
                 <g>
-                  <line x1={dimX} y1={groundPalletTopY} x2={dimX} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.6" />
-                  <line x1={dimX - 3} y1={groundPalletTopY} x2={dimX + 3} y2={groundPalletTopY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <line x1={dimX - 3} y1={firstBeamTopY} x2={dimX + 3} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <text x={dimX - 5} y={(groundPalletTopY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                    {formatMm(gapMm)}
-                  </text>
+                  <line x1={-10} y1={groundPalletTopY} x2={-10} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.5" />
+                  <line x1={-12} y1={groundPalletTopY} x2={-8} y2={groundPalletTopY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <line x1={-12} y1={firstBeamTopY} x2={-8} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <text x={-13} y={(groundPalletTopY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(gapMm)}</text>
                 </g>
               );
             }
@@ -956,57 +913,59 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
           })()}
 
           {/* Scale bar */}
-          {(() => {
-            const scaleBarM = 2;
-            const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = groundY + 60;
-            return (
-              <g>
-                <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
-                <line x1={0} y1={barY - 3} x2={0} y2={barY + 3} stroke={COLORS.textMuted} strokeWidth="1" />
-                <line x1={scaleBarPx} y1={barY - 3} x2={scaleBarPx} y2={barY + 3} stroke={COLORS.textMuted} strokeWidth="1" />
-                <text x={scaleBarPx / 2} y={barY + 12} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{scaleBarM}m</text>
-              </g>
-            );
-          })()}
+          <ScaleBar x={4} y={groundY + 40} lengthMm={2000} scale={scale} fontScale={fontScale} />
         </g>
-      </svg>
 
-      <Legend rackType={rackType} fontScale={fontScale} />
+        <TitleBlock
+          view="front" scale={scale} totalWidth={totalW} totalHeight={totalH}
+          innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH}
+          warehouseLength={0} warehouseWidth={0} frameHeight={frameHeight}
+          bayWidth={bayWidth} frameDepth={0} rackType={rackType}
+          beamLevels={beamLevels} palletsPerLevel={palletsPerLevel}
+          baysPerRow={baysPerRow} rackRows={0} fontScale={fontScale}
+        />
+      </svg>
     </div>
   );
 }
 
 // ============================================================
-// Side elevation view — single row + back-to-back pair (typical)
+// Side elevation view — engineering drawing style
 // ============================================================
-function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, view, setView, svgRef, handleExportPNG, fontScale, rackRows, aisleWidth, warehouseHeight }: any) {
+function SideView(props: any) {
+  const { svgRef, containerWidth, fontScale, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, rackRows, aisleWidth, warehouseHeight, rackType, view, setView, handleExportPNG } = props;
+
   const hasBackToBack = rackRows >= 2;
   const displayRows = hasBackToBack ? 3 : 1;
   const backToBackGap = 200;
   const palletOverhang = 50;
   const totalWidthMm = frameDepth * displayRows + (hasBackToBack ? aisleWidth + backToBackGap : 0);
 
-  const scale = Math.min(
-    (svgWidth - padding * 2 - 100) / Math.max(totalWidthMm / 1000, 0.8),
-    550 / (frameHeight / 1000)
-  );
+  const scale = Math.min((containerWidth - OUTER_MARGIN * 2 - INNER_MARGIN * 2 - 60 - TITLE_BLOCK_W) / Math.max(totalWidthMm / 1000, 0.8), 500 / (frameHeight / 1000), 40);
 
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
-  const uprightPx = Math.max(5, Math.min(12, frameDepth / 1000 * scale * 0.06));
-  const beamHPx = Math.max(3, Math.min(8, beamSectionHeight / 1000 * scale));
+  const uprightPx = Math.max(4, Math.min(10, frameDepth / 1000 * scale * 0.05));
+  const beamHPx = Math.max(3, Math.min(7, beamSectionHeight / 1000 * scale));
   const palletDPx = palletDepth / 1000 * scale;
   const palletHPx = palletHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
 
-  const topMargin = 30;
-  const groundY = topMargin + frameHPx + 30;
+  const groundY = frameHPx + 40;
   const ceilY = groundY - ceilPx;
   const rackTopY = groundY - frameHPx;
 
-  const bottomMargin = 120;
-  const svgHeight = groundY + bottomMargin;
+  const contentH = groundY + 60;
+  const totalW = containerWidth;
+  const totalH = contentH + OUTER_MARGIN * 2 + INNER_MARGIN * 2 + TITLE_BLOCK_H + 10;
+
+  const innerX = OUTER_MARGIN + INNER_MARGIN;
+  const innerY = OUTER_MARGIN + INNER_MARGIN;
+  const innerW = totalW - (OUTER_MARGIN + INNER_MARGIN) * 2;
+  const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
+
+  const leftLabelSpace = 20;
+  const contentX = innerX + leftLabelSpace;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -1014,145 +973,95 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
 
-  const leftLabelSpace = 24;
-  const rightDimOffset = 20;
-  const heightDimX = totalPx + leftLabelSpace + rightDimOffset;
-
-  // Frame clear span = upright inner face to inner face
+  const heightDimX = totalPx + 16;
   const frameClearSpanPx = frameDepth / 1000 * scale - uprightPx;
   const frameClearSpanMm = Math.round(frameClearSpanPx / scale * 1000);
 
-  // Calculate X offset for each row
   const rowOffsets: number[] = [];
   let currentX = 0;
   for (let i = 0; i < displayRows; i++) {
     rowOffsets.push(currentX);
     currentX += frameDepth / 1000 * scale;
-    if (hasBackToBack && i === 0) {
-      currentX += aisleWidth / 1000 * scale;
-    }
-    if (hasBackToBack && i === 1) {
-      currentX += backToBackGap / 1000 * scale;
-    }
+    if (hasBackToBack && i === 0) currentX += aisleWidth / 1000 * scale;
+    if (hasBackToBack && i === 1) currentX += backToBackGap / 1000 * scale;
   }
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} fontScale={fontScale} />
 
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="w-full"
-        style={{ minHeight: svgHeight, display: 'block' }}
-        data-view="side"
-      >
+      <svg ref={svgRef} viewBox={`0 0 ${totalW} ${totalH}`} className="w-full" style={{ minHeight: 380 }} data-view="side">
         <defs>
-          <pattern id="grid-side" width={500 * scale} height={500 * scale} patternUnits="userSpaceOnUse">
-            <path d={`M ${500 * scale} 0 L 0 0 0 ${500 * scale}`} fill="none" stroke={COLORS.gridLine} strokeWidth="0.3" />
-          </pattern>
-          <pattern id="ground-hatch-side" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
-            <line x1="0" y1="0" x2="0" y2="6" stroke={COLORS.groundHatch} strokeWidth="0.8" />
+          <pattern id="ground-hatch-side" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+            <line x1="0" y1="0" x2="0" y2="5" stroke={COLORS.groundHatch} strokeWidth="0.6" />
           </pattern>
         </defs>
-        <g transform={`translate(${padding + leftLabelSpace}, 0)`}>
-          {/* Grid background from rack top to ground */}
-          <rect x={0} y={rackTopY} width={totalPx} height={frameHPx} fill={COLORS.grid} />
 
-          {/* Ceiling line (shown but not labeled) */}
-          <line x1={-10} y1={ceilY} x2={totalPx + 10} y2={ceilY} stroke={COLORS.textSecondary} strokeWidth="1" strokeDasharray="6 3" />
+        <rect x={0} y={0} width={totalW} height={totalH} fill={COLORS.white} />
+        <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
 
-          {/* Floor line with hatch */}
-          <line x1={-10} y1={groundY} x2={totalPx + 10} y2={groundY} stroke={COLORS.ground} strokeWidth="2" />
-          <rect x={-10} y={groundY} width={totalPx + 20} height="12" fill="url(#ground-hatch-side)" />
+        <g transform={`translate(${contentX}, ${innerY})`}>
+          {/* Ceiling line */}
+          <line x1={-8} y1={ceilY} x2={totalPx + 8} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
+
+          {/* Floor */}
+          <line x1={-8} y1={groundY} x2={totalPx + 8} y2={groundY} stroke={COLORS.ground} strokeWidth="1.5" />
+          <rect x={-8} y={groundY} width={totalPx + 16} height="10" fill="url(#ground-hatch-side)" />
 
           {/* Each rack row */}
           {rowOffsets.map((rowX, rowIdx) => {
             const rowEndX = rowX + frameDepth / 1000 * scale;
-
             return (
               <g key={`row-${rowIdx}`}>
-                {/* Left upright */}
-                <rect x={rowX} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
-                {/* Right upright */}
-                <rect x={rowEndX - uprightPx} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+                <rect x={rowX} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="0.5" />
+                <rect x={rowEndX - uprightPx} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="0.5" />
 
-                {/* Beams and pallets at each level */}
                 {levels.map((lvl, lvlIdx) => {
-                  // beamTopY = load-bearing surface (beam top), beamBottomY = physical bottom
                   const beamTopY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamBottomY = beamTopY + beamHPx;
-                  // Pallet sits ON beam top (load-bearing surface)
                   const palletBottomY = lvl.isGround ? groundY : beamTopY;
                   const palletTopY = palletBottomY - palletHPx;
-                  const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
 
                   const overhangPx = palletOverhang / 1000 * scale;
                   let palletX: number;
-                  if (hasBackToBack && rowIdx === 1) {
-                    palletX = rowEndX + overhangPx - palletDPx;
-                  } else if (hasBackToBack && rowIdx === 2) {
-                    palletX = rowX - overhangPx;
-                  } else {
-                    palletX = rowX + (frameDepth / 1000 * scale - palletDPx) / 2;
-                  }
+                  if (hasBackToBack && rowIdx === 1) palletX = rowEndX + overhangPx - palletDPx;
+                  else if (hasBackToBack && rowIdx === 2) palletX = rowX - overhangPx;
+                  else palletX = rowX + (frameDepth / 1000 * scale - palletDPx) / 2;
 
                   return (
                     <g key={`side-r${rowIdx}-l${lvlIdx}`}>
-                      {/* Beam — extends downward from load-bearing surface */}
-                      {!lvl.isGround && (
-                        <rect x={rowX} y={beamTopY} width={frameDepth / 1000 * scale} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
-                      )}
-                      {/* Pallet */}
-                      <rect x={palletX} y={palletTopY} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
-                      <line x1={palletX} y1={palletBottomY} x2={palletX + palletDPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
+                      {!lvl.isGround && <rect x={rowX} y={beamTopY} width={frameDepth / 1000 * scale} height={beamHPx} fill={COLORS.beamFill} rx="0.3" />}
+                      <rect x={palletX} y={palletTopY} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.6" strokeOpacity={COLORS.palletStrokeOpacity} rx="0.5" />
+                      <line x1={palletX} y1={palletBottomY} x2={palletX + palletDPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity="0.35" />
                     </g>
                   );
                 })}
 
-                {/* Row label below ground */}
-                {rowIdx === 0 && (
-                  <text x={rowX + frameDepth / 1000 * scale / 2} y={groundY + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                    R1 (Single)
-                  </text>
-                )}
-                {rowIdx === 1 && (
-                  <text x={rowX + frameDepth / 1000 * scale / 2} y={groundY + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                    R2
-                  </text>
-                )}
-                {rowIdx === 2 && (
-                  <text x={rowX + frameDepth / 1000 * scale / 2} y={groundY + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                    R{rackRows}
-                  </text>
-                )}
+                {rowIdx === 0 && <text x={rowX + frameDepth / 1000 * scale / 2} y={groundY + 10} textAnchor="middle" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">R1</text>}
+                {rowIdx === 1 && <text x={rowX + frameDepth / 1000 * scale / 2} y={groundY + 10} textAnchor="middle" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">R2</text>}
+                {rowIdx === 2 && <text x={rowX + frameDepth / 1000 * scale / 2} y={groundY + 10} textAnchor="middle" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">R{rackRows}</text>}
               </g>
             );
           })}
 
-          {/* ===== HEIGHT DIMENSIONS — right side ===== */}
-
-          {/* Frame height */}
+          {/* Height dimensions */}
           {(() => {
             const x = heightDimX;
             return (
               <g>
-                <line x1={x} y1={groundY} x2={x} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.6" />
-                <line x1={x - 3} y1={groundY} x2={x + 3} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <line x1={x - 3} y1={rackTopY} x2={x + 3} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <line x1={0} y1={groundY} x2={x - 4} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                <line x1={totalPx} y1={rackTopY} x2={x - 4} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                <rect x={x + 4} y={(groundY + rackTopY) / 2 - 7 * fontScale} width={50 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
-                <text x={x + 6} y={(groundY + rackTopY) / 2 + 4 * fontScale} textAnchor="start" fontSize={8 * fontScale} fill={COLORS.upright} fontFamily="monospace" fontWeight="600">
-                  柱高 {formatMm(frameHeight)}
-                </text>
+                <line x1={x} y1={groundY} x2={x} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.5" />
+                <line x1={x - 2.5} y1={groundY} x2={x + 2.5} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <line x1={x - 2.5} y1={rackTopY} x2={x + 2.5} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <line x1={0} y1={groundY} x2={x - 3} y2={groundY} stroke={COLORS.dimension} strokeWidth="0.25" strokeDasharray="2 2" />
+                <line x1={totalPx} y1={rackTopY} x2={x - 3} y2={rackTopY} stroke={COLORS.dimension} strokeWidth="0.25" strokeDasharray="2 2" />
+                <text x={x + 3} y={(groundY + rackTopY) / 2 + 3} textAnchor="start" fontSize={6.5 * fontScale} fill={COLORS.upright} fontFamily="monospace" fontWeight="600">{formatMm(frameHeight)}</text>
               </g>
             );
           })()}
 
           {/* Per-level dimensions and beam top height labels */}
           {(() => {
-            const dimX = heightDimX + 56 * fontScale;
+            const dimX = heightDimX + 38 * fontScale;
             const els: JSX.Element[] = [];
             const r0x = rowOffsets[0];
             const r0end = r0x + frameDepth / 1000 * scale;
@@ -1160,26 +1069,15 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
             for (let i = 0; i < levels.length; i++) {
               const lvl = levels[i];
               const beamTopY = groundY - lvl.bottomMm / 1000 * scale;
-              const palletBottomY = lvl.isGround ? groundY : beamTopY;
-              const palletTopY = palletBottomY - palletHPx;
               const levelLabel = lvl.isGround ? 'G' : `L${i - (hasGroundLevel ? 1 : 0)}`;
 
-              // Level label on left
-              els.push(
-                <text key={`ll-${i}`} x={-6} y={beamTopY + 3} textAnchor="end" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                  {levelLabel}
-                </text>
-              );
+              els.push(<text key={`ll-${i}`} x={-5} y={beamTopY + 3} textAnchor="end" fontSize={6.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{levelLabel}</text>);
 
-              // Beam top height label on right (inner side of rightmost upright of first row)
               if (!lvl.isGround) {
                 els.push(
                   <g key={`btl-${i}`}>
-                    <line x1={r0end - uprightPx} y1={beamTopY} x2={r0end - uprightPx + 4} y2={beamTopY} stroke={COLORS.beam} strokeWidth="0.5" />
-                    <rect x={r0end - uprightPx + 6} y={beamTopY - 7 * fontScale} width={36 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.beam} strokeWidth="0.3" />
-                    <text x={r0end - uprightPx + 8} y={beamTopY + 4 * fontScale} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                      {formatMm(lvl.bottomMm)}
-                    </text>
+                    <line x1={r0end - uprightPx} y1={beamTopY} x2={r0end - uprightPx + 3} y2={beamTopY} stroke={COLORS.beam} strokeWidth="0.4" />
+                    <text x={r0end - uprightPx + 5} y={beamTopY + 3} textAnchor="start" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(lvl.bottomMm)}</text>
                   </g>
                 );
               }
@@ -1189,37 +1087,25 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 const prevBeamTopY = groundY - prevLvl.bottomMm / 1000 * scale;
                 const prevPalletTopY = prevBeamTopY - palletHPx;
                 const levelGapMm = lvl.bottomMm - prevLvl.bottomMm;
-                const dimFromY = prevPalletTopY;
-                const dimToY = beamTopY;
-                const midY = (dimFromY + dimToY) / 2;
+                const midY = (prevPalletTopY + beamTopY) / 2;
 
-                // Vertical dimension
                 els.push(
                   <g key={`hdim-${i}`}>
-                    <line x1={dimX} y1={dimFromY} x2={dimX} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.6" />
-                    <line x1={dimX - 3} y1={dimFromY} x2={dimX + 3} y2={dimFromY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                    <line x1={dimX - 3} y1={dimToY} x2={dimX + 3} y2={dimToY} stroke={COLORS.dimension} strokeWidth="0.8" />
-                    <rect x={dimX + 4} y={midY - 7 * fontScale} width={32 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
-                    <text x={dimX + 6} y={midY + 4 * fontScale} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                      {formatMm(levelGapMm)}
-                    </text>
+                    <line x1={dimX} y1={prevPalletTopY} x2={dimX} y2={beamTopY} stroke={COLORS.dimension} strokeWidth="0.5" />
+                    <line x1={dimX - 2} y1={prevPalletTopY} x2={dimX + 2} y2={prevPalletTopY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                    <line x1={dimX - 2} y1={beamTopY} x2={dimX + 2} y2={beamTopY} stroke={COLORS.dimension} strokeWidth="0.7" />
+                    <text x={dimX + 3} y={midY + 3} textAnchor="start" fontSize={5.5 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">{formatMm(levelGapMm)}</text>
                   </g>
                 );
 
-                // Frame clear span (upright inner face to inner face)
-                const beamMidY = beamTopY + beamHPx / 2;
-                const spanLabelY = beamTopY + 16;
+                // Frame clear span
+                const spanLabelY = beamTopY + 12;
                 els.push(
                   <g key={`fspan-${i}`}>
-                    <line x1={r0x + uprightPx / 2} y1={beamMidY} x2={r0x + uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                    <line x1={r0end - uprightPx / 2} y1={beamMidY} x2={r0end - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
-                    <line x1={r0x + uprightPx / 2} y1={spanLabelY} x2={r0end - uprightPx / 2} y2={spanLabelY} stroke={COLORS.beam} strokeWidth="0.6" />
-                    <line x1={r0x + uprightPx / 2} y1={spanLabelY - 3} x2={r0x + uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
-                    <line x1={r0end - uprightPx / 2} y1={spanLabelY - 3} x2={r0end - uprightPx / 2} y2={spanLabelY + 3} stroke={COLORS.beam} strokeWidth="0.8" />
-                    <rect x={(r0x + uprightPx / 2 + r0end - uprightPx / 2) / 2 - 28 * fontScale} y={spanLabelY + 6} width={56 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.beam} strokeWidth="0.3" />
-                    <text x={(r0x + uprightPx / 2 + r0end - uprightPx / 2) / 2} y={spanLabelY + 15} textAnchor="middle" fontSize={6.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                      {formatMm(frameClearSpanMm)}
-                    </text>
+                    <line x1={r0x + uprightPx / 2} y1={spanLabelY} x2={r0end - uprightPx / 2} y2={spanLabelY} stroke={COLORS.beam} strokeWidth="0.5" />
+                    <line x1={r0x + uprightPx / 2} y1={spanLabelY - 2} x2={r0x + uprightPx / 2} y2={spanLabelY + 2} stroke={COLORS.beam} strokeWidth="0.7" />
+                    <line x1={r0end - uprightPx / 2} y1={spanLabelY - 2} x2={r0end - uprightPx / 2} y2={spanLabelY + 2} stroke={COLORS.beam} strokeWidth="0.7" />
+                    <text x={(r0x + uprightPx / 2 + r0end - uprightPx / 2) / 2} y={spanLabelY + 10} textAnchor="middle" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(frameClearSpanMm)}</text>
                   </g>
                 );
               }
@@ -1231,53 +1117,41 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
           {hasBackToBack && (() => {
             const aisleStartX = rowOffsets[1] + frameDepth / 1000 * scale;
             const aisleEndX = rowOffsets[2];
-            const aisleY = groundY + 30;
+            const aisleY = groundY + 20;
             return (
               <g>
-                <line x1={aisleStartX} y1={aisleY} x2={aisleEndX} y2={aisleY} stroke={COLORS.dimension} strokeWidth="0.6" />
-                <line x1={aisleStartX} y1={aisleY - 3} x2={aisleStartX} y2={aisleY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <line x1={aisleEndX} y1={aisleY - 3} x2={aisleEndX} y2={aisleY + 3} stroke={COLORS.dimension} strokeWidth="0.8" />
-                <rect x={(aisleStartX + aisleEndX) / 2 - 26 * fontScale} y={aisleY + 6} width={52 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.dimension} strokeWidth="0.3" />
-                <text x={(aisleStartX + aisleEndX) / 2} y={aisleY + 15} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
-                  {formatMm(aisleWidth)}
-                </text>
+                <line x1={aisleStartX} y1={aisleY} x2={aisleEndX} y2={aisleY} stroke={COLORS.dimension} strokeWidth="0.5" />
+                <line x1={aisleStartX} y1={aisleY - 2} x2={aisleStartX} y2={aisleY + 2} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <line x1={aisleEndX} y1={aisleY - 2} x2={aisleEndX} y2={aisleY + 2} stroke={COLORS.dimension} strokeWidth="0.7" />
+                <text x={(aisleStartX + aisleEndX) / 2} y={aisleY + 10} textAnchor="middle" fontSize={5.5 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">{formatMm(aisleWidth)}</text>
               </g>
             );
           })()}
 
-          {/* Row Spacer between R2 ↔ R3 */}
+          {/* Row spacer */}
           {hasBackToBack && (() => {
             const spacerStartX = rowOffsets[1] + frameDepth / 1000 * scale;
             const spacerEndX = rowOffsets[2];
-            const spacerY = rackTopY + 8 * fontScale;
             return (
               <g>
-                <line x1={spacerStartX} y1={rackTopY} x2={spacerStartX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
-                <line x1={spacerEndX} y1={rackTopY} x2={spacerEndX} y2={groundY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.4" />
-                <DimensionLine
-                  x1={spacerStartX} y1={spacerY} x2={spacerEndX} y2={spacerY}
-                  label={formatMm(backToBackGap)}
-                  offset={-6}
-                  fontSize={7 * fontScale}
-                />
+                <line x1={spacerStartX} y1={rackTopY} x2={spacerStartX} y2={groundY} stroke={COLORS.column} strokeWidth="0.4" strokeDasharray="3 2" strokeOpacity="0.4" />
+                <line x1={spacerEndX} y1={rackTopY} x2={spacerEndX} y2={groundY} stroke={COLORS.column} strokeWidth="0.4" strokeDasharray="3 2" strokeOpacity="0.4" />
+                <DimensionLine x1={spacerStartX} y1={rackTopY + 6} x2={spacerEndX} y2={rackTopY + 6} label={formatMm(backToBackGap)} offset={-4} fontSize={5.5 * fontScale} />
               </g>
             );
           })()}
 
-          {/* First beam height — left side */}
+          {/* First beam height — left */}
           {(() => {
             if (levels.length > 1 && !levels[0].isGround) {
               const firstLvl = levels[0];
               const firstBeamTopY = groundY - firstLvl.bottomMm / 1000 * scale;
-              const dimX = -12;
               return (
                 <g>
-                  <line x1={dimX} y1={groundY} x2={dimX} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.6" />
-                  <line x1={dimX - 3} y1={groundY} x2={dimX + 3} y2={groundY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <line x1={dimX - 3} y1={firstBeamTopY} x2={dimX + 3} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <text x={dimX - 5} y={(groundY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                    {formatMm(firstLvl.bottomMm)}
-                  </text>
+                  <line x1={-9} y1={groundY} x2={-9} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.5" />
+                  <line x1={-11} y1={groundY} x2={-7} y2={groundY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <line x1={-11} y1={firstBeamTopY} x2={-7} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <text x={-12} y={(groundY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(firstLvl.bottomMm)}</text>
                 </g>
               );
             }
@@ -1286,15 +1160,12 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
               const firstBeamTopY = groundY - firstBeamLvl.bottomMm / 1000 * scale;
               const groundPalletTopY = groundY - palletHPx;
               const gapMm = firstBeamLvl.bottomMm - palletHeight;
-              const dimX = -12;
               return (
                 <g>
-                  <line x1={dimX} y1={groundPalletTopY} x2={dimX} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.6" />
-                  <line x1={dimX - 3} y1={groundPalletTopY} x2={dimX + 3} y2={groundPalletTopY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <line x1={dimX - 3} y1={firstBeamTopY} x2={dimX + 3} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.8" />
-                  <text x={dimX - 5} y={(groundPalletTopY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">
-                    {formatMm(gapMm)}
-                  </text>
+                  <line x1={-9} y1={groundPalletTopY} x2={-9} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.5" />
+                  <line x1={-11} y1={groundPalletTopY} x2={-7} y2={groundPalletTopY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <line x1={-11} y1={firstBeamTopY} x2={-7} y2={firstBeamTopY} stroke={COLORS.beam} strokeWidth="0.7" />
+                  <text x={-12} y={(groundPalletTopY + firstBeamTopY) / 2 + 3} textAnchor="end" fontSize={5.5 * fontScale} fill={COLORS.beam} fontFamily="monospace" fontWeight="600">{formatMm(gapMm)}</text>
                 </g>
               );
             }
@@ -1302,23 +1173,18 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
           })()}
 
           {/* Scale bar */}
-          {(() => {
-            const scaleBarM = 2;
-            const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = groundY + 60;
-            return (
-              <g>
-                <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
-                <line x1={0} y1={barY - 3} x2={0} y2={barY + 3} stroke={COLORS.textMuted} strokeWidth="1" />
-                <line x1={scaleBarPx} y1={barY - 3} x2={scaleBarPx} y2={barY + 3} stroke={COLORS.textMuted} strokeWidth="1" />
-                <text x={scaleBarPx / 2} y={barY + 12} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{scaleBarM}m</text>
-              </g>
-            );
-          })()}
+          <ScaleBar x={4} y={groundY + 40} lengthMm={2000} scale={scale} fontScale={fontScale} />
         </g>
-      </svg>
 
-      <Legend rackType={rackType} fontScale={fontScale} />
+        <TitleBlock
+          view="side" scale={scale} totalWidth={totalW} totalHeight={totalH}
+          innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH}
+          warehouseLength={0} warehouseWidth={0} frameHeight={frameHeight}
+          bayWidth={0} frameDepth={frameDepth} rackType={rackType}
+          beamLevels={beamLevels} palletsPerLevel={palletsPerLevel}
+          baysPerRow={0} rackRows={rackRows} fontScale={fontScale}
+        />
+      </svg>
     </div>
   );
 }
