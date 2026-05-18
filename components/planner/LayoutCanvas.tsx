@@ -792,7 +792,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
   const hasBackToBack = rackRows >= 2;
   const displayRows = hasBackToBack ? 3 : 1; // single, [back-to-back pair]
   // Width = frameDepth × displayRows + aisleWidth + back-to-back gap
-  const backToBackGap = 50; // mm gap between back-to-back frames
+  const backToBackGap = 0; // back-to-back frames touch directly (no gap)
   const totalWidthMm = frameDepth * displayRows + (hasBackToBack ? aisleWidth + backToBackGap : 0);
 
   const scale = Math.min(
@@ -891,8 +891,20 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                   const palletBottomY = beamTopY;          // pallet sits on top of beam
                   const palletTopY = palletBottomY - palletHPx;
                   const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
-                  // Pallet centered on frame (overhangs 50mm each side)
-                  const palletX = rowX + (frameDPx - palletDPx) / 2;
+                  // Pallet position: back-to-back pallets face outward
+                  // R2 pallets extend left from frame, R3 pallets extend right from frame
+                  // Single rows (R1) pallets centered
+                  let palletX: number;
+                  if (hasBackToBack && rowIdx === 1) {
+                    // R2: pallets extend left from left face
+                    palletX = rowX - (palletDPx - frameDPx);
+                  } else if (hasBackToBack && rowIdx === 2) {
+                    // R3: pallets extend right from right face
+                    palletX = rowEndX;
+                  } else {
+                    // Single row or front/back of back-to-back: centered on frame
+                    palletX = rowX + (frameDPx - palletDPx) / 2;
+                  }
 
                   return (
                     <g key={`side-r${rowIdx}-l${lvlIdx}`}>
