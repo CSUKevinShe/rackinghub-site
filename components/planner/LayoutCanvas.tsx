@@ -174,6 +174,7 @@ export function LayoutCanvas() {
           totalLevels={totalLevels}
           baysPerRow={layout.baysPerRow}
           uprightSelection={uprightSelection}
+          warehouseHeight={warehouse.height}
         />
       )}
       {view === 'side' && (
@@ -191,11 +192,9 @@ export function LayoutCanvas() {
           hasGroundLevel={rack.hasGroundLevel}
           palletsPerLevel={rack.palletsPerLevel}
           totalLevels={totalLevels}
-          uprightSelection={uprightSelection}
           rackRows={layout.rackRows}
           aisleWidth={rack.aisleWidth}
-          bayWidth={bayWidth}
-          baysPerRow={layout.baysPerRow}
+          warehouseHeight={warehouse.height}
         />
       )}
 
@@ -575,21 +574,22 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
 }
 
 // ============================================================
-// Front elevation view
+// Front elevation view — 2 typical bays with break line
 // ============================================================
-function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, palletWidth, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, baysPerRow, uprightSelection, view, setView, svgRef, handleExportPNG, fontScale }: any) {
-  const maxDisplayBays = Math.min(baysPerRow, 10);
-  const totalWidthMm = bayWidth * maxDisplayBays;
+function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, palletWidth, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, baysPerRow, uprightSelection, view, setView, svgRef, handleExportPNG, fontScale, warehouseHeight }: any) {
+  const displayBays = baysPerRow >= 2 ? 2 : 1;
+  const totalWidthMm = bayWidth * displayBays;
 
   const scale = Math.min(
     (svgWidth - padding * 2) / (totalWidthMm / 1000),
-    450 / (frameHeight / 1000)
+    500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 50);
+  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 50);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
-  const uprightPx = Math.max(6, Math.min(16, totalPx / maxDisplayBays * 0.04));
+  const ceilPx = warehouseHeight / 1000 * scale;
+  const uprightPx = Math.max(6, Math.min(14, totalPx / displayBays * 0.04));
   const beamHPx = Math.max(3, Math.min(10, beamSectionHeight / 1000 * scale));
   const palletHPx = palletHeight / 1000 * scale;
   const palletWPx = palletWidth / 1000 * scale;
@@ -598,23 +598,6 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
   for (let i = 0; i < beamLevels; i++) {
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
-  }
-
-  // Per-level clear height (distance between beam bottom and beam above / ceiling)
-  const levelClearances: { y: number; label: string }[] = [];
-  for (let i = 0; i < levels.length - 1; i++) {
-    const thisBottom = levels[i].bottomMm;
-    const nextBottom = levels[i + 1].bottomMm;
-    const clear = nextBottom - thisBottom;
-    const yPx = (frameHeight - thisBottom - clear / 2) / 1000 * scale;
-    levelClearances.push({ y: yPx, label: formatMm(clear) });
-  }
-  // Top level to top of frame
-  if (levels.length > 0) {
-    const topBottom = levels[levels.length - 1].bottomMm;
-    const clear = frameHeight - topBottom;
-    const yPx = (frameHeight - topBottom - clear / 2) / 1000 * scale;
-    levelClearances.push({ y: yPx, label: formatMm(clear) });
   }
 
   const dimOff = 14;
@@ -637,25 +620,24 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
           <pattern id="ground-hatch-front" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <line x1="0" y1="0" x2="0" y2="6" stroke={COLORS.groundHatch} strokeWidth="0.8" />
           </pattern>
+          <clipPath id="rack-clip">
+            <rect x={-uprightPx / 2} y={0} width={totalPx + uprightPx} height={frameHPx} />
+          </clipPath>
         </defs>
         <g transform={`translate(${padding}, ${padding + 10})`}>
-          {/* Grid background */}
-          <rect width={totalPx} height={frameHPx} fill={COLORS.grid} />
+          {/* Grid background (full warehouse height) */}
+          <rect width={totalPx} height={ceilPx} fill={COLORS.grid} />
+
+          {/* Warehouse ceiling line */}
+          <line x1={-10} y1={ceilPx} x2={totalPx + 10} y2={ceilPx} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
+          <text x={totalPx + dimOff + 6} y={ceilPx + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
 
           {/* Floor line with hatch */}
           <line x1={-10} y1={frameHPx} x2={totalPx + 10} y2={frameHPx} stroke={COLORS.ground} strokeWidth="2" />
           <rect x={-10} y={frameHPx} width={totalPx + 20} height="12" fill="url(#ground-hatch-front)" />
 
-          {/* Bay width dimension */}
-          <DimensionLine
-            x1={0} y1={frameHPx + 28} x2={bayWidth / 1000 * scale} y2={frameHPx + 28}
-            label={formatMm(bayWidth)}
-            offset={0}
-            fontSize={7 * fontScale}
-          />
-
           {/* Each bay */}
-          {Array.from({ length: maxDisplayBays }).map((_, bayIdx) => {
+          {Array.from({ length: displayBays }).map((_, bayIdx) => {
             const bayStartX = bayIdx * bayWidth / 1000 * scale;
             const bayEndX = (bayIdx + 1) * bayWidth / 1000 * scale;
 
@@ -666,7 +648,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
                   <rect x={-uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
                 )}
                 <rect x={bayStartX - uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
-                {bayIdx === maxDisplayBays - 1 && (
+                {bayIdx === displayBays - 1 && (
                   <rect x={bayEndX - uprightPx / 2} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
                 )}
 
@@ -675,7 +657,6 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
                   const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
                   const palletTopPx = beamBottomPx - palletHPx;
                   const beamTopPx = beamBottomPx - beamHPx;
-                  const beamYLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
 
                   return (
                     <g key={`lvl-${lvlIdx}`}>
@@ -705,22 +686,38 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             );
           })}
 
-          {/* Total height dimension on right */}
-          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
-
-          {/* Per-level clear height annotations */}
-          {levelClearances.length > 1 && (() => {
-            const hx = -dimOff - 6;
+          {/* Break lines at sides (when there are more bays than shown) */}
+          {baysPerRow > displayBays && (() => {
+            const zigW = 4;
+            const zigN = 5;
+            const zigH = frameHPx / (zigN * 2);
+            const leftPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => {
+              const y = i * zigH;
+              const x = i % 2 === 0 ? -uprightPx / 2 - zigW : -uprightPx / 2 + zigW;
+              return `${x},${y}`;
+            }).join(' ');
+            const rightPath = Array.from({ length: zigN * 2 + 1 }).map((_, i) => {
+              const y = i * zigH;
+              const x = i % 2 === 0 ? totalPx + uprightPx / 2 - zigW : totalPx + uprightPx / 2 + zigW;
+              return `${x},${y}`;
+            }).join(' ');
             return (
               <g>
-                {levelClearances.map((lc, i) => (
-                  <text key={`lc-${i}`} x={hx} y={lc.y + 3} textAnchor="end" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                    {lc.label}
-                  </text>
-                ))}
+                <polyline points={leftPath} fill="none" stroke={COLORS.textMuted} strokeWidth="0.5" />
+                <polyline points={rightPath} fill="none" stroke={COLORS.textMuted} strokeWidth="0.5" />
               </g>
             );
           })()}
+
+          {/* Bay width dimension */}
+          {displayBays >= 1 && (
+            <DimensionLine
+              x1={0} y1={frameHPx + 24} x2={bayWidth / 1000 * scale} y2={frameHPx + 24}
+              label={formatMm(bayWidth)}
+              offset={0}
+              fontSize={7 * fontScale}
+            />
+          )}
 
           {/* Level labels on left */}
           {levels.map((lvl, i) => {
@@ -735,11 +732,32 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
             );
           })}
 
+          {/* Total height dimension on right — from floor to ceiling */}
+          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={ceilPx} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
+
+          {/* Rack height sub-dimension */}
+          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
+
+          {/* Clearance to ceiling annotation */}
+          {(() => {
+            const clearanceY = (ceilPx + frameHPx) / 2;
+            const clearanceMm = warehouseHeight - frameHeight;
+            return (
+              <g>
+                <line x1={totalPx / 4} y1={frameHPx} x2={totalPx / 4} y2={ceilPx} stroke={COLORS.textSecondary} strokeWidth="0.5" strokeDasharray="3 2" />
+                <rect x={totalPx / 4 - 35 * fontScale} y={clearanceY - 7 * fontScale} width={70 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.textSecondary} strokeWidth="0.5" />
+                <text x={totalPx / 4} y={clearanceY + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
+                  ⬍ {formatMm(clearanceMm)}
+                </text>
+              </g>
+            );
+          })()}
+
           {/* Scale bar */}
           {(() => {
             const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = frameHPx + 42;
+            const barY = ceilPx + 30;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
@@ -758,24 +776,29 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 }
 
 // ============================================================
-// Side elevation view — shows ALL rack rows from the side
+// Side elevation view — single row + back-to-back pair (typical)
 // ============================================================
-function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, uprightSelection, view, setView, svgRef, handleExportPNG, fontScale, rackRows, aisleWidth, bayWidth, baysPerRow }: any) {
-  const maxDisplayRows = Math.min(rackRows, 8);
-  const totalWidthMm = frameDepth * maxDisplayRows + aisleWidth * Math.max(0, maxDisplayRows - 1);
+function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, view, setView, svgRef, handleExportPNG, fontScale, rackRows, aisleWidth, warehouseHeight }: any) {
+  // Show 2 typical: single row + back-to-back pair (3 frames)
+  // When only 1 row exists, show just 1
+  const hasBackToBack = rackRows >= 2;
+  const displayRows = hasBackToBack ? 3 : 1; // single, [back-to-back pair]
+  // Width = frameDepth × displayRows + aisleWidth × gaps
+  const totalWidthMm = frameDepth * displayRows + (hasBackToBack ? aisleWidth : 0);
 
   const scale = Math.min(
     (svgWidth - padding * 2) / Math.max(totalWidthMm / 1000, 0.8),
-    450 / (frameHeight / 1000)
+    500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 60);
+  const svgHeight = Math.max(400, (warehouseHeight / 1000) * scale + padding * 2 + 60);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
+  const ceilPx = warehouseHeight / 1000 * scale;
   const frameDPx = frameDepth / 1000 * scale;
   const aislePx = aisleWidth / 1000 * scale;
-  const uprightPx = Math.max(4, Math.min(10, frameDPx * 0.05));
-  const beamHPx = Math.max(2, Math.min(6, beamSectionHeight / 1000 * scale));
+  const uprightPx = Math.max(5, Math.min(12, frameDPx * 0.06));
+  const beamHPx = Math.max(3, Math.min(8, beamSectionHeight / 1000 * scale));
   const palletDPx = palletDepth / 1000 * scale;
   const palletHPx = palletHeight / 1000 * scale;
 
@@ -785,18 +808,18 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
 
-  const { bracingType, bracingCount } = uprightSelection || { bracingType: 'D', bracingCount: { diagonal: 8, horizontal: 2 } };
-  const nDiag = bracingCount?.diagonal || 8;
-  const nHoriz = bracingCount?.horizontal || 2;
-
   const dimOff = 14;
 
   // Calculate X offset for each row
   const rowOffsets: number[] = [];
   let currentX = 0;
-  for (let i = 0; i < maxDisplayRows; i++) {
+  for (let i = 0; i < displayRows; i++) {
     rowOffsets.push(currentX);
-    currentX += frameDPx + aislePx;
+    currentX += frameDPx;
+    // Add aisle gap between single and back-to-back pair
+    if (hasBackToBack && i === 0) {
+      currentX += aislePx;
+    }
   }
 
   return (
@@ -819,18 +842,24 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
           </pattern>
         </defs>
         <g transform={`translate(${padding}, ${padding + 10})`}>
-          {/* Grid background */}
-          <rect width={totalPx} height={frameHPx} fill={COLORS.grid} />
+          {/* Grid background (full warehouse height) */}
+          <rect width={totalPx} height={ceilPx} fill={COLORS.grid} />
+
+          {/* Warehouse ceiling line */}
+          <line x1={-10} y1={ceilPx} x2={totalPx + 10} y2={ceilPx} stroke={COLORS.textSecondary} strokeWidth="1.5" strokeDasharray="8 4" />
+          <text x={totalPx + dimOff + 6} y={ceilPx + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace">CEILING</text>
 
           {/* Floor line with hatch */}
           <line x1={-10} y1={frameHPx} x2={totalPx + 10} y2={frameHPx} stroke={COLORS.ground} strokeWidth="2" />
           <rect x={-10} y={frameHPx} width={totalPx + 20} height="12" fill="url(#ground-hatch-side)" />
 
-          {/* Each rack row from the side */}
+          {/* Each rack row */}
           {rowOffsets.map((rowX, rowIdx) => {
             const rowEndX = rowX + frameDPx;
-            const innerLeft = rowX + uprightPx;
-            const innerRight = rowEndX - uprightPx;
+
+            // Determine if this row is part of back-to-back pair (share upright with neighbor)
+            const isBackToBackFirst = hasBackToBack && rowIdx === 1;
+            const isBackToBackSecond = hasBackToBack && rowIdx === 2;
 
             return (
               <g key={`row-${rowIdx}`}>
@@ -839,54 +868,13 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 {/* Right upright */}
                 <rect x={rowEndX - uprightPx} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
 
-                {/* Bracing */}
-                <g opacity="0.35">
-                  {(() => {
-                    const lines: JSX.Element[] = [];
-                    if (bracingType === 'D') {
-                      const totalH = nHoriz + nDiag;
-                      const spacing = frameHPx / (totalH + 1);
-                      for (let d = 0; d < nDiag; d++) {
-                        const y1 = spacing * (d * 2 + 1);
-                        const y2 = spacing * (d * 2 + 3);
-                        lines.push(<line key={`d-${d}`} x1={innerLeft} y1={y1} x2={innerRight} y2={y2} stroke={COLORS.bracing} strokeWidth="0.8" />);
-                      }
-                      for (let h = 0; h < nHoriz; h++) {
-                        const y = spacing * (h * 2 + 2);
-                        if (y < frameHPx) {
-                          lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke={COLORS.bracing} strokeWidth="0.8" />);
-                        }
-                      }
-                    } else {
-                      const segH = frameHPx / nDiag;
-                      for (let d = 0; d < nDiag; d++) {
-                        const y1 = d * segH;
-                        const y2 = (d + 1) * segH;
-                        const goRight = d % 2 === 0;
-                        lines.push(
-                          <line key={`d-${d}`}
-                            x1={goRight ? innerLeft : innerRight} y1={y1}
-                            x2={goRight ? innerRight : innerLeft} y2={y2}
-                            stroke={COLORS.bracing} strokeWidth="0.8"
-                          />
-                        );
-                      }
-                      for (let h = 0; h < nHoriz; h++) {
-                        const y = h * (frameHPx / (nHoriz + 1));
-                        lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke={COLORS.bracing} strokeWidth="0.8" />);
-                      }
-                    }
-                    return lines;
-                  })()}
-                </g>
-
                 {/* Beams and pallets at each level */}
                 {levels.map((lvl, lvlIdx) => {
                   const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
                   const palletTopPx = beamBottomPx - palletHPx;
                   const beamTopPx = beamBottomPx - beamHPx;
                   const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
-                  // Pallet centered on frame (overhangs 50mm each side = frameDepth = palletDepth - 100)
+                  // Pallet centered on frame (overhangs 50mm each side)
                   const palletX = rowX + (frameDPx - palletDPx) / 2;
 
                   return (
@@ -895,10 +883,10 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                       {!lvl.isGround && (
                         <rect x={rowX} y={beamTopPx} width={frameDPx} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
                       )}
-                      {/* Pallet — centered on frame, overhangs slightly */}
+                      {/* Pallet */}
                       <rect x={palletX} y={palletTopPx} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
                       <line x1={palletX} y1={palletTopPx + palletHPx} x2={palletX + palletDPx} y2={palletTopPx + palletHPx} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
-                      {/* Level label on right side of frame */}
+                      {/* Level label */}
                       <text x={rowEndX + 4} y={beamTopPx + beamHPx / 2 + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
                         {levelLabel}
                       </text>
@@ -907,24 +895,65 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 })}
 
                 {/* Row label */}
-                <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                  R{rowIdx + 1}
-                </text>
+                {rowIdx === 0 && (
+                  <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                    R1 (Single)
+                  </text>
+                )}
+                {rowIdx === 1 && (
+                  <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                    R{displayRows > 1 ? '2' : ''}
+                  </text>
+                )}
+                {rowIdx === 2 && (
+                  <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                    R{rackRows}
+                  </text>
+                )}
               </g>
             );
           })}
 
-          {/* Total width dimension at bottom */}
-          <DimensionLine x1={0} y1={frameHPx} x2={totalPx} y2={frameHPx} label={formatMm(totalWidthMm)} offset={dimOff + 14} fontSize={8 * fontScale} />
+          {/* Aisle width dimension between rows */}
+          {hasBackToBack && (() => {
+            const aisleStartX = rowOffsets[1] + frameDPx;
+            const aisleEndX = rowOffsets[2];
+            const aisleLabelY = ceilPx + 24;
+            return (
+              <DimensionLine
+                x1={aisleStartX} y1={aisleLabelY} x2={aisleEndX} y2={aisleLabelY}
+                label={formatMm(aisleWidth)}
+                offset={0}
+                fontSize={7 * fontScale}
+              />
+            );
+          })()}
 
-          {/* Total height dimension on right */}
-          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
+          {/* Total height dimension on right — floor to ceiling */}
+          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={ceilPx} label={formatMm(warehouseHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
+
+          {/* Rack height sub-dimension */}
+          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff + 16} vertical fontSize={7 * fontScale} />
+
+          {/* Clearance to ceiling annotation */}
+          {(() => {
+            const clearanceY = (ceilPx + frameHPx) / 2;
+            const clearanceMm = warehouseHeight - frameHeight;
+            return (
+              <g>
+                <rect x={totalPx / 2 - 35 * fontScale} y={clearanceY - 7 * fontScale} width={70 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.textSecondary} strokeWidth="0.5" />
+                <text x={totalPx / 2} y={clearanceY + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.textSecondary} fontFamily="monospace" fontWeight="600">
+                  ⬍ {formatMm(clearanceMm)}
+                </text>
+              </g>
+            );
+          })()}
 
           {/* Scale bar */}
           {(() => {
             const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = frameHPx + 44;
+            const barY = ceilPx + 36;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
