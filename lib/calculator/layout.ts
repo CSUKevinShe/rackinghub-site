@@ -54,8 +54,7 @@ export function calculateLayout(input: PlannerInput): LayoutData {
       effectiveWidth,
       bayWidth,
       frameDepth,
-      rack.aisleWidth,
-      warehouse.columnSpacing
+      rack.aisleWidth
     );
   } else if (rackType === 'drive-in') {
     layoutResult = calculateDriveInLayout(
@@ -85,14 +84,12 @@ export function calculateLayout(input: PlannerInput): LayoutData {
     rackType
   );
 
-  // Generate column positions when columnSpacing > 0
+  // Generate column positions when columnSpacingX/Y > 0
   const { columnPositions, rackRowPositions } = generateColumnPositions(
     effectiveLength,
-    layoutResult,
-    frameDepth,
-    rack.aisleWidth,
-    warehouse.columnSpacing,
-    effectiveWidth
+    effectiveWidth,
+    warehouse.columnSpacingX,
+    warehouse.columnSpacingY
   );
 
   const warehouseArea = (warehouse.length * warehouse.width) / 1e6;
@@ -122,8 +119,7 @@ function calculateSelectiveLayout(
   effectiveWidth: number,
   bayWidth: number,
   frameDepth: number,
-  aisleWidth: number,
-  columnSpacing: number
+  aisleWidth: number
 ) {
   const doubleBlockWidth = 2 * frameDepth + aisleWidth;
 
@@ -308,50 +304,42 @@ function generateLayoutElements(
   return elements;
 }
 
-/** Generate column positions when columnSpacing > 0 — full 2D grid */
+/** Generate column positions at columnSpacingX/Y intervals — full 2D grid */
 function generateColumnPositions(
   effectiveLength: number,
-  layout: { rackRows: number; aisles: number; rackBlocks: number; baysPerRow: number },
-  frameDepth: number,
-  aisleWidth: number,
-  columnSpacing: number,
-  effectiveWidth: number
+  effectiveWidth: number,
+  columnSpacingX: number,
+  columnSpacingY: number
 ): { columnPositions: { x: number; y: number }[]; rackRowPositions: { index: number; y: number; height: number }[] } {
-  if (columnSpacing <= 0) {
+  const hasX = columnSpacingX > 0;
+  const hasY = columnSpacingY > 0;
+  if (!hasX && !hasY) {
     return { columnPositions: [], rackRowPositions: [] };
   }
 
-  // Calculate rack row Y positions (same logic as generateLayoutElements)
-  const rackRowPositions: { index: number; y: number; height: number }[] = [];
-  let currentY = 0;
-
-  // First row
-  rackRowPositions.push({ index: 0, y: currentY, height: frameDepth });
-  currentY += frameDepth;
-
-  for (let block = 0; block < layout.rackBlocks; block++) {
-    rackRowPositions.push({ index: rackRowPositions.length, y: currentY, height: frameDepth });
-    currentY += frameDepth;
-    currentY += aisleWidth;
-    rackRowPositions.push({ index: rackRowPositions.length, y: currentY, height: frameDepth });
-    currentY += frameDepth;
-  }
-
-  // For selective: check if there's an end row
-  if (layout.rackRows > rackRowPositions.length) {
-    currentY += aisleWidth;
-    rackRowPositions.push({ index: rackRowPositions.length, y: currentY, height: frameDepth });
-  }
-
-  // Generate column positions at columnSpacing intervals in BOTH directions
-  // X: along the length, Y: along the width (full warehouse area)
+  // Generate column positions at independent X and Y intervals
   const columnPositions: { x: number; y: number }[] = [];
-  for (let x = columnSpacing; x < effectiveLength; x += columnSpacing) {
-    for (let y = columnSpacing; y < effectiveWidth; y += columnSpacing) {
-      columnPositions.push({ x, y });
+  if (hasX && hasY) {
+    // Full 2D grid
+    for (let x = columnSpacingX; x < effectiveLength; x += columnSpacingX) {
+      for (let y = columnSpacingY; y < effectiveWidth; y += columnSpacingY) {
+        columnPositions.push({ x, y });
+      }
+    }
+  } else if (hasX) {
+    // Only X spacing — columns along each rack row edge
+    for (let x = columnSpacingX; x < effectiveLength; x += columnSpacingX) {
+      columnPositions.push({ x, y: 0 });
+    }
+  } else {
+    // Only Y spacing
+    for (let y = columnSpacingY; y < effectiveWidth; y += columnSpacingY) {
+      columnPositions.push({ x: 0, y });
     }
   }
 
+  // Rack row Y positions (for reference, not used for grid)
+  const rackRowPositions: { index: number; y: number; height: number }[] = [];
   return { columnPositions, rackRowPositions };
 }
 

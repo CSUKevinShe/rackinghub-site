@@ -15,8 +15,10 @@ export interface WarehouseParams {
   height: number;
   /** Minimum clearance from wall to nearest rack face in mm */
   wallClearance: number;
-  /** Column spacing (grid) in mm — 0 = ignore */
-  columnSpacing: number;
+  /** Column spacing along warehouse length in mm — 0 = ignore */
+  columnSpacingX: number;
+  /** Column spacing along warehouse width in mm — 0 = ignore */
+  columnSpacingY: number;
 }
 
 /** Rack system configuration */

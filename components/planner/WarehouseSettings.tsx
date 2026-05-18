@@ -43,11 +43,20 @@ export function WarehouseSettings() {
         step={50}
       />
       <NumberInput
-        label="Column Spacing"
-        value={warehouse.columnSpacing}
-        onChange={(v) => setWarehouse({ columnSpacing: v })}
-        min={constraints.columnSpacing.min}
-        max={constraints.columnSpacing.max}
+        label="Column Spacing (Length)"
+        value={warehouse.columnSpacingX}
+        onChange={(v) => setWarehouse({ columnSpacingX: v })}
+        min={constraints.columnSpacingX.min}
+        max={constraints.columnSpacingX.max}
+        step={100}
+        unit="0 = ignore"
+      />
+      <NumberInput
+        label="Column Spacing (Width)"
+        value={warehouse.columnSpacingY}
+        onChange={(v) => setWarehouse({ columnSpacingY: v })}
+        min={constraints.columnSpacingY.min}
+        max={constraints.columnSpacingY.max}
         step={100}
         unit="0 = ignore"
       />

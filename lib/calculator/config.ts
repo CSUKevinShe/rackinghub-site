@@ -150,7 +150,8 @@ export const DEFAULT_WAREHOUSE: WarehouseParams = {
   width: 25000,
   height: 10000,
   wallClearance: 200,
-  columnSpacing: 10000,
+  columnSpacingX: 8000,
+  columnSpacingY: 12000,
 };
 
 export const DEFAULT_RACK: RackParams = {
@@ -186,7 +187,8 @@ export const CONSTRAINTS = {
     width: { min: 5000, max: 100000 },
     height: { min: 3000, max: 30000 },
     wallClearance: { min: 50, max: 1000 },
-    columnSpacing: { min: 0, max: 15000 },
+    columnSpacingX: { min: 0, max: 20000 },
+    columnSpacingY: { min: 0, max: 20000 },
   },
   rack: {
     beamLevels: { min: 1, max: 15 },

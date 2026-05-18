@@ -34,7 +34,7 @@ const COLORS = {
 } as const;
 
 export function LayoutCanvas() {
-  const { layout, rackType, rack, pallet, uprightSelection, beamSelection } = usePlannerStore();
+  const { layout, rackType, rack, pallet, uprightSelection, beamSelection, warehouse } = usePlannerStore();
   const [view, setView] = useState<ViewType>('top');
   const [showQuotePrompt, setShowQuotePrompt] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -153,6 +153,8 @@ export function LayoutCanvas() {
           padding={padding}
           bayWidth={bayWidth}
           frameDepth={frameDepth}
+          columnSpacingX={warehouse.columnSpacingX}
+          columnSpacingY={warehouse.columnSpacingY}
         />
       )}
       {view === 'front' && (
@@ -190,6 +192,10 @@ export function LayoutCanvas() {
           palletsPerLevel={rack.palletsPerLevel}
           totalLevels={totalLevels}
           uprightSelection={uprightSelection}
+          rackRows={layout.rackRows}
+          aisleWidth={rack.aisleWidth}
+          bayWidth={bayWidth}
+          baysPerRow={layout.baysPerRow}
         />
       )}
 
@@ -372,7 +378,7 @@ function DimensionLine({
 // ============================================================
 // Top-down plan view
 // ============================================================
-function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale }: any) {
+function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale, columnSpacingX, columnSpacingY }: any) {
   const scale = Math.min(
     (svgWidth - padding * 2) / (layout.warehouseLength / 1000),
     400 / (layout.warehouseWidth / 1000)
@@ -518,6 +524,20 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
               </g>
             );
           })}
+
+          {/* Column grid label */}
+          {hasColumns && (() => {
+            const cx = columnSpacingX / 1000 * scale / 2;
+            const cy = columnSpacingY / 1000 * scale / 2;
+            return (
+              <g>
+                <rect x={cx - 30 * fontScale} y={cy - 8 * fontScale} width={60 * fontScale} height={16 * fontScale} rx={3} fill="white" stroke={COLORS.column} strokeWidth="0.5" strokeOpacity="0.3" />
+                <text x={cx} y={cy + 3 * fontScale} textAnchor="middle" fontSize={7 * fontScale} fill={COLORS.column} fontFamily="monospace" fontWeight="600">
+                  {formatMm(columnSpacingX)}×{formatMm(columnSpacingY)}
+                </text>
+              </g>
+            );
+          })()}
 
           {/* North arrow */}
           {(() => {
@@ -738,19 +758,24 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 }
 
 // ============================================================
-// Side elevation view
+// Side elevation view — shows ALL rack rows from the side
 // ============================================================
-function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, uprightSelection, view, setView, svgRef, handleExportPNG, fontScale }: any) {
+function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, totalLevels, uprightSelection, view, setView, svgRef, handleExportPNG, fontScale, rackRows, aisleWidth, bayWidth, baysPerRow }: any) {
+  const maxDisplayRows = Math.min(rackRows, 8);
+  const totalWidthMm = frameDepth * maxDisplayRows + aisleWidth * Math.max(0, maxDisplayRows - 1);
+
   const scale = Math.min(
-    (svgWidth - padding * 2) / Math.max(frameDepth / 1000, 0.8),
+    (svgWidth - padding * 2) / Math.max(totalWidthMm / 1000, 0.8),
     450 / (frameHeight / 1000)
   );
 
   const svgHeight = Math.max(400, (frameHeight / 1000) * scale + padding * 2 + 60);
-  const depthPx = frameDepth / 1000 * scale;
+  const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
-  const uprightPx = Math.max(8, Math.min(14, depthPx * 0.06));
-  const beamHPx = Math.max(3, Math.min(8, beamSectionHeight / 1000 * scale));
+  const frameDPx = frameDepth / 1000 * scale;
+  const aislePx = aisleWidth / 1000 * scale;
+  const uprightPx = Math.max(4, Math.min(10, frameDPx * 0.05));
+  const beamHPx = Math.max(2, Math.min(6, beamSectionHeight / 1000 * scale));
   const palletDPx = palletDepth / 1000 * scale;
   const palletHPx = palletHeight / 1000 * scale;
 
@@ -765,6 +790,14 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
   const nHoriz = bracingCount?.horizontal || 2;
 
   const dimOff = 14;
+
+  // Calculate X offset for each row
+  const rowOffsets: number[] = [];
+  let currentX = 0;
+  for (let i = 0; i < maxDisplayRows; i++) {
+    rowOffsets.push(currentX);
+    currentX += frameDPx + aislePx;
+  }
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -787,95 +820,111 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
         </defs>
         <g transform={`translate(${padding}, ${padding + 10})`}>
           {/* Grid background */}
-          <rect width={depthPx} height={frameHPx} fill={COLORS.grid} />
+          <rect width={totalPx} height={frameHPx} fill={COLORS.grid} />
 
           {/* Floor line with hatch */}
-          <line x1={-10} y1={frameHPx} x2={depthPx + uprightPx + 10} y2={frameHPx} stroke={COLORS.ground} strokeWidth="2" />
-          <rect x={-10} y={frameHPx} width={depthPx + uprightPx + 20} height="12" fill="url(#ground-hatch-side)" />
+          <line x1={-10} y1={frameHPx} x2={totalPx + 10} y2={frameHPx} stroke={COLORS.ground} strokeWidth="2" />
+          <rect x={-10} y={frameHPx} width={totalPx + 20} height="12" fill="url(#ground-hatch-side)" />
 
-          {/* Left upright (front column) */}
-          <rect x={0} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
-          {/* Right upright (back column) */}
-          <rect x={depthPx - uprightPx} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
-
-          {/* Bracing between uprights */}
-          <g opacity="0.35">
-            {(() => {
-              const innerLeft = uprightPx;
-              const innerRight = depthPx - uprightPx;
-              const innerW = innerRight - innerLeft;
-              const lines: JSX.Element[] = [];
-
-              if (bracingType === 'D') {
-                const totalH = nHoriz + nDiag;
-                const spacing = frameHPx / (totalH + 1);
-                for (let d = 0; d < nDiag; d++) {
-                  const y1 = spacing * (d * 2 + 1);
-                  const y2 = spacing * (d * 2 + 3);
-                  lines.push(<line key={`d-${d}`} x1={innerLeft} y1={y1} x2={innerRight} y2={y2} stroke={COLORS.bracing} strokeWidth="1" />);
-                }
-                for (let h = 0; h < nHoriz; h++) {
-                  const y = spacing * (h * 2 + 2);
-                  if (y < frameHPx) {
-                    lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke={COLORS.bracing} strokeWidth="1" />);
-                  }
-                }
-              } else {
-                const segH = frameHPx / nDiag;
-                for (let d = 0; d < nDiag; d++) {
-                  const y1 = d * segH;
-                  const y2 = (d + 1) * segH;
-                  const goRight = d % 2 === 0;
-                  lines.push(
-                    <line key={`d-${d}`}
-                      x1={goRight ? innerLeft : innerRight} y1={y1}
-                      x2={goRight ? innerRight : innerLeft} y2={y2}
-                      stroke={COLORS.bracing} strokeWidth="1"
-                    />
-                  );
-                }
-                for (let h = 0; h < nHoriz; h++) {
-                  const y = h * (frameHPx / (nHoriz + 1));
-                  lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke={COLORS.bracing} strokeWidth="1" />);
-                }
-              }
-              return lines;
-            })()}
-          </g>
-
-          {/* Beams and pallets at each level */}
-          {levels.map((lvl, lvlIdx) => {
-            const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
-            const palletTopPx = beamBottomPx - palletHPx;
-            const beamTopPx = beamBottomPx - beamHPx;
-            const palletX = (depthPx - palletDPx) / 2;
-            const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
+          {/* Each rack row from the side */}
+          {rowOffsets.map((rowX, rowIdx) => {
+            const rowEndX = rowX + frameDPx;
+            const innerLeft = rowX + uprightPx;
+            const innerRight = rowEndX - uprightPx;
 
             return (
-              <g key={`side-lvl-${lvlIdx}`}>
-                {!lvl.isGround && (
-                  <rect x={0} y={beamTopPx} width={depthPx} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
-                )}
-                <rect x={palletX} y={palletTopPx} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
-                <line x1={palletX} y1={palletTopPx + palletHPx} x2={palletX + palletDPx} y2={palletTopPx + palletHPx} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
-                <text x={depthPx + 8} y={beamTopPx + beamHPx / 2 + 3} textAnchor="start" fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
-                  {levelLabel}
+              <g key={`row-${rowIdx}`}>
+                {/* Left upright */}
+                <rect x={rowX} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+                {/* Right upright */}
+                <rect x={rowEndX - uprightPx} y={0} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="1" />
+
+                {/* Bracing */}
+                <g opacity="0.35">
+                  {(() => {
+                    const lines: JSX.Element[] = [];
+                    if (bracingType === 'D') {
+                      const totalH = nHoriz + nDiag;
+                      const spacing = frameHPx / (totalH + 1);
+                      for (let d = 0; d < nDiag; d++) {
+                        const y1 = spacing * (d * 2 + 1);
+                        const y2 = spacing * (d * 2 + 3);
+                        lines.push(<line key={`d-${d}`} x1={innerLeft} y1={y1} x2={innerRight} y2={y2} stroke={COLORS.bracing} strokeWidth="0.8" />);
+                      }
+                      for (let h = 0; h < nHoriz; h++) {
+                        const y = spacing * (h * 2 + 2);
+                        if (y < frameHPx) {
+                          lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke={COLORS.bracing} strokeWidth="0.8" />);
+                        }
+                      }
+                    } else {
+                      const segH = frameHPx / nDiag;
+                      for (let d = 0; d < nDiag; d++) {
+                        const y1 = d * segH;
+                        const y2 = (d + 1) * segH;
+                        const goRight = d % 2 === 0;
+                        lines.push(
+                          <line key={`d-${d}`}
+                            x1={goRight ? innerLeft : innerRight} y1={y1}
+                            x2={goRight ? innerRight : innerLeft} y2={y2}
+                            stroke={COLORS.bracing} strokeWidth="0.8"
+                          />
+                        );
+                      }
+                      for (let h = 0; h < nHoriz; h++) {
+                        const y = h * (frameHPx / (nHoriz + 1));
+                        lines.push(<line key={`h-${h}`} x1={innerLeft} y1={y} x2={innerRight} y2={y} stroke={COLORS.bracing} strokeWidth="0.8" />);
+                      }
+                    }
+                    return lines;
+                  })()}
+                </g>
+
+                {/* Beams and pallets at each level */}
+                {levels.map((lvl, lvlIdx) => {
+                  const beamBottomPx = (frameHeight - lvl.bottomMm) / 1000 * scale;
+                  const palletTopPx = beamBottomPx - palletHPx;
+                  const beamTopPx = beamBottomPx - beamHPx;
+                  const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
+                  // Pallet centered on frame (overhangs 50mm each side = frameDepth = palletDepth - 100)
+                  const palletX = rowX + (frameDPx - palletDPx) / 2;
+
+                  return (
+                    <g key={`side-r${rowIdx}-l${lvlIdx}`}>
+                      {/* Beam across full frame depth */}
+                      {!lvl.isGround && (
+                        <rect x={rowX} y={beamTopPx} width={frameDPx} height={beamHPx} fill={COLORS.beamFill} rx="0.5" />
+                      )}
+                      {/* Pallet — centered on frame, overhangs slightly */}
+                      <rect x={palletX} y={palletTopPx} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity={COLORS.palletStrokeOpacity} rx="1" />
+                      <line x1={palletX} y1={palletTopPx + palletHPx} x2={palletX + palletDPx} y2={palletTopPx + palletHPx} stroke={COLORS.palletStroke} strokeWidth="1" strokeOpacity="0.4" />
+                      {/* Level label on right side of frame */}
+                      <text x={rowEndX + 4} y={beamTopPx + beamHPx / 2 + 3} textAnchor="start" fontSize={7 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                        {levelLabel}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {/* Row label */}
+                <text x={rowX + frameDPx / 2} y={frameHPx + 12} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">
+                  R{rowIdx + 1}
                 </text>
               </g>
             );
           })}
 
-          {/* Depth dimension at bottom */}
-          <DimensionLine x1={0} y1={frameHPx} x2={depthPx} y2={frameHPx} label={formatMm(frameDepth)} offset={dimOff} fontSize={8 * fontScale} />
+          {/* Total width dimension at bottom */}
+          <DimensionLine x1={0} y1={frameHPx} x2={totalPx} y2={frameHPx} label={formatMm(totalWidthMm)} offset={dimOff + 14} fontSize={8 * fontScale} />
 
           {/* Total height dimension on right */}
-          <DimensionLine x1={depthPx} y1={0} x2={depthPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
+          <DimensionLine x1={totalPx} y1={0} x2={totalPx} y2={frameHPx} label={formatMm(frameHeight)} offset={dimOff} vertical fontSize={8 * fontScale} />
 
           {/* Scale bar */}
           {(() => {
-            const scaleBarM = 1;
+            const scaleBarM = 2;
             const scaleBarPx = scaleBarM * 1000 / 1000 * scale;
-            const barY = frameHPx + 34;
+            const barY = frameHPx + 44;
             return (
               <g>
                 <line x1={0} y1={barY} x2={scaleBarPx} y2={barY} stroke={COLORS.textMuted} strokeWidth="1" />
