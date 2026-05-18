@@ -585,7 +585,6 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
     500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(450, (warehouseHeight / 1000) * scale + padding * 2 + 90);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
@@ -595,9 +594,13 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
   const palletWPx = palletWidth / 1000 * scale;
 
   // In SVG, y=0 is at the top. For engineering elevation, ground should be at bottom.
-  const groundY = svgHeight - padding - 20; // ground line Y position
-  const ceilY = groundY - ceilPx;             // ceiling line Y position
-  const rackTopY = groundY - frameHPx;        // top of rack frame Y position
+  // We position the drawing from near the top of the SVG so there's room for labels below.
+  const topMargin = 20;
+  const groundY = topMargin + ceilPx;
+  const ceilY = topMargin;
+  const rackTopY = groundY - frameHPx;
+
+  const svgHeight = topMargin + ceilPx + 140;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -615,7 +618,7 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
         ref={svgRef}
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         className="w-full"
-        style={{ minHeight: 400 }}
+        style={{ minHeight: svgHeight, display: 'block' }}
         data-view="front"
       >
         <defs>
@@ -797,21 +800,23 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
     500 / (warehouseHeight / 1000)
   );
 
-  const svgHeight = Math.max(450, (warehouseHeight / 1000) * scale + padding * 2 + 90);
   const totalPx = totalWidthMm / 1000 * scale;
   const frameHPx = frameHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
+
+  // In SVG, y=0 is at the top. For engineering elevation, ground should be at bottom.
+  const topMargin = 20;
+  const groundY = topMargin + ceilPx;
+  const ceilY = topMargin;
+  const rackTopY = groundY - frameHPx;
+
+  const svgHeight = Math.max(450, topMargin + ceilPx + 140);
   const frameDPx = frameDepth / 1000 * scale;
   const aislePx = aisleWidth / 1000 * scale;
   const uprightPx = Math.max(5, Math.min(12, frameDPx * 0.06));
   const beamHPx = Math.max(3, Math.min(8, beamSectionHeight / 1000 * scale));
   const palletDPx = palletDepth / 1000 * scale;
   const palletHPx = palletHeight / 1000 * scale;
-
-  // In SVG, y=0 is at the top. For engineering elevation, ground should be at bottom.
-  const groundY = svgHeight - padding - 20;
-  const ceilY = groundY - ceilPx;
-  const rackTopY = groundY - frameHPx;
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -841,7 +846,7 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
         ref={svgRef}
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         className="w-full"
-        style={{ minHeight: 400 }}
+        style={{ minHeight: svgHeight, display: 'block' }}
         data-view="side"
       >
         <defs>
