@@ -745,11 +745,12 @@ function FrontView({ rackType, svgWidth, padding, bayWidth, frameHeight, beamSec
 
                 {/* Pallets and beams at each level */}
                 {levels.map((lvl, lvlIdx) => {
-                  // Y position measured upward from ground (inverted SVG coordinates)
                   const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
-                  const palletBottomY = beamTopY;          // pallet sits on top of beam
-                  const palletTopY = palletBottomY - palletHPx;
+                  // Pallet sits ON the beam: pallet bottom = beam bottom surface
+                  // In SVG (y increases down): beam bottom > beam top, pallet sits above beam bottom
+                  const palletBottomY = beamBottomY - palletHPx;
+                  const palletTopY = palletBottomY;
 
                   return (
                     <g key={`lvl-${lvlIdx}`}>
@@ -976,7 +977,8 @@ function SideView({ rackType, svgWidth, padding, frameDepth, frameHeight, beamSe
                 {levels.map((lvl, lvlIdx) => {
                   const beamBottomY = groundY - lvl.bottomMm / 1000 * scale;
                   const beamTopY = beamBottomY - beamHPx;
-                  const palletBottomY = beamTopY;          // pallet sits on top of beam
+                  // Pallet sits ON beam: pallet bottom = beam bottom surface
+                  const palletBottomY = beamBottomY;
                   const palletTopY = palletBottomY - palletHPx;
                   const levelLabel = lvl.isGround ? 'G' : `L${lvlIdx - (hasGroundLevel ? 1 : 0)}`;
                   // Pallet direction: back-to-back pallets face toward the gap
