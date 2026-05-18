@@ -422,7 +422,7 @@ function TopView(props: any) {
   const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
 
   const drawingAreaH = innerH - TITLE_BLOCK_H;
-  const contentX = innerX + drawingPad + (innerW - drawingPad * 2 - TITLE_BLOCK_W - contentPxW) / 2;
+  const contentX = innerX + drawingPad + (innerW - drawingPad * 2 - contentPxW) / 2;
   const contentY = innerY + drawingPad + (drawingAreaH - drawingPad * 2 - contentPxH) / 2;
 
   const lenPx = contentPxW;
@@ -596,7 +596,8 @@ function FrontView(props: any) {
   const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
 
   const leftLabelSpace = 24;
-  const contentX = innerX + leftLabelSpace;
+  // Center content horizontally within the inner border
+  const contentX = innerX + leftLabelSpace + Math.max(0, (innerW - totalPx) / 2);
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -729,7 +730,8 @@ function SideView(props: any) {
   const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
 
   const leftLabelSpace = 20;
-  const contentX = innerX + leftLabelSpace;
+  // Center content horizontally within the inner border
+  const contentX = innerX + leftLabelSpace + Math.max(0, (innerW - totalPx) / 2);
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
