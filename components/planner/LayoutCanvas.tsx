@@ -595,9 +595,8 @@ function FrontView(props: any) {
   const innerW = totalW - (OUTER_MARGIN + INNER_MARGIN) * 2;
   const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
 
-  const leftLabelSpace = 24;
   // Center content horizontally within the inner border
-  const contentX = innerX + leftLabelSpace + Math.max(0, (innerW - totalPx) / 2);
+  const contentX = innerX + Math.max(0, (innerW - totalPx) / 2);
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
@@ -729,9 +728,8 @@ function SideView(props: any) {
   const innerW = totalW - (OUTER_MARGIN + INNER_MARGIN) * 2;
   const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
 
-  const leftLabelSpace = 20;
   // Center content horizontally within the inner border
-  const contentX = innerX + leftLabelSpace + Math.max(0, (innerW - totalPx) / 2);
+  const contentX = innerX + Math.max(0, (innerW - totalPx) / 2);
 
   const levels: { bottomMm: number; isGround: boolean }[] = [];
   if (hasGroundLevel) levels.push({ bottomMm: 0, isGround: true });
