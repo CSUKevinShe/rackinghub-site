@@ -20,8 +20,8 @@ const COLORS = {
   upright: '#475569',
   beam: '#d97706',
   beamFill: 'rgba(217,119,6,0.6)',
-  palletFill: 'rgba(59,130,246,0.10)',
-  palletStroke: '#3b82f6',
+  palletFill: 'rgba(160,82,45,0.12)',
+  palletStroke: '#a0522d',
   palletStrokeOpacity: 0.4,
   aisle: '#f1f5f9',
   rackFill: 'rgba(59,130,246,0.06)',
@@ -155,6 +155,8 @@ export function LayoutCanvas() {
           frameDepth={frameDepth}
           columnSpacingX={warehouse.columnSpacingX}
           columnSpacingY={warehouse.columnSpacingY}
+          pallet={pallet}
+          rack={rack}
         />
       )}
       {view === 'front' && (
@@ -377,7 +379,7 @@ function DimensionLine({
 // ============================================================
 // Top-down plan view
 // ============================================================
-function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale, columnSpacingX, columnSpacingY }: any) {
+function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, view, setView, svgRef, handleExportPNG, fontScale, columnSpacingX, columnSpacingY, pallet, rack }: any) {
   const scale = Math.min(
     (svgWidth - padding * 2) / (layout.warehouseLength / 1000),
     400 / (layout.warehouseWidth / 1000)
@@ -469,46 +471,111 @@ function TopView({ layout, rackType, svgWidth, padding, bayWidth, frameDepth, vi
             return els;
           })()}
 
-          {layout.elements.map((el: any, i: number) => {
-            const x = (el.x / 1000) * scale;
-            const y = (el.y / 1000) * scale;
-            const w = (el.width / 1000) * scale;
-            const h = (el.height / 1000) * scale;
+          {(() => {
+            const els = layout.elements;
+            let rowNum = 0;
 
-            if (el.type === 'aisle') {
-              return (
-                <g key={i}>
-                  <rect x={x} y={y} width={w} height={h} fill={COLORS.aisle} />
-                  <text x={x + 6} y={y + h / 2 + 3} fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{el.label}</text>
-                </g>
-              );
-            }
-            if (el.type === 'rack-row') {
-              const color = el.color || COLORS.rackStroke;
-              const frameDepthPx = (frameDepth / 1000) * scale;
-              const bayWidthPx = (bayWidth / 1000) * scale;
-              const numBays = Math.floor(w / bayWidthPx);
-              return (
-                <g key={i}>
-                  <rect x={x} y={y} width={w} height={frameDepthPx} fill={COLORS.rackFill} stroke={color} strokeWidth="1" strokeOpacity="0.3" />
-                  {/* Bay dividers */}
-                  {Array.from({ length: numBays + 1 }).map((_, j) => (
-                    <line key={`bay-${j}`} x1={x + j * bayWidthPx} y1={y} x2={x + j * bayWidthPx} y2={y + frameDepthPx} stroke={color} strokeWidth="1.5" strokeOpacity="0.5" />
-                  ))}
-                  <text x={x + 3} y={y + frameDepthPx / 2 + 3} fontSize={7 * fontScale} fill={color} fillOpacity="0.7" fontFamily="monospace">{el.label}</text>
-                  {/* Bay width dimension on first bay */}
-                  <DimensionLine
-                    key={`bw-${i}`}
-                    x1={x} y1={y + frameDepthPx + 16} x2={x + bayWidthPx} y2={y + frameDepthPx + 16}
-                    label={formatMm(bayWidth)}
-                    offset={-8}
-                    fontSize={7 * fontScale}
-                  />
-                </g>
-              );
-            }
-            return null;
-          })}
+            return els.map((el: any, i: number) => {
+              const x = (el.x / 1000) * scale;
+              const y = (el.y / 1000) * scale;
+              const w = (el.width / 1000) * scale;
+              const h = (el.height / 1000) * scale;
+
+              if (el.type === 'aisle') {
+                return (
+                  <g key={i}>
+                    <rect x={x} y={y} width={w} height={h} fill={COLORS.aisle} />
+                    <text x={x + 6} y={y + h / 2 + 3} fontSize={8 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{el.label}</text>
+                  </g>
+                );
+              }
+              if (el.type === 'rack-row') {
+                rowNum++;
+                // Detect back-to-back: next element is also rack-row (no aisle between)
+                const isBackToBack = els[i + 1]?.type === 'rack-row';
+
+                const color = el.color || COLORS.rackStroke;
+                const frameDepthPx = (frameDepth / 1000) * scale;
+                const bayWidthPx = (bayWidth / 1000) * scale;
+                const numBays = Math.floor(w / bayWidthPx);
+                const palletWPx = (pallet.width / 1000) * scale;
+                const palletDPx = (pallet.depth / 1000) * scale;
+                const palletGapPx = (100 / 1000) * scale;
+                const palletToUprightPx = (100 / 1000) * scale;
+                const uprightPx = Math.max(3, Math.min(8, frameDepthPx * 0.08));
+
+                return (
+                  <g key={i}>
+                    {/* Rack row background */}
+                    <rect x={x} y={y} width={w} height={frameDepthPx} fill={COLORS.rackFill} stroke={color} strokeWidth="1" strokeOpacity="0.3" />
+
+                    {/* Bay dividers (uprights) */}
+                    {Array.from({ length: numBays + 1 }).map((_, j) => (
+                      <g key={`bay-${j}`}>
+                        <rect x={x + j * bayWidthPx - uprightPx / 2} y={y} width={uprightPx} height={frameDepthPx} fill={COLORS.upright} opacity="0.5" rx="1" />
+                      </g>
+                    ))}
+
+                    {/* Pallets in each bay */}
+                    {Array.from({ length: numBays }).map((_, bayIdx) => {
+                      const bayStartX = x + bayIdx * bayWidthPx + palletToUprightPx;
+                      return (
+                        <g key={`pallets-${bayIdx}`}>
+                          {Array.from({ length: rack.palletsPerLevel }).map((_, pIdx) => {
+                            const palletX = bayStartX + pIdx * (palletWPx + palletGapPx);
+                            const palletY = y + (frameDepthPx - palletDPx) / 2;
+                            return (
+                              <rect
+                                key={`p-${bayIdx}-${pIdx}`}
+                                x={palletX} y={palletY}
+                                width={palletWPx} height={palletDPx}
+                                fill={COLORS.palletFill}
+                                stroke={COLORS.palletStroke}
+                                strokeWidth="0.6" strokeOpacity="0.5"
+                                rx="1"
+                              />
+                            );
+                          })}
+                        </g>
+                      );
+                    })}
+
+                    {/* Row label R1, R2... */}
+                    <text x={x + 3} y={y + frameDepthPx / 2 + 3} fontSize={7 * fontScale} fill={color} fillOpacity="0.7" fontFamily="monospace">
+                      R{rowNum}{isBackToBack ? ' (B2B)' : ''}
+                    </text>
+
+                    {/* Row spacer annotation between back-to-back rows */}
+                    {isBackToBack && (() => {
+                      const nextEl = els[i + 1];
+                      const nextY = (nextEl.y / 1000) * scale;
+                      const nextFrameDepthPx = (frameDepth / 1000) * scale;
+                      const spacerMidY = y + frameDepthPx + (nextY - (y + frameDepthPx)) / 2;
+                      return (
+                        <g>
+                          <line x1={x} y1={spacerMidY} x2={x + w} y2={spacerMidY} stroke={COLORS.column} strokeWidth="0.5" strokeDasharray="3 2" strokeOpacity="0.5" />
+                          <rect x={x + w / 2 - 38 * fontScale} y={spacerMidY - 6 * fontScale} width={76 * fontScale} height={12 * fontScale} rx={2} fill="white" stroke={COLORS.column} strokeWidth="0.5" />
+                          <text x={x + w / 2} y={spacerMidY + 3 * fontScale} textAnchor="middle" fontSize={6 * fontScale} fill={COLORS.column} fontFamily="monospace" fontWeight="600">
+                            Row Spacer 200mm
+                          </text>
+                        </g>
+                      );
+                    })()}
+
+                    {/* Bay width dimension */}
+                    <DimensionLine
+                      key={`bw-${i}`}
+                      x1={x} y1={y + frameDepthPx + 16} x2={x + bayWidthPx} y2={y + frameDepthPx + 16}
+                      label={formatMm(bayWidth)}
+                      offset={-8}
+                      fontSize={7 * fontScale}
+                    />
+                  </g>
+                );
+              }
+              return null;
+            });
+          })()}
 
           {/* Column markers */}
           {hasColumns && layout.columnPositions.map((col: { x: number; y: number }, i: number) => {
