@@ -27,6 +27,7 @@ import { generateBOMFromLayout, calculateSummaryFromResults } from '@/lib/calcul
 import { selectBeam } from '@/lib/calculator/beam-selector';
 import { selectUpright } from '@/lib/calculator/upright-selector';
 import { calculateShipping } from '@/lib/calculator/container-shipping';
+import { decodeParams, loadFromLocalStorage, saveToLocalStorage, encodeParams } from '@/lib/planner-persistence';
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 function debounce(fn: () => void, ms: number) {
@@ -102,13 +103,57 @@ interface PlannerState {
   reset: () => void;
 }
 
+// Resolve initial state from URL params > localStorage > defaults
+function getInitialState() {
+  const defaults = {
+    warehouse: { ...DEFAULT_WAREHOUSE },
+    rackType: 'selective' as RackType,
+    rack: { ...DEFAULT_RACK },
+    pallet: { ...DEFAULT_PALLET },
+    displayCurrency: 'USD' as CurrencyCode,
+    wireMeshDeck: false,
+  };
+
+  // Priority 1: URL params
+  const urlParams = decodeParams();
+  if (urlParams) {
+    return {
+      ...defaults,
+      warehouse: urlParams.warehouse || defaults.warehouse,
+      rackType: urlParams.rackType || defaults.rackType,
+      rack: { ...defaults.rack, ...urlParams.rack },
+      pallet: { ...defaults.pallet, ...urlParams.pallet },
+      displayCurrency: urlParams.displayCurrency || defaults.displayCurrency,
+      wireMeshDeck: urlParams.wireMeshDeck ?? defaults.wireMeshDeck,
+    };
+  }
+
+  // Priority 2: localStorage
+  const stored = loadFromLocalStorage();
+  if (stored) {
+    return {
+      ...defaults,
+      warehouse: stored.warehouse || defaults.warehouse,
+      rackType: stored.rackType || defaults.rackType,
+      rack: { ...defaults.rack, ...stored.rack },
+      pallet: { ...defaults.pallet, ...stored.pallet },
+      displayCurrency: stored.displayCurrency || defaults.displayCurrency,
+      wireMeshDeck: stored.wireMeshDeck ?? defaults.wireMeshDeck,
+    };
+  }
+
+  return defaults;
+}
+
+const initial = getInitialState();
+
 export const usePlannerStore = create<PlannerState>((set, get) => ({
-  warehouse: { ...DEFAULT_WAREHOUSE },
-  rackType: 'selective',
-  rack: { ...DEFAULT_RACK },
-  pallet: { ...DEFAULT_PALLET },
-  displayCurrency: 'USD',
-  wireMeshDeck: false,
+  warehouse: initial.warehouse,
+  rackType: initial.rackType,
+  rack: initial.rack,
+  pallet: initial.pallet,
+  displayCurrency: initial.displayCurrency,
+  wireMeshDeck: initial.wireMeshDeck,
 
   summary: null,
   bom: [],
@@ -196,6 +241,16 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
 
   calculate: () => {
     const state = get();
+
+    // Auto-save to localStorage
+    saveToLocalStorage({
+      warehouse: state.warehouse,
+      rackType: state.rackType,
+      rack: state.rack,
+      pallet: state.pallet,
+      wireMeshDeck: state.wireMeshDeck,
+      displayCurrency: state.displayCurrency,
+    });
 
     // Compute firstBeamHeight based on ground level setting
     const firstBeamHeight = state.rack.hasGroundLevel

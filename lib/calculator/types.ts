@@ -19,6 +19,10 @@ export interface WarehouseParams {
   columnSpacingX: number;
   /** Column spacing along warehouse width in mm — 0 = ignore */
   columnSpacingY: number;
+  /** Wall thickness in mm (for visualization) */
+  wallThickness: number;
+  /** Column cross-section size in mm (square, for visualization) */
+  columnSize: number;
 }
 
 /** Rack system configuration */
@@ -33,6 +37,8 @@ export interface RackParams {
   firstBeamHeight: number;
   /** Whether ground-level pallets are stored directly on floor (no beams needed) */
   hasGroundLevel: boolean;
+  /** Rack direction: 'along-length' (0) or 'along-width' (1) — determines rack row orientation */
+  rackDirection: 'length' | 'width';
 }
 
 /** Pallet / load specifications */

@@ -22,8 +22,12 @@ export function calculateLayout(input: PlannerInput): LayoutData {
   const { warehouse, rackType, rack, pallet } = input;
   const config = RACK_TYPES[rackType];
 
-  const effectiveWidth = warehouse.width - 2 * warehouse.wallClearance;
-  const effectiveLength = warehouse.length - 2 * warehouse.wallClearance;
+  // Swap dimensions based on rack direction
+  const effectiveLengthRaw = rack.rackDirection === 'width' ? warehouse.width : warehouse.length;
+  const effectiveWidthRaw = rack.rackDirection === 'width' ? warehouse.length : warehouse.width;
+
+  const effectiveWidth = effectiveWidthRaw - 2 * warehouse.wallClearance;
+  const effectiveLength = effectiveLengthRaw - 2 * warehouse.wallClearance;
 
   // Frame depth = pallet depth - offset (pallet overhangs frame by 50mm each side)
   const frameDepth = pallet.depth - SPACING.frameDepthOffset;
@@ -484,6 +488,48 @@ export function validateLayout(
       message: 'No upright profile found that meets capacity and thickness requirements.',
       severity: 'error',
     });
+  }
+
+  // Rack height to warehouse height ratio
+  if (rackHeight <= warehouse.height) {
+    const ratio = rackHeight / warehouse.height;
+    if (ratio > 0.85) {
+      warnings.push({
+        type: 'height',
+        message: `Rack height is ${Math.round(ratio * 100)}% of warehouse height. Consider leaving more clearance for sprinklers, lighting, or ventilation.`,
+        severity: 'warning',
+      });
+    }
+  }
+
+  // Pallets per level > 4
+  if (rack.palletsPerLevel > 4) {
+    warnings.push({
+      type: 'layout',
+      message: `${rack.palletsPerLevel} pallets per bay may reduce accessibility. Consider splitting into multiple bays with fewer pallets each.`,
+      severity: 'warning',
+    });
+  }
+
+  // High load per pallet
+  if (pallet.loadPerPallet > 2000) {
+    warnings.push({
+      type: 'frame',
+      message: `Load of ${pallet.loadPerPallet}kg/pallet requires heavy-duty uprights. Verify column capacity and consider reduced level spacing.`,
+      severity: 'warning',
+    });
+  }
+
+  // Beam utilization (capacity margin)
+  if (beamSelection && beamSelection.requiredCapacityKg > 0) {
+    const margin = ((beamSelection.tableCapacityKg - beamSelection.requiredCapacityKg) / beamSelection.requiredCapacityKg) * 100;
+    if (margin < 10) {
+      warnings.push({
+        type: 'beam',
+        message: `Beam capacity is only ${Math.round(margin)}% above required load. Consider upgrading to next beam size for safety margin.`,
+        severity: 'warning',
+      });
+    }
   }
 
   return warnings;

@@ -152,6 +152,8 @@ export const DEFAULT_WAREHOUSE: WarehouseParams = {
   wallClearance: 200,
   columnSpacingX: 8000,
   columnSpacingY: 12000,
+  wallThickness: 300,
+  columnSize: 400,
 };
 
 export const DEFAULT_RACK: RackParams = {
@@ -160,6 +162,7 @@ export const DEFAULT_RACK: RackParams = {
   aisleWidth: 2500,
   firstBeamHeight: 300,
   hasGroundLevel: false,
+  rackDirection: 'length',
 };
 
 export const DEFAULT_PALLET: PalletParams = {
@@ -189,6 +192,8 @@ export const CONSTRAINTS = {
     wallClearance: { min: 50, max: 1000 },
     columnSpacingX: { min: 0, max: 20000 },
     columnSpacingY: { min: 0, max: 20000 },
+    wallThickness: { min: 100, max: 600 },
+    columnSize: { min: 200, max: 800 },
   },
   rack: {
     beamLevels: { min: 1, max: 15 },

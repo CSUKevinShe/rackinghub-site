@@ -153,7 +153,7 @@ function DimensionLine({
 }
 
 export function LayoutCanvas() {
-  const { layout, rackType, rack, pallet, uprightSelection, beamSelection, warehouse } = usePlannerStore();
+  const { layout, rackType, rack, pallet, uprightSelection, beamSelection, warehouse, summary } = usePlannerStore();
   const [view, setView] = useState<ViewType>('top');
   const [showQuotePrompt, setShowQuotePrompt] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -220,6 +220,17 @@ export function LayoutCanvas() {
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
   }, [view]);
 
+  const handleExportSVG = useCallback(() => {
+    if (!svgRef.current) return;
+    const svgStr = new XMLSerializer().serializeToString(svgRef.current);
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.download = `rackinghub-${view}-layout.svg`;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, [view]);
+
   if (!layout || layout.elements.length === 0) {
     return (
       <div className="flex items-center justify-center h-full min-h-[300px] bg-slate-50 rounded-xl border border-slate-200">
@@ -247,7 +258,7 @@ export function LayoutCanvas() {
   const isMobile = containerWidth < 640;
   const fontScale = isMobile ? 1.3 : 1;
 
-  const viewProps = { view, setView, rackType, svgRef, handleExportPNG, fontScale };
+  const viewProps = { view, setView, rackType, svgRef, handleExportPNG, handleExportSVG, fontScale };
 
   return (
     <div ref={containerRef} className="space-y-0">
@@ -260,6 +271,8 @@ export function LayoutCanvas() {
           frameDepth={frameDepth}
           columnSpacingX={warehouse.columnSpacingX}
           columnSpacingY={warehouse.columnSpacingY}
+          wallThickness={warehouse.wallThickness}
+          columnSize={warehouse.columnSize}
           pallet={pallet}
           rack={rack}
           wallClearance={warehouse.wallClearance}
@@ -289,6 +302,10 @@ export function LayoutCanvas() {
           baysPerRow={layout.baysPerRow}
           uprightSelection={uprightSelection}
           warehouseHeight={warehouse.height}
+          warehouseWidth={warehouse.width}
+          wallThickness={warehouse.wallThickness}
+          columnSize={warehouse.columnSize}
+          columnSpacingX={warehouse.columnSpacingX}
           rackType={rackType}
           beamLevelsParam={rack.beamLevels}
           palletsPerLevelParam={rack.palletsPerLevel}
@@ -311,10 +328,23 @@ export function LayoutCanvas() {
           rackRows={layout.rackRows}
           aisleWidth={rack.aisleWidth}
           warehouseHeight={warehouse.height}
+          warehouseWidth={warehouse.width}
+          wallThickness={warehouse.wallThickness}
+          columnSize={warehouse.columnSize}
+          columnSpacingY={warehouse.columnSpacingY}
           rackType={rackType}
           beamLevelsParam={rack.beamLevels}
           palletsPerLevelParam={rack.palletsPerLevel}
         />
+      )}
+
+      {summary && (
+        <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <MetricCard icon="📦" label="Pallet Positions" value={summary.totalPalletPositions.toLocaleString()} />
+          <MetricCard icon="📐" label="Space Utilization" value={`${summary.spaceUtilization}%`} />
+          <MetricCard icon="⚖️" label="Storage Area" value={`${summary.rackingArea.toLocaleString()}㎡`} />
+          <MetricCard icon="💰" label="Est. Total Cost" value={`$${summary.estimatedTotalCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} />
+        </div>
       )}
 
       {showQuotePrompt && (
@@ -352,7 +382,7 @@ export function LayoutCanvas() {
 // ============================================================
 // Shared view toolbar (HTML, not part of drawing)
 // ============================================================
-function ViewToolbar({ view, setView, rackType, handleExportPNG, fontScale }: { view: ViewType; setView: (v: ViewType) => void; rackType: string; handleExportPNG: () => void; fontScale: number }) {
+function ViewToolbar({ view, setView, rackType, handleExportPNG, handleExportSVG, fontScale }: { view: ViewType; setView: (v: ViewType) => void; rackType: string; handleExportPNG: () => void; handleExportSVG: () => void; fontScale: number }) {
   const views: { key: ViewType; label: string }[] = [
     { key: 'top', label: 'Plan' },
     { key: 'front', label: 'Front' },
@@ -383,6 +413,16 @@ function ViewToolbar({ view, setView, rackType, handleExportPNG, fontScale }: { 
         </div>
         <button
           type="button"
+          onClick={handleExportSVG}
+          className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+          style={{ fontSize: `${11 * fontScale}px` }}
+          title="Export as SVG vector"
+        >
+          <Download className="w-3 h-3" />
+          <span className="hidden sm:inline">SVG</span>
+        </button>
+        <button
+          type="button"
           onClick={handleExportPNG}
           className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
           style={{ fontSize: `${11 * fontScale}px` }}
@@ -397,10 +437,25 @@ function ViewToolbar({ view, setView, rackType, handleExportPNG, fontScale }: { 
 }
 
 // ============================================================
+// Metric card — compact KPI display
+// ============================================================
+function MetricCard({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="bg-slate-50 rounded-lg border border-slate-200 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+        <span>{icon}</span>
+        <span className="truncate">{label}</span>
+      </div>
+      <div className="text-sm font-bold text-slate-800 mt-0.5 truncate">{value}</div>
+    </div>
+  );
+}
+
+// ============================================================
 // Top-down plan view — engineering drawing style
 // ============================================================
 function TopView(props: any) {
-  const { layout, svgRef, containerWidth, fontScale, bayWidth, frameDepth, wallClearance, columnSpacingX, columnSpacingY, pallet, rack, rackType, baysPerRow, rackRows, view, setView, handleExportPNG } = props;
+  const { layout, svgRef, containerWidth, fontScale, bayWidth, frameDepth, wallClearance, wallThickness, columnSize, columnSpacingX, columnSpacingY, pallet, rack, rackType, baysPerRow, rackRows, view, setView, handleExportPNG, handleExportSVG } = props;
 
   const contentW = layout.warehouseLength / 1000;
   const contentH = layout.warehouseWidth / 1000;
@@ -428,18 +483,44 @@ function TopView(props: any) {
   const lenPx = contentPxW;
   const widPx = contentPxH;
   const hasColumns = layout.columnPositions && layout.columnPositions.length > 0;
+  const wallPx = (wallThickness / 1000) * scale;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} fontScale={fontScale} />
+      <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} handleExportSVG={handleExportSVG} fontScale={fontScale} />
 
       <svg ref={svgRef} viewBox={`0 0 ${totalW} ${totalH}`} className="w-full" style={{ minHeight: 330 }} data-view="top">
         <rect x={0} y={0} width={totalW} height={totalH} fill={COLORS.white} />
         <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
 
         <g transform={`translate(${contentX}, ${contentY})`}>
-          {/* Warehouse outline */}
+          {/* Wall fill — solid structural walls outside warehouse boundary */}
+          <g>
+            {/* Top wall */}
+            <rect x={-wallPx} y={-wallPx} width={lenPx + wallPx * 2} height={wallPx} fill={COLORS.groundHatch} opacity="0.3" />
+            {/* Bottom wall */}
+            <rect x={-wallPx} y={widPx} width={lenPx + wallPx * 2} height={wallPx} fill={COLORS.groundHatch} opacity="0.3" />
+            {/* Left wall */}
+            <rect x={-wallPx} y={0} width={wallPx} height={widPx} fill={COLORS.groundHatch} opacity="0.3" />
+            {/* Right wall */}
+            <rect x={lenPx} y={0} width={wallPx} height={widPx} fill={COLORS.groundHatch} opacity="0.3" />
+            {/* Wall outer boundary */}
+            <rect x={-wallPx} y={-wallPx} width={lenPx + wallPx * 2} height={widPx + wallPx * 2} fill="none" stroke={COLORS.borderLight} strokeWidth="0.5" strokeDasharray="2 1" rx="1" />
+          </g>
+
+          {/* Warehouse interior outline */}
           <rect x={0} y={0} width={lenPx} height={widPx} fill={COLORS.grid} stroke={COLORS.borderLight} strokeWidth="1" strokeDasharray="4 2" rx="1" />
+
+          {/* Wall thickness dimension */}
+          {(() => {
+            if (wallPx < 4) return null; // too small to label
+            return (
+              <g>
+                <rect x={lenPx + 4} y={2} width={wallPx} height={8} fill="none" stroke={COLORS.dimension} strokeWidth="0.3" rx="0.5" />
+                <text x={lenPx + 4 + wallPx / 2} y={8} textAnchor="middle" fontSize={4.5 * fontScale} fill={COLORS.dimension} fontFamily="monospace">{wallThickness}</text>
+              </g>
+            );
+          })()}
 
           {/* Wall clearance zone */}
           {(() => {
@@ -455,8 +536,8 @@ function TopView(props: any) {
           })()}
 
           {/* Warehouse dimensions */}
-          <DimensionLine x1={0} y1={0} x2={lenPx} y2={0} label={formatMm(layout.warehouseLength)} offset={12} fontSize={6.5 * fontScale} />
-          <DimensionLine x1={0} y1={0} x2={0} y2={widPx} label={formatMm(layout.warehouseWidth)} offset={12} vertical fontSize={6.5 * fontScale} />
+          <DimensionLine x1={0} y1={0} x2={lenPx} y2={0} label={formatMm(layout.warehouseLength)} offset={16} fontSize={6.5 * fontScale} />
+          <DimensionLine x1={0} y1={0} x2={0} y2={widPx} label={formatMm(layout.warehouseWidth)} offset={16} vertical fontSize={6.5 * fontScale} />
 
           {/* Rack rows and pallets */}
           {(() => {
@@ -515,16 +596,16 @@ function TopView(props: any) {
             });
           })()}
 
-          {/* Column markers */}
+          {/* Column grid — sized squares */}
           {hasColumns && layout.columnPositions.map((col: { x: number; y: number }, i: number) => {
             const cx = (col.x / 1000) * scale;
             const cy = (col.y / 1000) * scale;
-            const s = 3 * fontScale;
+            const halfCol = (columnSize / 1000) * scale / 2;
             return (
               <g key={`col-${i}`}>
-                <circle cx={cx} cy={cy} r={2.5 * fontScale} fill="none" stroke={COLORS.column} strokeWidth="0.7" strokeOpacity="0.5" />
-                <line x1={cx - s} y1={cy - s} x2={cx + s} y2={cy + s} stroke={COLORS.column} strokeWidth="1" strokeOpacity="0.5" />
-                <line x1={cx + s} y1={cy - s} x2={cx - s} y2={cy + s} stroke={COLORS.column} strokeWidth="1" strokeOpacity="0.5" />
+                <rect x={cx - halfCol} y={cy - halfCol} width={halfCol * 2} height={halfCol * 2} fill={COLORS.groundHatch} opacity="0.4" stroke={COLORS.column} strokeWidth="0.7" strokeOpacity="0.5" rx="0.5" />
+                <line x1={cx - halfCol} y1={cy - halfCol} x2={cx + halfCol} y2={cy + halfCol} stroke={COLORS.column} strokeWidth="0.5" strokeOpacity="0.4" />
+                <line x1={cx + halfCol} y1={cy - halfCol} x2={cx - halfCol} y2={cy + halfCol} stroke={COLORS.column} strokeWidth="0.5" strokeOpacity="0.4" />
               </g>
             );
           })}
@@ -535,8 +616,10 @@ function TopView(props: any) {
             const cy = (columnSpacingY / 1000) * scale / 2;
             return (
               <g>
-                <rect x={cx - 22 * fontScale} y={cy - 7 * fontScale} width={44 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.column} strokeWidth="0.4" strokeOpacity="0.4" />
+                <rect x={cx - 24 * fontScale} y={cy - 7 * fontScale} width={48 * fontScale} height={14 * fontScale} rx={2} fill="white" stroke={COLORS.column} strokeWidth="0.4" strokeOpacity="0.4" />
                 <text x={cx} y={cy + 3 * fontScale} textAnchor="middle" fontSize={5.5 * fontScale} fill={COLORS.column} fontFamily="monospace" fontWeight="600">{formatMm(columnSpacingX)}×{formatMm(columnSpacingY)}</text>
+                <rect x={cx - 10 * fontScale} y={cy + 7 * fontScale} width={20 * fontScale} height={8 * fontScale} rx={1} fill="white" stroke={COLORS.column} strokeWidth="0.3" strokeOpacity="0.3" />
+                <text x={cx} y={cy + 13 * fontScale} textAnchor="middle" fontSize={4.5 * fontScale} fill={COLORS.column} fontFamily="monospace">{columnSize}×{columnSize}</text>
               </g>
             );
           })()}
@@ -568,7 +651,7 @@ const HEIGHT_DIM_X = 16;
 // Front elevation view — simplified engineering drawing style
 // ============================================================
 function FrontView(props: any) {
-  const { svgRef, containerWidth, fontScale, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, palletWidth, beamLevels, hasGroundLevel, palletsPerLevel, baysPerRow, warehouseHeight, rackType, view, setView, handleExportPNG } = props;
+  const { svgRef, containerWidth, fontScale, bayWidth, frameHeight, beamSectionHeight, firstBeamBottom, palletHeight, palletWidth, beamLevels, hasGroundLevel, palletsPerLevel, baysPerRow, warehouseHeight, warehouseWidth, wallThickness, columnSize, columnSpacingX, rackType, view, setView, handleExportPNG, handleExportSVG } = props;
 
   const displayBays = baysPerRow >= 2 ? 2 : 1;
   const totalWidthMm = bayWidth * displayBays;
@@ -581,6 +664,8 @@ function FrontView(props: any) {
   const palletHPx = palletHeight / 1000 * scale;
   const palletWPx = palletWidth / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
+  const wallPx = (wallThickness / 1000) * scale;
+  const colPx = (columnSize / 1000) * scale;
 
   const groundY = frameHPx + 40;
   const ceilY = groundY - ceilPx;
@@ -595,7 +680,6 @@ function FrontView(props: any) {
   const innerW = totalW - (OUTER_MARGIN + INNER_MARGIN) * 2;
   const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
 
-  // Center content horizontally within the inner border
   const contentX = innerX + Math.max(0, (innerW - totalPx) / 2);
   const contentY = innerY + 40;
 
@@ -605,14 +689,20 @@ function FrontView(props: any) {
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
 
+  // Show columns if columnSpacingX > 0 — render first column at left edge
+  const hasColumns = columnSpacingX > 0;
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} fontScale={fontScale} />
+      <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} handleExportSVG={handleExportSVG} fontScale={fontScale} />
 
       <svg ref={svgRef} viewBox={`0 0 ${totalW} ${totalH}`} className="w-full" style={{ minHeight: 330 }} data-view="front">
         <defs>
           <pattern id="ground-hatch-front" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
             <line x1="0" y1="0" x2="0" y2="5" stroke={COLORS.groundHatch} strokeWidth="0.6" />
+          </pattern>
+          <pattern id="wall-hatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="3" stroke={COLORS.groundHatch} strokeWidth="0.5" />
           </pattern>
         </defs>
 
@@ -620,12 +710,57 @@ function FrontView(props: any) {
         <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
 
         <g transform={`translate(${contentX}, ${contentY})`}>
+          {/* Roof structure — beam/steel deck */}
+          <line x1={-wallPx} y1={ceilY} x2={totalPx + wallPx} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
+          {(() => {
+            const roofH = 8 * fontScale;
+            return (
+              <g>
+                <rect x={-wallPx} y={ceilY - roofH} width={totalPx + wallPx * 2} height={roofH} fill="rgba(148,163,184,0.08)" stroke={COLORS.textMuted} strokeWidth="0.3" />
+                <text x={totalPx / 2} y={ceilY - roofH - 2} textAnchor="middle" fontSize={4.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">Roof Structure</text>
+              </g>
+            );
+          })()}
+
+          {/* Side walls — vertical sections */}
+          {wallPx > 0 && (
+            <g>
+              <rect x={-wallPx} y={groundY - ceilPx - 10} width={wallPx} height={ceilPx + 10} fill="url(#wall-hatch)" stroke={COLORS.borderLight} strokeWidth="0.3" />
+              <rect x={totalPx} y={groundY - ceilPx - 10} width={wallPx} height={ceilPx + 10} fill="url(#wall-hatch)" stroke={COLORS.borderLight} strokeWidth="0.3" />
+            </g>
+          )}
+
+          {/* Column cross-sections along the wall */}
+          {hasColumns && colPx > 0 && (() => {
+            const colBottom = groundY - ceilPx - 10;
+            const colTop = groundY;
+            return (
+              <g>
+                {/* Left column at wall edge */}
+                <rect x={-wallPx - colPx / 2} y={colBottom} width={colPx} height={ceilPx + 10} fill={COLORS.groundHatch} opacity="0.3" stroke={COLORS.column} strokeWidth="0.6" strokeOpacity="0.4" rx="0.5" />
+                {/* Label */}
+                <text x={-wallPx - colPx / 2} y={colBottom - 3} textAnchor="middle" fontSize={4.5 * fontScale} fill={COLORS.column} fontFamily="monospace">{columnSize}×{columnSize}</text>
+              </g>
+            );
+          })()}
+
           {/* Ceiling line */}
-          <line x1={-8} y1={ceilY} x2={totalPx + 8} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
+          <line x1={0} y1={ceilY} x2={totalPx} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.5" strokeDasharray="3 2" />
 
           {/* Floor line with hatch */}
-          <line x1={-8} y1={groundY} x2={totalPx + 8} y2={groundY} stroke={COLORS.ground} strokeWidth="1.5" />
-          <rect x={-8} y={groundY} width={totalPx + 16} height="10" fill="url(#ground-hatch-front)" />
+          <line x1={-wallPx - 4} y1={groundY} x2={totalPx + wallPx + 4} y2={groundY} stroke={COLORS.ground} strokeWidth="1.5" />
+          <rect x={-wallPx - 4} y={groundY} width={totalPx + wallPx * 2 + 8} height="10" fill="url(#ground-hatch-front)" />
+
+          {/* Height dimension — warehouse clearance */}
+          {(() => {
+            const dimX = -wallPx - 8;
+            return (
+              <g>
+                <line x1={dimX} y1={groundY} x2={dimX} y2={ceilY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                <text x={dimX - 2} y={(groundY + ceilY) / 2 + 3} textAnchor="end" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{formatMm(warehouseHeight)}</text>
+              </g>
+            );
+          })()}
 
           {/* Each bay */}
           {Array.from({ length: displayBays }).map((_, bayIdx) => {
@@ -698,7 +833,7 @@ function FrontView(props: any) {
 // Side elevation view — simplified engineering drawing style
 // ============================================================
 function SideView(props: any) {
-  const { svgRef, containerWidth, fontScale, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, rackRows, aisleWidth, warehouseHeight, rackType, view, setView, handleExportPNG } = props;
+  const { svgRef, containerWidth, fontScale, frameDepth, frameHeight, beamSectionHeight, firstBeamBottom, palletDepth, palletHeight, beamLevels, hasGroundLevel, palletsPerLevel, rackRows, aisleWidth, warehouseHeight, warehouseWidth, wallThickness, columnSize, columnSpacingY, rackType, view, setView, handleExportPNG, handleExportSVG } = props;
 
   const hasBackToBack = rackRows >= 2;
   const displayRows = hasBackToBack ? 3 : 1;
@@ -715,6 +850,8 @@ function SideView(props: any) {
   const palletDPx = palletDepth / 1000 * scale;
   const palletHPx = palletHeight / 1000 * scale;
   const ceilPx = warehouseHeight / 1000 * scale;
+  const wallPx = (wallThickness / 1000) * scale;
+  const colPx = (columnSize / 1000) * scale;
 
   const groundY = frameHPx + 40;
   const ceilY = groundY - ceilPx;
@@ -729,7 +866,6 @@ function SideView(props: any) {
   const innerW = totalW - (OUTER_MARGIN + INNER_MARGIN) * 2;
   const innerH = totalH - (OUTER_MARGIN + INNER_MARGIN) * 2;
 
-  // Center content horizontally within the inner border
   const contentX = innerX + Math.max(0, (innerW - totalPx) / 2);
   const contentY = innerY + 80;
 
@@ -739,7 +875,6 @@ function SideView(props: any) {
     levels.push({ bottomMm: firstBeamBottom + i * (palletHeight + 100), isGround: false });
   }
 
-  // Row X offsets
   const rowOffsets: number[] = [];
   let currentX = 0;
   for (let i = 0; i < displayRows; i++) {
@@ -749,14 +884,19 @@ function SideView(props: any) {
     if (hasBackToBack && i === 1) currentX += backToBackGap / 1000 * scale;
   }
 
+  const hasColumns = columnSpacingY > 0;
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} fontScale={fontScale} />
+      <ViewToolbar view={view} setView={setView} rackType={rackType} handleExportPNG={handleExportPNG} handleExportSVG={handleExportSVG} fontScale={fontScale} />
 
       <svg ref={svgRef} viewBox={`0 0 ${totalW} ${totalH}`} className="w-full" style={{ minHeight: 330 }} data-view="side">
         <defs>
           <pattern id="ground-hatch-side" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
             <line x1="0" y1="0" x2="0" y2="5" stroke={COLORS.groundHatch} strokeWidth="0.6" />
+          </pattern>
+          <pattern id="wall-hatch-side" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="3" stroke={COLORS.groundHatch} strokeWidth="0.5" />
           </pattern>
         </defs>
 
@@ -764,12 +904,54 @@ function SideView(props: any) {
         <DrawingFrame totalWidth={totalW} totalHeight={totalH} innerX={innerX} innerY={innerY} innerW={innerW} innerH={innerH} />
 
         <g transform={`translate(${contentX}, ${contentY})`}>
+          {/* Roof structure */}
+          <line x1={-wallPx} y1={ceilY} x2={totalPx + wallPx} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
+          {(() => {
+            const roofH = 8 * fontScale;
+            return (
+              <g>
+                <rect x={-wallPx} y={ceilY - roofH} width={totalPx + wallPx * 2} height={roofH} fill="rgba(148,163,184,0.08)" stroke={COLORS.textMuted} strokeWidth="0.3" />
+                <text x={totalPx / 2} y={ceilY - roofH - 2} textAnchor="middle" fontSize={4.5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">Roof Structure</text>
+              </g>
+            );
+          })()}
+
+          {/* Side walls */}
+          {wallPx > 0 && (
+            <g>
+              <rect x={-wallPx} y={groundY - ceilPx - 10} width={wallPx} height={ceilPx + 10} fill="url(#wall-hatch-side)" stroke={COLORS.borderLight} strokeWidth="0.3" />
+              <rect x={totalPx} y={groundY - ceilPx - 10} width={wallPx} height={ceilPx + 10} fill="url(#wall-hatch-side)" stroke={COLORS.borderLight} strokeWidth="0.3" />
+            </g>
+          )}
+
+          {/* Column */}
+          {hasColumns && colPx > 0 && (() => {
+            const colBottom = groundY - ceilPx - 10;
+            return (
+              <g>
+                <rect x={-wallPx - colPx / 2} y={colBottom} width={colPx} height={ceilPx + 10} fill={COLORS.groundHatch} opacity="0.3" stroke={COLORS.column} strokeWidth="0.6" strokeOpacity="0.4" rx="0.5" />
+                <text x={-wallPx - colPx / 2} y={colBottom - 3} textAnchor="middle" fontSize={4.5 * fontScale} fill={COLORS.column} fontFamily="monospace">{columnSize}×{columnSize}</text>
+              </g>
+            );
+          })()}
+
           {/* Ceiling line */}
-          <line x1={-8} y1={ceilY} x2={totalPx + 8} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.8" strokeDasharray="5 3" />
+          <line x1={0} y1={ceilY} x2={totalPx} y2={ceilY} stroke={COLORS.textMuted} strokeWidth="0.5" strokeDasharray="3 2" />
 
           {/* Floor */}
-          <line x1={-8} y1={groundY} x2={totalPx + 8} y2={groundY} stroke={COLORS.ground} strokeWidth="1.5" />
-          <rect x={-8} y={groundY} width={totalPx + 16} height="10" fill="url(#ground-hatch-side)" />
+          <line x1={-wallPx - 4} y1={groundY} x2={totalPx + wallPx + 4} y2={groundY} stroke={COLORS.ground} strokeWidth="1.5" />
+          <rect x={-wallPx - 4} y={groundY} width={totalPx + wallPx * 2 + 8} height="10" fill="url(#ground-hatch-side)" />
+
+          {/* Warehouse height dimension */}
+          {(() => {
+            const dimX = -wallPx - 8;
+            return (
+              <g>
+                <line x1={dimX} y1={groundY} x2={dimX} y2={ceilY} stroke={COLORS.dimension} strokeWidth="0.3" strokeDasharray="2 2" />
+                <text x={dimX - 2} y={(groundY + ceilY) / 2 + 3} textAnchor="end" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">{formatMm(warehouseHeight)}</text>
+              </g>
+            );
+          })()}
 
           {/* Each rack row */}
           {rowOffsets.map((rowX, rowIdx) => {
@@ -777,7 +959,6 @@ function SideView(props: any) {
             const rowEndX = rowX + rowW;
             const overhangPx = palletOverhang / 1000 * scale;
 
-            // Pallet X position: pallets overhang the beam by 50mm each side
             let palletX: number;
             if (hasBackToBack && rowIdx === 1) {
               palletX = rowEndX + overhangPx - palletDPx;
@@ -789,11 +970,9 @@ function SideView(props: any) {
 
             return (
               <g key={`row-${rowIdx}`}>
-                {/* Uprights — left and right of each row frame */}
                 <rect x={rowX} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="0.5" />
                 <rect x={rowEndX - uprightPx} y={rackTopY} width={uprightPx} height={frameHPx} fill={COLORS.upright} rx="0.5" />
 
-                {/* Beams — horizontal bars spanning between uprights at each level */}
                 {levels.map((lvl, lvlIdx) => {
                   const beamTopY = groundY - lvl.bottomMm / 1000 * scale;
                   const palletBottomY = lvl.isGround ? groundY : beamTopY;
@@ -801,18 +980,15 @@ function SideView(props: any) {
 
                   return (
                     <g key={`side-r${rowIdx}-l${lvlIdx}`}>
-                      {/* Beam spans between uprights (not full frame depth) */}
                       {!lvl.isGround && (
                         <rect x={rowX + uprightPx} y={beamTopY} width={rowW - uprightPx * 2} height={beamHPx} fill={COLORS.beamFill} rx="0.3" />
                       )}
-                      {/* Pallet sits on beam, overhangs by 50mm */}
                       <rect x={palletX} y={palletTopY} width={palletDPx} height={palletHPx} fill={COLORS.palletFill} stroke={COLORS.palletStroke} strokeWidth="0.6" strokeOpacity={COLORS.palletStrokeOpacity} rx="0.5" />
                       <line x1={palletX} y1={palletBottomY} x2={palletX + palletDPx} y2={palletBottomY} stroke={COLORS.palletStroke} strokeWidth="0.8" strokeOpacity="0.35" />
                     </g>
                   );
                 })}
 
-                {/* Row label */}
                 {rowIdx === 0 && <text x={rowX + rowW / 2} y={groundY + 10} textAnchor="middle" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">R1</text>}
                 {rowIdx === 1 && <text x={rowX + rowW / 2} y={groundY + 10} textAnchor="middle" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">R2</text>}
                 {rowIdx === 2 && <text x={rowX + rowW / 2} y={groundY + 10} textAnchor="middle" fontSize={5 * fontScale} fill={COLORS.textMuted} fontFamily="monospace">R{rackRows}</text>}
