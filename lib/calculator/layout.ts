@@ -2,32 +2,27 @@ import type {
   PlannerInput,
   LayoutData,
   LayoutElement,
+  Layout3DData,
   ValidationWarning,
   BeamSelection,
   UprightSelection,
+  WarehouseParams,
+  RackZone,
 } from './types';
 import { RACK_TYPES, SPACING } from './config';
 
 // ============================================================
-// Layout Calculation Engine — precise spacing rules
+// Layout Calculation Engine v2
+// Column-grid-based warehouse model with transfer aisles
 // ============================================================
-
-/**
- * Minimum forklift access aisle width at walls (mm).
- * Used when wall clearance alone is insufficient for forklift access.
- */
-const WALL_ACCESS_AISLE_MM = 2000;
 
 export function calculateLayout(input: PlannerInput): LayoutData {
   const { warehouse, rackType, rack, pallet } = input;
   const config = RACK_TYPES[rackType];
 
-  // Swap dimensions based on rack direction
-  const effectiveLengthRaw = rack.rackDirection === 'width' ? warehouse.width : warehouse.length;
-  const effectiveWidthRaw = rack.rackDirection === 'width' ? warehouse.length : warehouse.width;
-
-  const effectiveWidth = effectiveWidthRaw - 2 * warehouse.wallClearance;
-  const effectiveLength = effectiveLengthRaw - 2 * warehouse.wallClearance;
+  // Total warehouse dimensions from column grid
+  const totalLength = warehouse.columnsX * warehouse.columnSpanX;
+  const totalWidth = warehouse.columnsY * warehouse.columnSpanY;
 
   // Frame depth = pallet depth - offset (pallet overhangs frame by 50mm each side)
   const frameDepth = pallet.depth - SPACING.frameDepthOffset;
@@ -38,8 +33,8 @@ export function calculateLayout(input: PlannerInput): LayoutData {
     (rack.palletsPerLevel - 1) * SPACING.palletToPallet +
     2 * SPACING.palletToUpright;
 
-  // Rack height based on first beam height
-  const beamSectionHeight = 120; // default beam section height
+  // Rack height
+  const beamSectionHeight = 120;
   const lastLevelBeamBottom =
     rack.firstBeamHeight +
     (rack.beamLevels - 1) * (pallet.height + SPACING.topClearance);
@@ -51,394 +46,382 @@ export function calculateLayout(input: PlannerInput): LayoutData {
     console.warn(`Rack height ${rackHeight}mm exceeds warehouse height ${warehouse.height}mm`);
   }
 
-  let layoutResult: {
-    rackRows: number;
-    aisles: number;
-    rackBlocks: number;
-    baysPerRow: number;
-  };
+  // --- 2D Block Layout ---
+  // Direction: 0 = racks along X (length), working aisles along X, transfer aisles along X
+  //            1 = racks along Y (width)
 
-  if (rackType === 'selective') {
-    layoutResult = calculateSelectiveLayout(
-      effectiveLength,
-      effectiveWidth,
-      bayWidth,
-      frameDepth,
-      rack.aisleWidth
-    );
-  } else if (rackType === 'drive-in') {
-    layoutResult = calculateDriveInLayout(
-      effectiveLength,
-      effectiveWidth,
-      bayWidth,
-      frameDepth,
-      rack.aisleWidth
-    );
-  } else {
-    layoutResult = calculateRadioShuttleLayout(
-      effectiveLength,
-      effectiveWidth,
-      bayWidth,
-      frameDepth,
-      rack.aisleWidth
-    );
+  // For Phase 1, use the first (and only) zone
+  const zone = warehouse.zones[0];
+  if (!zone) {
+    return {
+      elements: [],
+      warehouseLength: totalLength,
+      warehouseWidth: totalWidth,
+      rackRows: 0,
+      aisles: 0,
+      baysPerRow: 0,
+      rackBlocks: 0,
+      transferAisles: 0,
+      rackingArea: 0,
+      warehouseArea: 0,
+      utilization: 0,
+    };
   }
 
-  const elements = generateLayoutElements(
-    effectiveLength,
-    effectiveWidth,
+  const direction = zone.direction;
+  const workingAisleWidth = zone.rack.aisleWidth;
+
+  // --- Blocks along length (X) ---
+  // One block per column bay (aligns with column grid)
+  const blocksX = warehouse.columnsX;
+  const blockLength = warehouse.columnSpanX - warehouse.columnWidth; // subtract column at right edge
+  const baysPerBlock = Math.max(1, Math.floor(blockLength / bayWidth));
+  const usedBlockLength = baysPerBlock * bayWidth;
+
+  // --- Double-row blocks along width (Y) ---
+  const doubleRowDepth = 2 * frameDepth;
+  // With working aisles on both sides: aisle + 2*frameDepth + aisle + 2*frameDepth + ... + aisle
+  // blocksY * doubleRowDepth + (blocksY + 1) * workingAisleWidth <= totalWidth - 2*wallClearance
+  const effectiveWidth = totalWidth - 2 * warehouse.wallClearance;
+  const blocksY = Math.max(1, Math.floor(
+    (effectiveWidth + workingAisleWidth) / (doubleRowDepth + workingAisleWidth)
+  ));
+
+  // Check if an end single row fits (with aisle on one side)
+  const consumedWidth = blocksY * doubleRowDepth + (blocksY + 1) * workingAisleWidth;
+  const remainingWidth = effectiveWidth - consumedWidth;
+  const hasEndRow = remainingWidth >= frameDepth;
+
+  const rackRows = blocksY * 2 + (hasEndRow ? 1 : 0);
+  const workingAisles = blocksY + 1 + (hasEndRow ? 1 : 0);
+  const rackBlocks = blocksX * blocksY;
+
+  // --- Generate elements ---
+  const elements = generateBlockElements(
+    totalLength,
+    totalWidth,
+    warehouse,
+    zone,
     bayWidth,
+    usedBlockLength,
     frameDepth,
-    rack.aisleWidth,
-    layoutResult,
-    rackType
+    workingAisleWidth,
+    blocksX,
+    blocksY,
+    baysPerBlock,
+    hasEndRow
   );
 
-  // Generate column positions when columnSpacingX/Y > 0
-  const { columnPositions, rackRowPositions } = generateColumnPositions(
-    warehouse.length,
-    warehouse.width,
-    warehouse.columnSpacingX,
-    warehouse.columnSpacingY
-  );
-
-  const warehouseArea = (warehouse.length * warehouse.width) / 1e6;
+  // --- Metrics ---
+  const warehouseArea = (totalLength * totalWidth) / 1e6;
   const rackingArea =
-    (layoutResult.baysPerRow * bayWidth * layoutResult.rackRows * frameDepth) /
+    (blocksX * blocksY * baysPerBlock * bayWidth * frameDepth * 2 +
+      (hasEndRow ? blocksX * baysPerBlock * bayWidth * frameDepth : 0)) /
     1e6;
   const utilization = warehouseArea > 0 ? (rackingArea / warehouseArea) * 100 : 0;
 
+  // --- 3D payload (for future Three.js) ---
+  const layout3D = generate3DPayload(
+    totalLength,
+    totalWidth,
+    warehouse,
+    zone,
+    usedBlockLength,
+    frameDepth,
+    workingAisleWidth,
+    rackHeight,
+    blocksX,
+    blocksY,
+    baysPerBlock,
+    hasEndRow
+  );
+
   return {
     elements,
-    warehouseLength: warehouse.length,
-    warehouseWidth: warehouse.width,
-    rackRows: layoutResult.rackRows,
-    aisles: layoutResult.aisles,
-    baysPerRow: layoutResult.baysPerRow,
-    rackBlocks: layoutResult.rackBlocks,
+    warehouseLength: totalLength,
+    warehouseWidth: totalWidth,
+    rackRows,
+    aisles: workingAisles,
+    baysPerRow: baysPerBlock,
+    rackBlocks,
+    transferAisles: blocksX > 1 ? blocksX - 1 : 0,
     rackingArea: Math.round(rackingArea),
     warehouseArea: Math.round(warehouseArea),
     utilization: Math.round(utilization * 10) / 10,
-    columnPositions,
-    rackRowPositions,
+    layout3D,
   };
 }
 
-function calculateSelectiveLayout(
-  effectiveLength: number,
-  effectiveWidth: number,
+// ============================================================
+// Block-based element generation
+// ============================================================
+
+function generateBlockElements(
+  totalLength: number,
+  totalWidth: number,
+  warehouse: WarehouseParams,
+  zone: RackZone,
   bayWidth: number,
+  blockLength: number,
   frameDepth: number,
-  aisleWidth: number
-) {
-  // Every rack row must have an access aisle on at least one side.
-  // No back-to-back racks against walls — each row is single-deep.
-  // Structure: [wall-aisle] [row] [aisle] [row] [aisle] ... [row] [wall-aisle]
-  // N rows need N-1 intermediate aisles + 2 wall access aisles.
-
-  let rackRows = 0;
-  let remainingWidth = effectiveWidth;
-
-  // Reserve top and bottom wall access aisles
-  if (WALL_ACCESS_AISLE_MM * 2 < remainingWidth) {
-    remainingWidth -= WALL_ACCESS_AISLE_MM * 2;
-  } else {
-    return { rackRows: 0, aisles: 0, rackBlocks: 0, baysPerRow: 0 };
-  }
-
-  // First row needs only frameDepth (top wall access aisle already reserved)
-  if (remainingWidth >= frameDepth) {
-    rackRows++;
-    remainingWidth -= frameDepth;
-  }
-
-  // Each subsequent row needs: 1 aisle + 1 rack row
-  while (remainingWidth >= aisleWidth + frameDepth) {
-    rackRows++;
-    remainingWidth -= aisleWidth + frameDepth;
-  }
-
-  const aisles = rackRows + 1; // N-1 intermediate + 2 wall access
-  const baysPerRow = Math.max(1, Math.floor(effectiveLength / bayWidth));
-
-  return { rackRows, aisles, rackBlocks: 0, baysPerRow };
-}
-
-function calculateDriveInLayout(
-  effectiveLength: number,
-  effectiveWidth: number,
-  bayWidth: number,
-  frameDepth: number,
-  _serviceAisleWidth: number
-) {
-  const laneDepth = 1200 * 6;
-  const laneWidth = bayWidth;
-  const lanesPerBlock = Math.max(1, Math.floor(laneDepth / laneWidth));
-
-  const entryAisleWidth = 2700;
-  const frameSetWidth = frameDepth * 2 + entryAisleWidth;
-
-  let rackBlocks = 0;
-  let remainingWidth = effectiveWidth;
-
-  // Reserve top wall access aisle
-  if (WALL_ACCESS_AISLE_MM < remainingWidth) {
-    remainingWidth -= WALL_ACCESS_AISLE_MM;
-  }
-
-  while (remainingWidth >= frameSetWidth + WALL_ACCESS_AISLE_MM) {
-    rackBlocks++;
-    remainingWidth -= frameSetWidth + WALL_ACCESS_AISLE_MM;
-  }
-
-  const endRow = remainingWidth >= frameDepth + WALL_ACCESS_AISLE_MM ? 1 : 0;
-  const rackRows = rackBlocks * 2 + endRow;
-  const aisles = 1 + rackBlocks + (endRow > 0 ? 1 : 0);
-  const baysPerRow = Math.max(1, Math.floor(effectiveLength / bayWidth));
-
-  return { rackRows, aisles, rackBlocks, baysPerRow };
-}
-
-function calculateRadioShuttleLayout(
-  effectiveLength: number,
-  effectiveWidth: number,
-  bayWidth: number,
-  frameDepth: number,
-  _serviceAisleWidth: number
-) {
-  const laneDepth = 1200 * 8;
-
-  const blockWidth = frameDepth * 2 + 2700;
-
-  let rackBlocks = 0;
-  let remainingWidth = effectiveWidth;
-
-  // Reserve top wall access aisle
-  if (WALL_ACCESS_AISLE_MM < remainingWidth) {
-    remainingWidth -= WALL_ACCESS_AISLE_MM;
-  }
-
-  while (remainingWidth >= blockWidth + WALL_ACCESS_AISLE_MM) {
-    rackBlocks++;
-    remainingWidth -= blockWidth + WALL_ACCESS_AISLE_MM;
-  }
-
-  const endRow = remainingWidth >= frameDepth + WALL_ACCESS_AISLE_MM ? 1 : 0;
-  const rackRows = rackBlocks * 2 + endRow;
-  const aisles = 1 + rackBlocks + (endRow > 0 ? 1 : 0);
-  const baysPerRow = Math.max(1, Math.floor(effectiveLength / bayWidth));
-
-  return { rackRows, aisles, rackBlocks, baysPerRow };
-}
-
-function generateLayoutElements(
-  effectiveLength: number,
-  effectiveWidth: number,
-  bayWidth: number,
-  frameDepth: number,
-  aisleWidth: number,
-  layout: { rackRows: number; aisles: number; rackBlocks: number; baysPerRow: number },
-  rackType: string
+  workingAisleWidth: number,
+  blocksX: number,
+  blocksY: number,
+  baysPerBlock: number,
+  hasEndRow: boolean
 ): LayoutElement[] {
   const elements: LayoutElement[] = [];
-  const startX = 0;
-  let currentY = 0;
-  let rowIndex = 0;
+  const wallClearance = warehouse.wallClearance;
+  const columnW = warehouse.columnWidth;
+  const columnD = warehouse.columnDepth;
+  const spanX = warehouse.columnSpanX;
+  const spanY = warehouse.columnSpanY;
+  const colsX = warehouse.columnsX;
+  const colsY = warehouse.columnsY;
 
-  const rackColor = rackType === 'drive-in' ? '#fbbf24' : rackType === 'radio-shuttle' ? '#a78bfa' : '#3b82f6';
-
-  // Top wall access aisle
+  // --- 1. Wall ---
   elements.push({
-    type: 'aisle',
-    x: startX,
+    type: 'wall',
+    x: 0,
     y: 0,
-    width: effectiveLength,
-    height: WALL_ACCESS_AISLE_MM,
-    label: `${(WALL_ACCESS_AISLE_MM / 1000).toFixed(1)}m aisle (wall access)`,
-    color: '#f1f5f9',
+    width: totalLength,
+    height: totalWidth,
+    label: 'Warehouse',
+    color: '#e2e8f0',
   });
-  currentY = WALL_ACCESS_AISLE_MM;
 
-  if (rackType === 'selective') {
-    // Selective racking: every row is single-deep, aisle between each row
-    for (let i = 0; i < layout.rackRows; i++) {
+  // --- 2. Columns at grid intersections ---
+  for (let cx = 0; cx < colsX; cx++) {
+    for (let cy = 0; cy < colsY; cy++) {
+      // Column at intersection of grid lines (lower-right corner of bay)
+      const colX = (cx + 1) * spanX - columnW;
+      const colY = (cy + 1) * spanY - columnD;
+      // Also columns at start (cx=0, cy=0 = wall edge)
+      // Actually columns are usually between bays, not at the corners.
+      // Let's place them at the END of each bay.
       elements.push({
-        type: 'rack-row',
-        x: startX + bayWidth * 0.5,
-        y: currentY,
-        width: layout.baysPerRow * bayWidth,
-        height: frameDepth,
-        label: `Row ${rowIndex + 1}`,
-        color: rackColor,
+        type: 'column',
+        x: colX,
+        y: colY,
+        width: columnW,
+        height: columnD,
+        label: `${columnW}×${columnD}`,
+        color: '#94a3b8',
       });
-      currentY += frameDepth;
-      rowIndex++;
-
-      if (i < layout.rackRows - 1) {
-        elements.push({
-          type: 'aisle',
-          x: startX,
-          y: currentY,
-          width: effectiveLength,
-          height: aisleWidth,
-          label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
-          color: '#f1f5f9',
-        });
-        currentY += aisleWidth;
-      }
-    }
-  } else {
-    // Drive-in / Radio-shuttle: back-to-back pairs with a single row at the top
-    // First row (single, not back-to-back against wall)
-    elements.push({
-      type: 'rack-row',
-      x: startX + bayWidth * 0.5,
-      y: currentY,
-      width: layout.baysPerRow * bayWidth,
-      height: frameDepth,
-      label: `Row ${rowIndex + 1}`,
-      color: rackColor,
-    });
-    currentY += frameDepth;
-    rowIndex++;
-
-    // Back-to-back pairs
-    for (let block = 0; block < layout.rackBlocks; block++) {
-      // Aisle before this pair
-      elements.push({
-        type: 'aisle',
-        x: startX,
-        y: currentY,
-        width: effectiveLength,
-        height: aisleWidth,
-        label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
-        color: '#f1f5f9',
-      });
-      currentY += aisleWidth;
-
-      // First row of pair
-      elements.push({
-        type: 'rack-row',
-        x: startX + bayWidth * 0.5,
-        y: currentY,
-        width: layout.baysPerRow * bayWidth,
-        height: frameDepth,
-        label: `Row ${rowIndex + 1}`,
-        color: rackColor,
-      });
-      currentY += frameDepth;
-      rowIndex++;
-
-      // Aisle between back-to-back rows
-      elements.push({
-        type: 'aisle',
-        x: startX,
-        y: currentY,
-        width: effectiveLength,
-        height: aisleWidth,
-        label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
-        color: '#f1f5f9',
-      });
-      currentY += aisleWidth;
-
-      // Second row of pair
-      elements.push({
-        type: 'rack-row',
-        x: startX + bayWidth * 0.5,
-        y: currentY,
-        width: layout.baysPerRow * bayWidth,
-        height: frameDepth,
-        label: `Row ${rowIndex + 1}`,
-        color: rackColor,
-      });
-      currentY += frameDepth;
-      rowIndex++;
-    }
-
-    // Closing row
-    if (layout.rackRows > 1 + layout.rackBlocks * 2) {
-      elements.push({
-        type: 'aisle',
-        x: startX,
-        y: currentY,
-        width: effectiveLength,
-        height: aisleWidth,
-        label: `${(aisleWidth / 1000).toFixed(1)}m aisle`,
-        color: '#f1f5f9',
-      });
-      currentY += aisleWidth;
-
-      elements.push({
-        type: 'rack-row',
-        x: startX + bayWidth * 0.5,
-        y: currentY,
-        width: layout.baysPerRow * bayWidth,
-        height: frameDepth,
-        label: `Row ${rowIndex + 1}`,
-        color: rackColor,
-      });
-      currentY += frameDepth;
-      rowIndex++;
     }
   }
 
-  // Bottom wall access aisle — fill remaining space
-  const bottomAisleY = currentY;
-  const bottomAisleHeight = effectiveWidth - bottomAisleY;
-  if (bottomAisleHeight > 0) {
+  // --- 3. Rack blocks + working aisles ---
+  const zoneOriginX = zone.originX;
+  const zoneOriginY = zone.originY;
+
+  // Starting Y (after wall clearance)
+  let currentY = wallClearance;
+
+  // First working aisle (access to Row 1 face)
+  elements.push({
+    type: 'aisle',
+    x: zoneOriginX,
+    y: currentY,
+    width: totalLength,
+    height: workingAisleWidth,
+    label: `aisle ${(workingAisleWidth / 1000).toFixed(1)}m`,
+    color: '#f1f5f9',
+  });
+  currentY += workingAisleWidth;
+
+  for (let by = 0; by < blocksY; by++) {
+    // --- Two back-to-back rows per block ---
+    for (let bx = 0; bx < blocksX; bx++) {
+      const blockX = bx * spanX; // block starts at column bay left edge
+
+      // Row A (faces previous aisle)
+      elements.push({
+        type: 'rack-row',
+        x: blockX + (spanX - blockLength) / 2,
+        y: currentY,
+        width: blockLength,
+        height: frameDepth,
+        label: `B${by + 1}.${bx + 1}A`,
+        color: '#3b82f6',
+        blockIndex: by * blocksX + bx,
+        faceDirection: -1, // faces up (toward previous aisle)
+      });
+    }
+
+    currentY += frameDepth;
+
+    // Row B (back-to-back with A, faces next aisle)
+    for (let bx = 0; bx < blocksX; bx++) {
+      const blockX = bx * spanX;
+      elements.push({
+        type: 'rack-row',
+        x: blockX + (spanX - blockLength) / 2,
+        y: currentY,
+        width: blockLength,
+        height: frameDepth,
+        label: `B${by + 1}.${bx + 1}B`,
+        color: '#2563eb',
+        blockIndex: by * blocksX + bx,
+        faceDirection: 1, // faces down (toward next aisle)
+      });
+    }
+
+    currentY += frameDepth;
+
+    // Working aisle after block (if not last, or always after each block)
+    const isLastBlock = by === blocksY - 1 && !hasEndRow;
     elements.push({
       type: 'aisle',
-      x: startX,
-      y: bottomAisleY,
-      width: effectiveLength,
-      height: bottomAisleHeight,
-      label: bottomAisleHeight >= WALL_ACCESS_AISLE_MM
-        ? `${(bottomAisleHeight / 1000).toFixed(1)}m aisle (wall access)`
-        : `${(bottomAisleHeight / 1000).toFixed(1)}m clearance`,
+      x: zoneOriginX,
+      y: currentY,
+      width: totalLength,
+      height: isLastBlock ? workingAisleWidth : workingAisleWidth,
+      label: `aisle ${(workingAisleWidth / 1000).toFixed(1)}m`,
       color: '#f1f5f9',
     });
+    currentY += workingAisleWidth;
+  }
+
+  // --- End single row (if space) ---
+  if (hasEndRow) {
+    for (let bx = 0; bx < blocksX; bx++) {
+      const blockX = bx * spanX;
+      elements.push({
+        type: 'rack-row',
+        x: blockX + (spanX - blockLength) / 2,
+        y: currentY,
+        width: blockLength,
+        height: frameDepth,
+        label: `End ${bx + 1}`,
+        color: '#3b82f6',
+        faceDirection: -1,
+      });
+    }
+    currentY += frameDepth;
+
+    // Final aisle
+    elements.push({
+      type: 'aisle',
+      x: zoneOriginX,
+      y: currentY,
+      width: totalLength,
+      height: workingAisleWidth,
+      label: `aisle ${(workingAisleWidth / 1000).toFixed(1)}m`,
+      color: '#f1f5f9',
+    });
+  }
+
+  // --- 4. Transfer aisles between blocks in X direction ---
+  if (blocksX > 1) {
+    for (let bx = 0; bx < blocksX - 1; bx++) {
+      const xPos = (bx + 1) * spanX - warehouse.transferAisleX / 2;
+      elements.push({
+        type: 'transfer-aisle',
+        x: xPos,
+        y: wallClearance,
+        width: warehouse.transferAisleX,
+        height: totalWidth - 2 * wallClearance,
+        label: `transfer ${(warehouse.transferAisleX / 1000).toFixed(1)}m`,
+        color: '#dbeafe',
+      });
+    }
   }
 
   return elements;
 }
 
-/** Generate column positions at columnSpacingX/Y intervals — full 2D grid across entire warehouse */
-function generateColumnPositions(
-  warehouseLength: number,
-  warehouseWidth: number,
-  columnSpacingX: number,
-  columnSpacingY: number
-): { columnPositions: { x: number; y: number }[]; rackRowPositions: { index: number; y: number; height: number }[] } {
-  const hasX = columnSpacingX > 0;
-  const hasY = columnSpacingY > 0;
-  if (!hasX && !hasY) {
-    return { columnPositions: [], rackRowPositions: [] };
+// ============================================================
+// 3D payload generation (for future Three.js integration)
+// ============================================================
+
+function generate3DPayload(
+  totalLength: number,
+  totalWidth: number,
+  warehouse: WarehouseParams,
+  zone: RackZone,
+  blockLength: number,
+  frameDepth: number,
+  workingAisleWidth: number,
+  rackHeight: number,
+  blocksX: number,
+  blocksY: number,
+  baysPerBlock: number,
+  hasEndRow: boolean
+): Layout3DData {
+  const { wallClearance, columnWidth, columnDepth, columnSpanX, columnSpanY, columnsX, columnsY } = warehouse;
+
+  const columns: Layout3DData['columns'] = [];
+  for (let cx = 0; cx < columnsX; cx++) {
+    for (let cy = 0; cy < columnsY; cy++) {
+      columns.push({
+        x: (cx + 1) * columnSpanX - columnWidth,
+        y: (cy + 1) * columnSpanY - columnDepth,
+        width: columnWidth,
+        depth: columnDepth,
+        height: warehouse.height,
+      });
+    }
   }
 
-  // Generate column positions at independent X and Y intervals across the full warehouse
-  const columnPositions: { x: number; y: number }[] = [];
-  if (hasX && hasY) {
-    // Full 2D grid across entire warehouse
-    for (let x = columnSpacingX; x < warehouseLength; x += columnSpacingX) {
-      for (let y = columnSpacingY; y < warehouseWidth; y += columnSpacingY) {
-        columnPositions.push({ x, y });
-      }
+  const rackBlocks3D: Layout3DData['rackBlocks'] = [];
+  let yPos = wallClearance + workingAisleWidth;
+  for (let by = 0; by < blocksY; by++) {
+    for (let bx = 0; bx < blocksX; bx++) {
+      const blockX = bx * columnSpanX + (columnSpanX - blockLength) / 2;
+      rackBlocks3D.push({
+        x: blockX,
+        y: yPos,
+        z: 0,
+        width: blockLength,
+        depth: frameDepth * 2, // double row
+        height: rackHeight,
+        bays: baysPerBlock,
+        levels: zone.rack.beamLevels + (zone.rack.hasGroundLevel ? 1 : 0),
+        direction: zone.direction,
+      });
     }
-  } else if (hasX) {
-    // Only X spacing — columns along each rack row edge
-    for (let x = columnSpacingX; x < warehouseLength; x += columnSpacingX) {
-      columnPositions.push({ x, y: 0 });
-    }
-  } else {
-    // Only Y spacing
-    for (let y = columnSpacingY; y < warehouseWidth; y += columnSpacingY) {
-      columnPositions.push({ x: 0, y });
+    yPos += frameDepth * 2 + workingAisleWidth;
+  }
+
+  const aisles3D: Layout3DData['aisles'] = [];
+  // Working aisles
+  let ayPos = wallClearance;
+  for (let i = 0; i <= blocksY + (hasEndRow ? 1 : 0); i++) {
+    aisles3D.push({
+      x: 0,
+      y: ayPos,
+      width: totalLength,
+      depth: workingAisleWidth,
+      type: 'working',
+    });
+    ayPos += workingAisleWidth;
+    if (i < blocksY) {
+      ayPos += frameDepth * 2; // skip block
     }
   }
 
-  // Rack row Y positions (for reference, not used for grid)
-  const rackRowPositions: { index: number; y: number; height: number }[] = [];
-  return { columnPositions, rackRowPositions };
+  // Transfer aisles
+  if (blocksX > 1) {
+    for (let bx = 0; bx < blocksX - 1; bx++) {
+      aisles3D.push({
+        x: (bx + 1) * columnSpanX - warehouse.transferAisleX / 2,
+        y: wallClearance,
+        width: warehouse.transferAisleX,
+        depth: totalWidth - 2 * wallClearance,
+        type: 'transfer',
+      });
+    }
+  }
+
+  const walls: Layout3DData['walls'] = [
+    { x: 0, y: 0, width: totalLength, depth: wallClearance, height: warehouse.height },
+    { x: 0, y: totalWidth - wallClearance, width: totalLength, depth: wallClearance, height: warehouse.height },
+    { x: 0, y: 0, width: wallClearance, depth: totalWidth, height: warehouse.height },
+    { x: totalLength - wallClearance, y: 0, width: wallClearance, depth: totalWidth, height: warehouse.height },
+  ];
+
+  return { columns, rackBlocks: rackBlocks3D, aisles: aisles3D, walls };
 }
 
 /** Validate layout and generate warnings */
@@ -488,48 +471,6 @@ export function validateLayout(
       message: 'No upright profile found that meets capacity and thickness requirements.',
       severity: 'error',
     });
-  }
-
-  // Rack height to warehouse height ratio
-  if (rackHeight <= warehouse.height) {
-    const ratio = rackHeight / warehouse.height;
-    if (ratio > 0.85) {
-      warnings.push({
-        type: 'height',
-        message: `Rack height is ${Math.round(ratio * 100)}% of warehouse height. Consider leaving more clearance for sprinklers, lighting, or ventilation.`,
-        severity: 'warning',
-      });
-    }
-  }
-
-  // Pallets per level > 4
-  if (rack.palletsPerLevel > 4) {
-    warnings.push({
-      type: 'layout',
-      message: `${rack.palletsPerLevel} pallets per bay may reduce accessibility. Consider splitting into multiple bays with fewer pallets each.`,
-      severity: 'warning',
-    });
-  }
-
-  // High load per pallet
-  if (pallet.loadPerPallet > 2000) {
-    warnings.push({
-      type: 'frame',
-      message: `Load of ${pallet.loadPerPallet}kg/pallet requires heavy-duty uprights. Verify column capacity and consider reduced level spacing.`,
-      severity: 'warning',
-    });
-  }
-
-  // Beam utilization (capacity margin)
-  if (beamSelection && beamSelection.requiredCapacityKg > 0) {
-    const margin = ((beamSelection.tableCapacityKg - beamSelection.requiredCapacityKg) / beamSelection.requiredCapacityKg) * 100;
-    if (margin < 10) {
-      warnings.push({
-        type: 'beam',
-        message: `Beam capacity is only ${Math.round(margin)}% above required load. Consider upgrading to next beam size for safety margin.`,
-        severity: 'warning',
-      });
-    }
   }
 
   return warnings;

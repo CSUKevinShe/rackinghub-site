@@ -2,24 +2,23 @@
 
 import { usePlannerStore } from '@/lib/store/usePlannerStore';
 import { CONSTRAINTS, EXCHANGE_RATES } from '@/lib/calculator/config';
-import type { CurrencyCode } from '@/lib/calculator/types';
+import type { CurrencyCode, RackDirection } from '@/lib/calculator/types';
 import { NumberInput } from './NumberInput';
 import { cn } from '@/lib/utils';
 
-const CURRENCY_INFO: Record<CurrencyCode, { symbol: string; country: string }> = {
-  USD: { symbol: '$', country: 'US Dollar' },
-  EUR: { symbol: '€', country: 'Euro' },
-  GBP: { symbol: '£', country: 'British Pound' },
-  AUD: { symbol: 'A$', country: 'Australian Dollar' },
-  CAD: { symbol: 'C$', country: 'Canadian Dollar' },
-  CNY: { symbol: '¥', country: 'Chinese Yuan' },
+const CURRENCY_INFO: Record<CurrencyCode, { symbol: string; country: string; defaultRate: number }> = {
+  USD: { symbol: '$', country: 'US Dollar', defaultRate: 7.25 },
+  EUR: { symbol: '€', country: 'Euro', defaultRate: 7.85 },
+  GBP: { symbol: '£', country: 'British Pound', defaultRate: 9.15 },
+  AUD: { symbol: 'A$', country: 'Australian Dollar', defaultRate: 4.75 },
+  CAD: { symbol: 'C$', country: 'Canadian Dollar', defaultRate: 5.30 },
+  CNY: { symbol: '¥', country: 'Chinese Yuan', defaultRate: 1.0 },
 };
 
 export function RackSettings() {
   const {
     rack,
     pallet,
-    warehouse,
     setRack,
     setPallet,
     displayCurrency,
@@ -28,8 +27,8 @@ export function RackSettings() {
     setExchangeRate,
     wireMeshDeck,
     setWireMeshDeck,
-    setRackType,
-    setWarehouse,
+    direction,
+    setDirection,
   } = usePlannerStore();
   const constraints = CONSTRAINTS.rack;
 
@@ -127,71 +126,25 @@ export function RackSettings() {
           Rack Direction
         </label>
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setRack({ rackDirection: 'length' })}
-            className={`px-3 py-2 rounded-lg text-center transition-all border-2 ${
-              rack.rackDirection === 'length'
-                ? 'bg-primary-50 border-primary-400 text-primary-700'
-                : 'bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <div className="text-xs font-semibold">Along Length</div>
-            <div className="text-[10px] opacity-60 mt-0.5">{warehouse.length / 1000}m side</div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setRack({ rackDirection: 'width' })}
-            className={`px-3 py-2 rounded-lg text-center transition-all border-2 ${
-              rack.rackDirection === 'width'
-                ? 'bg-primary-50 border-primary-400 text-primary-700'
-                : 'bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <div className="text-xs font-semibold">Along Width</div>
-            <div className="text-[10px] opacity-60 mt-0.5">{warehouse.width / 1000}m side</div>
-          </button>
-        </div>
-      </div>
-
-      {/* Forklift Type Quick Select */}
-      <div>
-        <label className="text-sm font-medium text-slate-700 block mb-2">
-          Forklift Type
-        </label>
-        <div className="space-y-1.5">
-          {[
-            { label: 'Counterbalance', width: 3200, desc: 'Traditional forklift — wide aisle needed', range: '3200–3500mm' },
-            { label: 'Reach Truck', width: 2500, desc: 'Most common — balances density & speed', range: '2500–2800mm' },
-            { label: 'Narrow Aisle', width: 1800, desc: 'High density storage', range: '1600–2000mm' },
-            { label: 'VNA', width: 1500, desc: 'Very Narrow Aisle — max density', range: '1400–1600mm' },
-          ].map((ft) => {
-            const isInRange = rack.aisleWidth >= ft.width - 300 && rack.aisleWidth <= ft.width + 300;
-            const isExact = rack.aisleWidth === ft.width;
-            return (
-              <button
-                key={ft.label}
-                type="button"
-                onClick={() => setRack({ aisleWidth: ft.width })}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all border ${
-                  isExact
-                    ? 'border-primary-400 bg-primary-50'
-                    : isInRange
-                      ? 'border-amber-200 bg-amber-50/50'
-                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
-                }`}
-              >
-                <div className={`w-2 h-2 rounded-full shrink-0 ${isExact ? 'bg-primary-500' : isInRange ? 'bg-amber-400' : 'bg-slate-300'}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-700">{ft.label}</span>
-                    <span className="text-[10px] font-mono text-slate-400">{ft.range}</span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 truncate">{ft.desc}</div>
-                </div>
-              </button>
-            );
-          })}
+          {([
+            { value: 0 as RackDirection, label: 'Along Length (X)', desc: 'Rows run left→right' },
+            { value: 1 as RackDirection, label: 'Along Width (Y)', desc: 'Rows run top→bottom' },
+          ]).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setDirection(opt.value)}
+              className={cn(
+                'flex flex-col items-center justify-center px-3 py-3 rounded-lg border transition-all',
+                direction === opt.value
+                  ? 'border-primary-950 bg-primary-50 text-primary-950'
+                  : 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100'
+              )}
+            >
+              <span className="text-sm font-semibold">{opt.label}</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">{opt.desc}</span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -280,96 +233,10 @@ export function RackSettings() {
           <span className="text-xs text-slate-500 shrink-0">CNY</span>
           <button
             type="button"
-            onClick={() => setExchangeRate(EXCHANGE_RATES[displayCurrency])}
+            onClick={() => setExchangeRate(CURRENCY_INFO[displayCurrency].defaultRate)}
             className="text-[10px] text-primary-600 hover:text-primary-800 font-medium shrink-0"
           >
             Reset
-          </button>
-        </div>
-      </div>
-
-      {/* Save / Load / Share */}
-      <div>
-        <label className="text-sm font-medium text-slate-700 block mb-2">
-          Save &amp; Share
-        </label>
-        <div className="grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            onClick={() => {
-              const state = usePlannerStore.getState();
-              const params = {
-                warehouse: state.warehouse,
-                rackType: state.rackType,
-                rack: state.rack,
-                pallet: state.pallet,
-                wireMeshDeck: state.wireMeshDeck,
-                displayCurrency: state.displayCurrency,
-              };
-              const blob = new Blob([JSON.stringify(params, null, 2)], { type: 'application/json' });
-              const a = document.createElement('a');
-              a.download = 'rackinghub-plan.json';
-              a.href = URL.createObjectURL(blob);
-              a.click();
-            }}
-            className="px-2 py-2 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors text-center"
-          >
-            <div>💾</div>
-            <div className="mt-0.5">Export</div>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = '.json';
-              input.onchange = (e: Event) => {
-                const file = (e.target as HTMLInputElement).files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                  try {
-                    const data = JSON.parse(ev.target?.result as string);
-                    if (data.warehouse) setWarehouse(data.warehouse);
-                    if (data.rackType) setRackType(data.rackType);
-                    if (data.rack) setRack(data.rack);
-                    if (data.pallet) setPallet(data.pallet);
-                    if (data.wireMeshDeck !== undefined) setWireMeshDeck(data.wireMeshDeck);
-                    if (data.displayCurrency) setDisplayCurrency(data.displayCurrency);
-                  } catch { /* ignore */ }
-                };
-                reader.readAsText(file);
-              };
-              input.click();
-            }}
-            className="px-2 py-2 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors text-center"
-          >
-            <div>📂</div>
-            <div className="mt-0.5">Import</div>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const state = usePlannerStore.getState();
-              const params = {
-                warehouse: state.warehouse,
-                rackType: state.rackType,
-                rack: state.rack,
-                pallet: state.pallet,
-                wireMeshDeck: state.wireMeshDeck,
-                displayCurrency: state.displayCurrency,
-              };
-              const { encodeParams: ep } = require('@/lib/planner-persistence');
-              const qs = ep(params);
-              const url = `${window.location.origin}/planner?${qs}`;
-              navigator.clipboard.writeText(url).then(() => {
-                // Could add a toast here
-              });
-            }}
-            className="px-2 py-2 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors text-center"
-          >
-            <div>🔗</div>
-            <div className="mt-0.5">Share</div>
           </button>
         </div>
       </div>

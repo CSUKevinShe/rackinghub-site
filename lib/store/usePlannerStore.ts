@@ -13,6 +13,7 @@ import type {
   UprightSelection,
   ValidationWarning,
   ShippingResult,
+  RackDirection,
 } from '@/lib/calculator/types';
 import {
   DEFAULT_WAREHOUSE,
@@ -78,6 +79,7 @@ interface PlannerState {
   pallet: PalletParams;
   displayCurrency: CurrencyCode;
   wireMeshDeck: boolean;
+  direction: RackDirection;
 
   // Output
   summary: PlanSummary | null;
@@ -97,6 +99,7 @@ interface PlannerState {
   setRack: (partial: Partial<RackParams>) => void;
   setPallet: (partial: Partial<PalletParams>) => void;
   setWireMeshDeck: (enabled: boolean) => void;
+  setDirection: (d: RackDirection) => void;
   setDisplayCurrency: (currency: CurrencyCode) => void;
   setExchangeRate: (rate: number) => void;
   calculate: () => void;
@@ -112,6 +115,7 @@ function getInitialState() {
     pallet: { ...DEFAULT_PALLET },
     displayCurrency: 'USD' as CurrencyCode,
     wireMeshDeck: false,
+    direction: 0 as RackDirection,
   };
 
   // Priority 1: URL params
@@ -125,6 +129,7 @@ function getInitialState() {
       pallet: { ...defaults.pallet, ...urlParams.pallet },
       displayCurrency: urlParams.displayCurrency || defaults.displayCurrency,
       wireMeshDeck: urlParams.wireMeshDeck ?? defaults.wireMeshDeck,
+      direction: defaults.direction,
     };
   }
 
@@ -139,6 +144,7 @@ function getInitialState() {
       pallet: { ...defaults.pallet, ...stored.pallet },
       displayCurrency: stored.displayCurrency || defaults.displayCurrency,
       wireMeshDeck: stored.wireMeshDeck ?? defaults.wireMeshDeck,
+      direction: defaults.direction,
     };
   }
 
@@ -154,6 +160,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   pallet: initial.pallet,
   displayCurrency: initial.displayCurrency,
   wireMeshDeck: initial.wireMeshDeck,
+  direction: initial.direction,
 
   summary: null,
   bom: [],
@@ -228,6 +235,11 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     get().calculate();
   },
 
+  setDirection: (direction) => {
+    set({ direction });
+    get().calculate();
+  },
+
   setDisplayCurrency: (currency) => {
     const rate = EXCHANGE_RATES[currency] ?? EXCHANGE_RATES.USD;
     set({ displayCurrency: currency, exchangeRate: rate });
@@ -258,9 +270,29 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       : state.rack.firstBeamHeight;
     const rack = { ...state.rack, firstBeamHeight };
 
+    // Build warehouse with column grid defaults (backward compat)
+    const wh = { ...state.warehouse };
+    if (wh.columnsX <= 0) wh.columnsX = Math.max(1, Math.floor(wh.length / (wh.columnSpanX || 10000)));
+    if (wh.columnsY <= 0) wh.columnsY = Math.max(1, Math.floor(wh.width / (wh.columnSpanY || 10000)));
+    if (wh.columnSpanX <= 0) wh.columnSpanX = wh.length / wh.columnsX;
+    if (wh.columnSpanY <= 0) wh.columnSpanY = wh.width / wh.columnsY;
+
+    // Build default zone from current settings
+    wh.zones = [{
+      id: 'zone-0',
+      originX: wh.wallClearance,
+      originY: wh.wallClearance,
+      width: wh.columnsX * wh.columnSpanX - 2 * wh.wallClearance,
+      depth: wh.columnsY * wh.columnSpanY - 2 * wh.wallClearance,
+      rackType: state.rackType,
+      rack,
+      pallet: state.pallet,
+      direction: state.direction,
+    }];
+
     try {
       const input: PlannerInput = {
-        warehouse: state.warehouse,
+        warehouse: wh,
         rackType: state.rackType,
         rack,
         pallet: state.pallet,

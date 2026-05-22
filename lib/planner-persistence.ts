@@ -5,6 +5,7 @@ import type {
   PalletParams,
   RackType,
   CurrencyCode,
+  RackDirection,
 } from '@/lib/calculator/types';
 import {
   DEFAULT_WAREHOUSE,
@@ -14,7 +15,7 @@ import {
 
 const STORAGE_KEY = 'rackinghub:plannerState';
 const URL_PARAMS = [
-  'wh_l', 'wh_w', 'wh_h', 'wh_wc', 'wh_cx', 'wh_cy',
+  'wh_l', 'wh_w', 'wh_h', 'wh_wc', 'wh_csx', 'wh_csy', 'wh_cw', 'wh_cd', 'wh_tax', 'wh_tay',
   'type',
   'levels', 'ppl', 'aisle', 'fbh', 'ground', 'dir',
   'pw', 'pd', 'ph', 'load',
@@ -28,25 +29,30 @@ export function encodeParams(params: {
   rack: RackParams;
   pallet: PalletParams;
   wireMeshDeck: boolean;
+  direction?: RackDirection;
   displayCurrency: CurrencyCode;
 }): string {
-  const { warehouse, rackType, rack, pallet, wireMeshDeck, displayCurrency } = params;
+  const { warehouse, rackType, rack, pallet, wireMeshDeck, direction, displayCurrency } = params;
   const p = new URLSearchParams();
   p.set('wh_l', String(warehouse.length));
   p.set('wh_w', String(warehouse.width));
   p.set('wh_h', String(warehouse.height));
   p.set('wh_wc', String(warehouse.wallClearance));
-  if (warehouse.columnSpacingX) p.set('wh_cx', String(warehouse.columnSpacingX));
-  if (warehouse.columnSpacingY) p.set('wh_cy', String(warehouse.columnSpacingY));
-  if (warehouse.wallThickness !== 300) p.set('wh_wt', String(warehouse.wallThickness));
-  if (warehouse.columnSize !== 400) p.set('wh_cs', String(warehouse.columnSize));
+  if (warehouse.columnsX && warehouse.columnsX !== 4) p.set('wh_cx', String(warehouse.columnsX));
+  if (warehouse.columnsY && warehouse.columnsY !== 2) p.set('wh_cy', String(warehouse.columnsY));
+  if (warehouse.columnSpanX && warehouse.columnSpanX !== 10000) p.set('wh_csx', String(warehouse.columnSpanX));
+  if (warehouse.columnSpanY && warehouse.columnSpanY !== 10000) p.set('wh_csy', String(warehouse.columnSpanY));
+  if (warehouse.columnWidth && warehouse.columnWidth !== 300) p.set('wh_cw', String(warehouse.columnWidth));
+  if (warehouse.columnDepth && warehouse.columnDepth !== 300) p.set('wh_cd', String(warehouse.columnDepth));
+  if (warehouse.transferAisleX && warehouse.transferAisleX !== 3000) p.set('wh_tax', String(warehouse.transferAisleX));
+  if (warehouse.transferAisleY && warehouse.transferAisleY !== 3000) p.set('wh_tay', String(warehouse.transferAisleY));
   if (rackType !== 'selective') p.set('type', rackType);
   p.set('levels', String(rack.beamLevels));
   p.set('ppl', String(rack.palletsPerLevel));
   p.set('aisle', String(rack.aisleWidth));
   if (rack.firstBeamHeight !== 300) p.set('fbh', String(rack.firstBeamHeight));
   if (rack.hasGroundLevel) p.set('ground', '1');
-  if (rack.rackDirection !== 'length') p.set('dir', rack.rackDirection);
+  if (direction != null && direction !== 0) p.set('dir', String(direction));
   p.set('pw', String(pallet.width));
   p.set('pd', String(pallet.depth));
   p.set('ph', String(pallet.height));
@@ -63,6 +69,7 @@ export function decodeParams(search?: string): Partial<{
   rack: RackParams;
   pallet: PalletParams;
   wireMeshDeck: boolean;
+  direction: RackDirection;
   displayCurrency: CurrencyCode;
 }> | null {
   const qs = search ?? (typeof window !== 'undefined' ? window.location.search : '');
@@ -79,10 +86,16 @@ export function decodeParams(search?: string): Partial<{
       width: parseInt(p.get('wh_w') || '0') || DEFAULT_WAREHOUSE.width,
       height: parseInt(p.get('wh_h') || '0') || DEFAULT_WAREHOUSE.height,
       wallClearance: parseInt(p.get('wh_wc') || '0') || DEFAULT_WAREHOUSE.wallClearance,
-      columnSpacingX: parseInt(p.get('wh_cx') || '0') || DEFAULT_WAREHOUSE.columnSpacingX,
-      columnSpacingY: parseInt(p.get('wh_cy') || '0') || DEFAULT_WAREHOUSE.columnSpacingY,
-      wallThickness: parseInt(p.get('wh_wt') || '0') || DEFAULT_WAREHOUSE.wallThickness,
-      columnSize: parseInt(p.get('wh_cs') || '0') || DEFAULT_WAREHOUSE.columnSize,
+      columnSpacing: 0,
+      columnsX: parseInt(p.get('wh_cx') || '0') || DEFAULT_WAREHOUSE.columnsX,
+      columnsY: parseInt(p.get('wh_cy') || '0') || DEFAULT_WAREHOUSE.columnsY,
+      columnSpanX: parseInt(p.get('wh_csx') || '0') || DEFAULT_WAREHOUSE.columnSpanX,
+      columnSpanY: parseInt(p.get('wh_csy') || '0') || DEFAULT_WAREHOUSE.columnSpanY,
+      columnWidth: parseInt(p.get('wh_cw') || '0') || DEFAULT_WAREHOUSE.columnWidth,
+      columnDepth: parseInt(p.get('wh_cd') || '0') || DEFAULT_WAREHOUSE.columnDepth,
+      transferAisleX: parseInt(p.get('wh_tax') || '0') || DEFAULT_WAREHOUSE.transferAisleX,
+      transferAisleY: parseInt(p.get('wh_tay') || '0') || DEFAULT_WAREHOUSE.transferAisleY,
+      zones: [],
     };
   }
 
@@ -100,8 +113,12 @@ export function decodeParams(search?: string): Partial<{
       aisleWidth: parseInt(p.get('aisle') || '0') || DEFAULT_RACK.aisleWidth,
       firstBeamHeight: parseInt(p.get('fbh') || '0') || DEFAULT_RACK.firstBeamHeight,
       hasGroundLevel: p.get('ground') === '1',
-      rackDirection: (p.get('dir') as RackParams['rackDirection']) || 'length',
     };
+  }
+
+  if (p.has('dir')) {
+    const d = parseInt(p.get('dir') || '0');
+    result.direction = (d === 1 ? 1 : 0) as RackDirection;
   }
 
   if (p.has('pw')) {
@@ -136,7 +153,7 @@ export function saveToLocalStorage(params: {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(params));
   } catch {
-    // ignore — storage may be full or disabled
+    // ignore
   }
 }
 

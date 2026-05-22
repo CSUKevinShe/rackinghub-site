@@ -114,13 +114,13 @@ export const COST_REFERENCE: CostReference = {
 
 export const PROFIT_MARGIN = 1.20;
 
-/** Exchange rates: 1 unit of currency = X CNY (updated 2026-05-18) */
+/** Exchange rates: 1 unit of currency = X CNY */
 export const EXCHANGE_RATES = {
-  USD: 6.78,
-  EUR: 7.92,
-  GBP: 9.09,
-  AUD: 4.92,
-  CAD: 4.95,
+  USD: 7.25,
+  EUR: 7.85,
+  GBP: 9.15,
+  AUD: 4.75,
+  CAD: 5.30,
   CNY: 1.0,
 } as const;
 
@@ -150,10 +150,17 @@ export const DEFAULT_WAREHOUSE: WarehouseParams = {
   width: 25000,
   height: 10000,
   wallClearance: 200,
-  columnSpacingX: 8000,
-  columnSpacingY: 12000,
-  wallThickness: 300,
-  columnSize: 400,
+  columnSpacing: 10000,
+  // Column grid (new)
+  columnsX: 4,
+  columnsY: 2,
+  columnSpanX: 10000,
+  columnSpanY: 10000,
+  columnWidth: 300,
+  columnDepth: 300,
+  transferAisleX: 3000,
+  transferAisleY: 3000,
+  zones: [], // populated at initialization
 };
 
 export const DEFAULT_RACK: RackParams = {
@@ -162,7 +169,6 @@ export const DEFAULT_RACK: RackParams = {
   aisleWidth: 2500,
   firstBeamHeight: 300,
   hasGroundLevel: false,
-  rackDirection: 'length',
 };
 
 export const DEFAULT_PALLET: PalletParams = {
@@ -190,10 +196,15 @@ export const CONSTRAINTS = {
     width: { min: 5000, max: 100000 },
     height: { min: 3000, max: 30000 },
     wallClearance: { min: 50, max: 1000 },
-    columnSpacingX: { min: 0, max: 20000 },
-    columnSpacingY: { min: 0, max: 20000 },
-    wallThickness: { min: 100, max: 600 },
-    columnSize: { min: 200, max: 800 },
+    columnSpacing: { min: 0, max: 15000 },
+    columnsX: { min: 1, max: 20 },
+    columnsY: { min: 1, max: 10 },
+    columnSpanX: { min: 5000, max: 30000 },
+    columnSpanY: { min: 5000, max: 30000 },
+    columnWidth: { min: 100, max: 1000 },
+    columnDepth: { min: 100, max: 1000 },
+    transferAisleX: { min: 1500, max: 8000 },
+    transferAisleY: { min: 1500, max: 8000 },
   },
   rack: {
     beamLevels: { min: 1, max: 15 },

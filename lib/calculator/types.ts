@@ -5,6 +5,22 @@
 /** Supported racking system types */
 export type RackType = 'selective' | 'drive-in' | 'radio-shuttle';
 
+/** Rack orientation — along X (length) or Y (width) axis */
+export type RackDirection = 0 | 1; // 0 = along X (horizontal), 1 = along Y (vertical)
+
+/** A racking zone within the warehouse — single rectangular area */
+export interface RackZone {
+  id: string;
+  originX: number;         // offset from warehouse origin (mm)
+  originY: number;
+  width: number;           // zone footprint (mm)
+  depth: number;
+  rackType: RackType;
+  rack: RackParams;
+  pallet: PalletParams;
+  direction: RackDirection;
+}
+
 /** Warehouse building dimensions */
 export interface WarehouseParams {
   /** Building interior length in mm */
@@ -15,14 +31,20 @@ export interface WarehouseParams {
   height: number;
   /** Minimum clearance from wall to nearest rack face in mm */
   wallClearance: number;
-  /** Column spacing along warehouse length in mm — 0 = ignore */
-  columnSpacingX: number;
-  /** Column spacing along warehouse width in mm — 0 = ignore */
-  columnSpacingY: number;
-  /** Wall thickness in mm (for visualization) */
-  wallThickness: number;
-  /** Column cross-section size in mm (square, for visualization) */
-  columnSize: number;
+  /** Column spacing (grid) in mm — 0 = ignore (DEPRECATED, use columnSpanX/Y) */
+  columnSpacing: number;
+  /** Column grid system */
+  columnsX: number;         // number of column bays along length
+  columnsY: number;         // number of column bays along width
+  columnSpanX: number;      // distance between columns along length (mm)
+  columnSpanY: number;      // distance between columns along width (mm)
+  columnWidth: number;      // column cross-section width (mm, along length)
+  columnDepth: number;      // column cross-section depth (mm, along width)
+  /** Transfer aisles between rack blocks */
+  transferAisleX: number;   // cross-aisle width along length (mm)
+  transferAisleY: number;   // cross-aisle width along width (mm)
+  /** Racking zones (Phase 1: single zone; future: multi-zone) */
+  zones: RackZone[];
 }
 
 /** Rack system configuration */
@@ -37,8 +59,6 @@ export interface RackParams {
   firstBeamHeight: number;
   /** Whether ground-level pallets are stored directly on floor (no beams needed) */
   hasGroundLevel: boolean;
-  /** Rack direction: 'along-length' (0) or 'along-width' (1) — determines rack row orientation */
-  rackDirection: 'length' | 'width';
 }
 
 /** Pallet / load specifications */
@@ -135,13 +155,17 @@ export interface BOMItem {
 
 /** 2D layout element */
 export interface LayoutElement {
-  type: 'rack-row' | 'aisle' | 'wall' | 'clearance' | 'column';
+  type: 'rack-row' | 'aisle' | 'transfer-aisle' | 'wall' | 'clearance' | 'column';
   x: number;
   y: number;
   width: number;
   height: number;
   label?: string;
   color?: string;
+  /** Block index for grouping back-to-back rows */
+  blockIndex?: number;
+  /** Rack row face direction: -1 left/up, +1 right/down */
+  faceDirection?: -1 | 1;
 }
 
 /** Computed layout data */
@@ -151,22 +175,35 @@ export interface LayoutData {
   warehouseWidth: number;
   /** Number of rack rows (single-deep rows) */
   rackRows: number;
-  /** Number of aisles */
+  /** Number of working aisles */
   aisles: number;
   /** Number of bays per row */
   baysPerRow: number;
   /** Number of double rack blocks */
   rackBlocks: number;
+  /** Number of transfer aisles (cross aisles) */
+  transferAisles: number;
   /** Total racking area in m2 */
   rackingArea: number;
   /** Warehouse area in m2 */
   warehouseArea: number;
   /** Space utilization percentage */
   utilization: number;
-  /** Column positions when columnSpacing > 0, in mm from warehouse origin */
-  columnPositions?: { x: number; y: number }[];
-  /** Y positions of each rack row for column alignment */
-  rackRowPositions?: { index: number; y: number; height: number }[];
+  /** 3D data payload (for future Three.js integration) */
+  layout3D?: Layout3DData;
+}
+
+/** 3D layout data for downstream rendering (Three.js interface) */
+export interface Layout3DData {
+  columns: { x: number; y: number; width: number; depth: number; height: number }[];
+  rackBlocks: {
+    x: number; y: number; z: number;
+    width: number; depth: number; height: number;
+    bays: number; levels: number;
+    direction: RackDirection;
+  }[];
+  aisles: { x: number; y: number; width: number; depth: number; type: 'working' | 'transfer' }[];
+  walls: { x: number; y: number; width: number; depth: number; height: number }[];
 }
 
 /** Plan summary (for display) */
