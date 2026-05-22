@@ -1,2 +1,7 @@
-# v1 ¡ú v2 redirects
+# v1 to v2 redirects
 /old-planner /planner 301
+
+# Legacy content to new structure (SEO preservation)
+/blog/*        /learn/:splat  301
+/case-studies  /learn/        301
+/products/*    /resources/    301

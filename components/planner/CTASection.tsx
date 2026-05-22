@@ -43,11 +43,11 @@ function DefaultView({ onSelect }: { onSelect: (v: CTAView) => void }) {
           className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-lg transition-colors shadow-sm text-sm"
         >
           <FileText className="w-4 h-4" />
-          Request Detailed Quote
+          Get Supplier Recommendations
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
         <p className="text-[11px] text-slate-400 text-center mt-2">
-          Free engineering review · Response within 24 hours
+          Personal review · Supplier matching · No obligation
         </p>
       </div>
 
@@ -172,7 +172,7 @@ function QuoteForm({ onBack }: { onBack: () => void }) {
         </div>
         <h4 className="text-sm font-bold text-slate-800 mb-1">Quote Request Submitted!</h4>
         <p className="text-xs text-slate-500 mb-3">
-          Our engineering team will contact you within 24 hours.
+          I will personally review your specs and respond with supplier recommendations within 24 hours.
         </p>
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg text-xs font-mono text-slate-600">
           Reference: <strong>{refId}</strong>
@@ -185,7 +185,7 @@ function QuoteForm({ onBack }: { onBack: () => void }) {
     <div className="animate-fade-in p-5">
       <div className="flex items-center gap-2 mb-3">
         <MessageSquare className="w-4 h-4 text-accent-500" />
-        <h4 className="text-sm font-semibold text-slate-700">Request a Detailed Quote</h4>
+        <h4 className="text-sm font-semibold text-slate-700">Get Supplier Recommendations</h4>
       </div>
 
       {/* Pre-filled plan summary */}
@@ -257,10 +257,10 @@ function QuoteForm({ onBack }: { onBack: () => void }) {
         className="w-full h-10 bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
       >
         <Send className="w-3.5 h-3.5" />
-        Submit Quote Request
+        Submit My Specs
       </button>
       <p className="text-[10px] text-slate-400 mt-2 text-center">
-        No obligation. Your contact info is kept confidential.
+        No obligation. I respond personally. Your data stays private.
       </p>
       <button
         type="button"
