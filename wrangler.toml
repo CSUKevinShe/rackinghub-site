@@ -1,0 +1,12 @@
+name = "rackinghub-site"
+pages_build_output_dir = "."
+
+[vars]
+  ENVIRONMENT = "production"
+  SITE_URL = "https://rackinghub.com"
+
+[env.production.vars]
+  ENVIRONMENT = "production"
+  SITE_URL = "https://rackinghub.com"
+  CONTACT_EMAIL = "info@rackinghub.com"
+  GA_ID = "G-HY3B0T73TJ"
