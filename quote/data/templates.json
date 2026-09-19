@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "note": "模板数据文件。新增具体产品模板时，只需在 templates 数组里追加一项，无需改动 app.js / calc.js。每个模板由一条或多条“行”组成，每行必须指定 formula: \"A\"（自制件）或 \"B\"（采购件/标准件），字段含义见 calc.js 顶部注释。复合产品（如横梁=型材+标准件）可以在 lines 里写多行。",
+  "categories": [
+    { "id": "fallback", "label": "通用兜底模板（非标件）" },
+    { "id": "standard", "label": "标准产品模板" }
+  ],
+  "templates": [
+    {
+      "id": "generic-self-made",
+      "category": "fallback",
+      "costType": "self-made",
+      "name": "自制件（通用兜底模板）",
+      "description": "任何找不到现成产品模板的自制/加工件都可以用这个模板临时报价：按重量输入材料、工费、表面处理等单价即可。对应 Excel 报价表里的“其他自制件”万能模板行。",
+      "lines": [
+        {
+          "key": "main",
+          "label": "自制件",
+          "formula": "A",
+          "fields": [
+            { "key": "partName", "label": "部件名称", "type": "text", "default": "", "placeholder": "如：非标立柱" },
+            { "key": "weight", "label": "单件重量", "type": "number", "unit": "kg", "default": 0, "min": 0, "step": 0.01 },
+            { "key": "materialPrice", "label": "材料单价（不含税）", "type": "number", "unit": "¥/kg", "default": 0, "min": 0, "step": 0.01 },
+            { "key": "buffer", "label": "损耗系数", "type": "number", "unit": "", "default": 1.02, "min": 1, "step": 0.01, "help": "立柱/主管类常用1.02，其余部件常用1.01（来自2024-06-30历史更新记录）" },
+            { "key": "laborPrice", "label": "工费", "type": "number", "unit": "¥/kg", "default": 0, "min": 0, "step": 0.01 },
+            { "key": "coatingPrice", "label": "喷塑/表面处理单价", "type": "number", "unit": "¥/kg", "default": 0, "min": 0, "step": 0.01 },
+            { "key": "standardPartPrice", "label": "标准件换算单价（按重量摊销）", "type": "number", "unit": "¥/kg等效", "default": 0, "min": 0, "step": 0.01, "help": "把固定标准件成本折算成 ¥/kg：固定成本 ÷ 本部件重量" },
+            { "key": "qty", "label": "数量", "type": "number", "unit": "件", "default": 1, "min": 0, "step": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generic-purchased",
+      "category": "fallback",
+      "costType": "purchased",
+      "name": "采购件（通用兜底模板）",
+      "description": "任何标准件/外购件如果不在标准件库里，可以用这个模板临时报价：直接填采购含税单价和运费即可。对应 Excel 报价表里的“采购件”万能模板行。",
+      "lines": [
+        {
+          "key": "main",
+          "label": "采购件",
+          "formula": "B",
+          "fields": [
+            { "key": "partName", "label": "部件名称", "type": "text", "default": "", "placeholder": "如：非标螺栓 M20x40" },
+            { "key": "unitPriceInclTax", "label": "采购含税单价", "type": "number", "unit": "¥/件", "default": 0, "min": 0, "step": 0.01, "help": "材料增值税按13%换算" },
+            { "key": "buffer", "label": "损耗/不良系数", "type": "number", "unit": "", "default": 1, "min": 1, "step": 0.01 },
+            { "key": "freightPriceInclTax", "label": "运费含税单价", "type": "number", "unit": "¥/件", "default": 0, "min": 0, "step": 0.01, "help": "运费增值税按6%换算" },
+            { "key": "qty", "label": "数量", "type": "number", "unit": "件", "default": 1, "min": 0, "step": 1 }
+          ]
+        }
+      ]
+    }
+  ]
+}
